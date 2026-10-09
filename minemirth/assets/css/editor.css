@@ -1,0 +1,26 @@
+/* Mine Mirth — block editor canvas. main.css is loaded alongside this file. */
+body,
+.editor-styles-wrapper {
+	background: var(--mm-bg);
+	color: var(--mm-text-2);
+	font-family: var(--mm-font-body);
+	font-size: 1.07rem;
+	line-height: 1.78;
+}
+body::before { display: none; }
+.editor-styles-wrapper .wp-block-post-title,
+.editor-post-title__input {
+	font-family: var(--mm-font-heading);
+	font-weight: var(--mm-heading-weight);
+	letter-spacing: var(--mm-heading-tracking);
+	color: var(--mm-text);
+}
+.editor-styles-wrapper h2,
+.editor-styles-wrapper h3,
+.editor-styles-wrapper h4 { color: var(--mm-text); margin-top: 1.8em; }
+.editor-styles-wrapper a { color: var(--mm-link); text-decoration: underline; text-decoration-color: var(--mm-primary-line); text-underline-offset: 3px; }
+.editor-styles-wrapper .mm-promo a, .editor-styles-wrapper .mm-btn { text-decoration: none; }
+.editor-styles-wrapper blockquote { position: relative; padding-left: 26px; border: 0; }
+.editor-styles-wrapper blockquote::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 3px; background: var(--mm-grad-bold); }
+.editor-styles-wrapper code { font-family: var(--mm-font-mono); }
+.editor-styles-wrapper .mm-promo { margin-block: 1.5em; }
