@@ -1,13 +1,19 @@
 <?php
 /**
  * Plugin Name:       Mine Mirth Logos
- * Description:       Separate header and footer logos for light and dark mode, with their own sizes. Set them in Appearance › Customize › Logos (light & dark). Needs the Mine Mirth theme 4.0.2 or later.
- * Version:           1.0.0
+ * Description:       Separate header and footer logos for light and dark mode, each with its own desktop and mobile size. Works with the Mine Mirth theme as installed (4.0 and later), no theme update needed. Settings: Appearance › Customize › Logos (light & dark).
+ * Version:           1.1.0
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            Mine Mirth, LLC
  * License:           GPLv2 or later
  * Text Domain:       mine-mirth-logos
+ *
+ * How it works with the theme: the theme draws every logo with mm_logo(), which
+ * reads two settings, the site logo (custom_logo) and "Logo for dark mode"
+ * (mm_logo_dark). This plugin notes whether the header or the footer is being
+ * drawn and hands those two settings the logos you chose for that place. Sizes
+ * use the theme's own CSS variables (--mm-logo-h, --mm-logo-h-mobile).
  *
  * @package MineMirthLogos
  */
@@ -15,14 +21,18 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Settings: context => [label, default height in px].
+ * Places: key => [label, which theme template starts it].
  */
-function mmlg_slots(): array {
+function mmlg_places(): array {
 	return array(
-		'header' => array( __( 'Header', 'mine-mirth-logos' ), 40 ),
-		'footer' => array( __( 'Footer', 'mine-mirth-logos' ), 44 ),
+		'header' => __( 'Header', 'mine-mirth-logos' ),
+		'footer' => __( 'Footer', 'mine-mirth-logos' ),
 	);
 }
+
+/* ---------------------------------------------------------------------------
+ * Customizer
+ * ------------------------------------------------------------------------- */
 
 add_action(
 	'customize_register',
@@ -31,13 +41,13 @@ add_action(
 			'mmlg_logos',
 			array(
 				'title'       => __( 'Logos (light & dark)', 'mine-mirth-logos' ),
-				'description' => __( 'Upload a logo for each place and mode. Leave one empty to use the light-mode logo of the same place, then the site logo.', 'mine-mirth-logos' ),
+				'description' => __( 'Choose a logo for each place and mode. Any empty slot falls back to the theme’s own logo settings. Heights set to 0 keep the theme’s size.', 'mine-mirth-logos' ),
 				'priority'    => 21,
 			)
 		);
-		foreach ( mmlg_slots() as $slot => $info ) {
+		foreach ( mmlg_places() as $place => $label ) {
 			foreach ( array( 'light' => __( 'light mode', 'mine-mirth-logos' ), 'dark' => __( 'dark mode', 'mine-mirth-logos' ) ) as $mode => $mode_label ) {
-				$id = "mmlg_{$slot}_{$mode}";
+				$id = "mmlg_{$place}_{$mode}";
 				$wp->add_setting( $id, array( 'default' => 0, 'sanitize_callback' => 'absint' ) );
 				$wp->add_control(
 					new WP_Customize_Media_Control(
@@ -45,101 +55,132 @@ add_action(
 						$id,
 						array(
 							/* translators: 1: Header/Footer 2: light mode/dark mode */
-							'label'     => sprintf( __( '%1$s logo, %2$s', 'mine-mirth-logos' ), $info[0], $mode_label ),
+							'label'     => sprintf( __( '%1$s logo, %2$s', 'mine-mirth-logos' ), $label, $mode_label ),
 							'section'   => 'mmlg_logos',
 							'mime_type' => 'image',
 						)
 					)
 				);
 			}
-			$hid = "mmlg_{$slot}_height";
-			$wp->add_setting( $hid, array( 'default' => $info[1], 'sanitize_callback' => 'absint' ) );
-			$wp->add_control(
-				$hid,
-				array(
-					/* translators: %s: Header/Footer */
-					'label'       => sprintf( __( '%s logo height (px)', 'mine-mirth-logos' ), $info[0] ),
-					'section'     => 'mmlg_logos',
-					'type'        => 'number',
-					'input_attrs' => array( 'min' => 16, 'max' => 160, 'step' => 1 ),
-				)
-			);
+			foreach ( array( 'h' => __( 'height on desktop (px)', 'mine-mirth-logos' ), 'hm' => __( 'height on mobile (px)', 'mine-mirth-logos' ) ) as $key => $size_label ) {
+				$id = "mmlg_{$place}_{$key}";
+				$wp->add_setting( $id, array( 'default' => 0, 'sanitize_callback' => 'absint' ) );
+				$wp->add_control(
+					$id,
+					array(
+						/* translators: 1: Header/Footer 2: size label */
+						'label'       => sprintf( __( '%1$s logo %2$s', 'mine-mirth-logos' ), $label, $size_label ),
+						'section'     => 'mmlg_logos',
+						'type'        => 'number',
+						'input_attrs' => array( 'min' => 0, 'max' => 200, 'step' => 1, 'placeholder' => '0' ),
+					)
+				);
+			}
+		}
+		$wp->add_setting( 'mmlg_max_width', array( 'default' => 240, 'sanitize_callback' => 'absint' ) );
+		$wp->add_control(
+			'mmlg_max_width',
+			array(
+				'label'       => __( 'Maximum logo width (px)', 'mine-mirth-logos' ),
+				'description' => __( 'Raise this for wide logos that look cut short.', 'mine-mirth-logos' ),
+				'section'     => 'mmlg_logos',
+				'type'        => 'number',
+				'input_attrs' => array( 'min' => 80, 'max' => 800, 'step' => 10 ),
+			)
+		);
+	}
+);
+
+/* ---------------------------------------------------------------------------
+ * Which place is being drawn
+ * ------------------------------------------------------------------------- */
+
+$GLOBALS['mmlg_place'] = 'header';
+
+// The theme loads its parts with get_template_part(); the footer's logo lives in template-parts/footer/main.
+add_action(
+	'get_template_part',
+	static function ( $slug ) {
+		$slug = (string) $slug;
+		if ( 'template-parts/footer/main' === $slug ) {
+			$GLOBALS['mmlg_place'] = 'footer';
+		} elseif ( str_starts_with( $slug, 'template-parts/header/' ) ) {
+			// Mobile menu and search overlay are printed at the end of the page but belong to the header.
+			$GLOBALS['mmlg_place'] = 'header';
 		}
 	}
 );
 
-/**
- * Which slot a theme logo context uses: header, drawer, loader and checkout follow the header; footer and sign-in follow the footer.
- */
-function mmlg_slot_for( string $context ): string {
-	return in_array( $context, array( 'footer', 'auth' ), true ) ? 'footer' : 'header';
+function mmlg_active(): bool {
+	return ! is_admin() && ! wp_doing_ajax() && ! ( defined( 'REST_REQUEST' ) && REST_REQUEST ) && ! wp_is_json_request();
 }
 
-function mmlg_img( int $id, string $mode, string $context ): string {
-	return (string) wp_get_attachment_image(
-		$id,
-		'full',
-		false,
-		array(
-			'class'         => 'mm-logo__img mmlg mmlg--' . $mode,
-			'alt'           => get_bloginfo( 'name' ),
-			'loading'       => 'header' === $context ? 'eager' : 'lazy',
-			'decoding'      => 'async',
-			'fetchpriority' => 'header' === $context && 'light' === $mode ? 'high' : 'auto',
-		)
-	);
-}
-
+// Hand the theme's two logo settings the logos chosen for the current place.
 add_filter(
-	'mm_logo_html',
-	static function ( $html, $context ) {
-		$slot  = mmlg_slot_for( (string) $context );
-		$light = (int) get_theme_mod( "mmlg_{$slot}_light" );
-		$dark  = (int) get_theme_mod( "mmlg_{$slot}_dark" );
-		if ( ! $light && ! $dark ) {
-			return $html;
+	'theme_mod_custom_logo',
+	static function ( $value ) {
+		if ( ! mmlg_active() ) {
+			return $value;
 		}
-		$light = $light ? $light : (int) get_theme_mod( 'custom_logo' );
-		$out   = '';
+		$place = $GLOBALS['mmlg_place'] ?? 'header';
+		$light = absint( get_theme_mod( "mmlg_{$place}_light" ) );
 		if ( $light ) {
-			$out .= mmlg_img( $light, $dark ? 'light' : 'both', (string) $context );
+			return $light;
 		}
-		if ( $dark ) {
-			$out .= mmlg_img( $dark, $light ? 'dark' : 'both', (string) $context );
-		}
-		return $out ? '<span class="mm-logo__media mmlg-wrap mmlg-wrap--' . esc_attr( $slot ) . '">' . $out . '</span>' : $html;
+		// Only a dark logo chosen and no site logo at all: use it so a logo still shows.
+		$dark = absint( get_theme_mod( "mmlg_{$place}_dark" ) );
+		return ( ! $value && $dark ) ? $dark : $value;
 	},
-	10,
-	2
+	20
 );
-
-add_action(
-	'wp_head',
-	static function () {
-		$h = absint( get_theme_mod( 'mmlg_header_height', 40 ) );
-		$f = absint( get_theme_mod( 'mmlg_footer_height', 44 ) );
-		?>
-		<style id="mmlg-css">
-			.mmlg-wrap{display:inline-flex;align-items:center}
-			.mmlg-wrap .mmlg{width:auto;max-width:none;object-fit:contain}
-			.mmlg-wrap--header .mmlg{height:<?php echo (int) $h; ?>px}
-			.mmlg-wrap--footer .mmlg{height:<?php echo (int) $f; ?>px}
-			.mmlg--dark{display:none!important}
-			:root[data-theme="dark"] .mmlg--light{display:none!important}
-			:root[data-theme="dark"] .mmlg--dark{display:block!important}
-			@media (max-width:640px){.mmlg-wrap--header .mmlg{height:<?php echo (int) max( 16, round( $h * 0.85 ) ); ?>px}}
-		</style>
-		<?php
+add_filter(
+	'theme_mod_mm_logo_dark',
+	static function ( $value ) {
+		if ( ! mmlg_active() ) {
+			return $value;
+		}
+		$place = $GLOBALS['mmlg_place'] ?? 'header';
+		$dark  = absint( get_theme_mod( "mmlg_{$place}_dark" ) );
+		return $dark ? $dark : $value;
 	},
 	20
 );
 
-// The theme needs the mm_logo_html filter, added in Mine Mirth 4.0.2.
+/* ---------------------------------------------------------------------------
+ * Sizes and light/dark switching
+ * ------------------------------------------------------------------------- */
+
 add_action(
-	'admin_notices',
+	'wp_head',
 	static function () {
-		if ( defined( 'MM_VERSION' ) && version_compare( MM_VERSION, '4.0.2', '<' ) && current_user_can( 'switch_themes' ) ) {
-			echo '<div class="notice notice-warning"><p>' . esc_html__( 'Mine Mirth Logos needs the Mine Mirth theme 4.0.2 or later. Please update the theme.', 'mine-mirth-logos' ) . '</p></div>';
+		$css = '';
+		$max = absint( get_theme_mod( 'mmlg_max_width', 240 ) );
+		if ( $max && 240 !== $max ) {
+			$css .= '.mm-logo .mm-logo__img{max-width:' . $max . 'px}';
 		}
-	}
+		$hh  = absint( get_theme_mod( 'mmlg_header_h' ) );
+		$hhm = absint( get_theme_mod( 'mmlg_header_hm' ) );
+		$fh  = absint( get_theme_mod( 'mmlg_footer_h' ) );
+		$fhm = absint( get_theme_mod( 'mmlg_footer_hm' ) );
+		// Header, mobile menu, checkout header and loader use the root values; the footer gets its own.
+		if ( $hh ) {
+			$css .= 'html:root{--mm-logo-h:' . $hh . 'px}';
+		}
+		if ( $hhm ) {
+			$css .= 'html:root{--mm-logo-h-mobile:' . $hhm . 'px}';
+		}
+		if ( $fh || $fhm ) {
+			$css .= '.mm-logo.mm-logo--footer{' . ( $fh ? '--mm-logo-h:' . $fh . 'px;' : '' ) . ( $fhm ? '--mm-logo-h-mobile:' . $fhm . 'px;' : '' ) . '}';
+		}
+		// The theme's footer has a dark background, so it always shows the dark logo there.
+		// When both footer logos are chosen, follow the site's light/dark mode instead.
+		if ( get_theme_mod( 'mmlg_footer_light' ) && get_theme_mod( 'mmlg_footer_dark' ) ) {
+			$css .= '.mm-logo--footer .mm-logo__img--light{display:block!important}.mm-logo--footer .mm-logo__img--dark{display:none!important}';
+			$css .= '[data-theme="dark"] .mm-logo--footer .mm-logo__img--light{display:none!important}[data-theme="dark"] .mm-logo--footer .mm-logo__img--dark{display:block!important}';
+		}
+		if ( $css ) {
+			echo '<style id="mmlg-css">' . $css . '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput -- built from integers and fixed strings.
+		}
+	},
+	99
 );
