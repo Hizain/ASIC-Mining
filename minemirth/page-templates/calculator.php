@@ -22,7 +22,7 @@ while ( have_posts() ) :
 	?>
 	<main id="mm-main" class="mm-main" tabindex="-1">
 		<div class="mm-container mm-page-body" style="padding-top:clamp(16px,3vw,40px)">
-			<div class="mm-split mm-split--calc" style="align-items:start">
+			<div class="mm-split mm-split--calc-page" style="align-items:start">
 				<div><?php echo mm_calculator_html( array( 'variant' => 'full', 'title' => get_the_title() ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
 				<div>
 					<div class="mm-card" style="padding:28px">

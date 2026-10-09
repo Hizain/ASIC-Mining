@@ -90,7 +90,13 @@
 
 		function syncLive() {
 			var lv = liveValues();
-			if (!lv) { return; }
+			if (!lv || (lv.price === null && lv.difficulty === null)) {
+				if (status && MM.market && MM.market.get && MM.market.get()) {
+					status.classList.add('is-stale');
+					if (statusText) { statusText.textContent = t('noLive', 'Live data unavailable — enter values'); }
+				}
+				return;
+			}
 			['price', 'difficulty', 'reward', 'fees'].forEach(function (k) {
 				if (lv[k] === null || lv[k] === undefined) { return; }
 				live[k] = lv[k];

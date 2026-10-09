@@ -126,7 +126,7 @@ while ( have_posts() ) :
 								</div>
 							<?php endif; ?>
 
-							<?php if ( mm_opt( 'single_newsletter' ) ) : ?>
+							<?php if ( mm_opt( 'single_newsletter' ) && ! mm_promo_seen( array( 'type' => 'newsletter' ) ) ) : ?>
 								<div class="mm-promo mm-promo--newsletter">
 									<span class="mm-promo__label"><?php echo mm_icon( 'mail' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo esc_html( (string) mm_opt( 'news_eyebrow' ) ); ?></span>
 									<h2 class="mm-promo__title"><?php echo esc_html( mm_strip_highlight( mm_opt( 'news_title' ) ) ); ?></h2>

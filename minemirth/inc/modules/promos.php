@@ -383,7 +383,50 @@ function mm_promo_auto_products( int $count = 6 ): array {
 add_action( 'save_post_product', static fn() => delete_transient( 'mm_promo_auto_products' ) );
 
 /**
- * Fallback promo spec for a placement when no promotion matches.
+ * Topic signatures already shown on this request (so an article never
+ * repeats the same promotion in several places).
+ */
+function mm_promo_topics( array $spec ): array {
+	$topics = array();
+	if ( ! empty( $spec['id'] ) ) {
+		$topics[] = 'id:' . (int) $spec['id'];
+	}
+	$type = $spec['type'] ?? 'banner';
+	switch ( $type ) {
+		case 'product':
+		case 'products':
+			foreach ( (array) ( $spec['products'] ?? array() ) as $pid ) {
+				$topics[] = 'product:' . (int) $pid;
+			}
+			break;
+		case 'banner':
+			$topics[] = 'banner:' . ( ! empty( $spec['button_url'] ) ? $spec['button_url'] : ( $spec['heading'] ?? '' ) );
+			break;
+		default:
+			$topics[] = $type;
+	}
+	return $topics;
+}
+
+function mm_promo_seen( array $spec ): bool {
+	$seen = $GLOBALS['mm_promo_seen'] ?? array();
+	foreach ( mm_promo_topics( $spec ) as $topic ) {
+		if ( isset( $seen[ $topic ] ) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function mm_promo_mark_seen( array $spec ): void {
+	foreach ( mm_promo_topics( $spec ) as $topic ) {
+		$GLOBALS['mm_promo_seen'][ $topic ] = true;
+	}
+}
+
+/**
+ * Fallback promo spec for a placement when no promotion matches. Picks the
+ * first candidate that has not already been shown on this page.
  *
  * @param string $placement inline|sidebar|slidein|end.
  * @param int    $slot      Inline slot index (0-based).
@@ -416,35 +459,44 @@ function mm_promo_fallback( string $placement, int $slot = 0 ): ?array {
 			'products' => array( $products[ $offset % count( $products ) ] ),
 		);
 	};
+	$row     = count( $products ) >= 3 ? array(
+		'type'        => 'products',
+		'products'    => array_slice( $products, 0, 3 ),
+		'heading'     => __( 'Popular with miners reading this', 'minemirth' ),
+		'button_text' => __( 'Browse all miners', 'minemirth' ),
+		'button_url'  => '{shop}',
+	) : null;
 
 	switch ( $mode ) {
 		case 'products':
-			return 'end' === $placement && count( $products ) >= 3
-				? array( 'type' => 'products', 'products' => array_slice( $products, 0, 3 ), 'heading' => __( 'Popular with readers', 'minemirth' ) )
-				: $product( $slot + ( 'slidein' === $placement ? 1 : 0 ) );
+			$candidates = 'end' === $placement ? array( $row, $product( 3 ), $product( 4 ) ) : array( $product( $slot ), $product( $slot + 1 ), $product( $slot + 2 ), $product( $slot + 3 ) );
+			break;
 		case 'calculator':
-			return $calc;
+			$candidates = array( $calc );
+			break;
 		case 'hosting':
-			return $hosting;
+			$candidates = array( $hosting );
+			break;
+		default: // Smart mix.
+			if ( 'inline' === $placement ) {
+				$cycle      = array( $product( 0 ), $calc, $product( 1 ), $hosting );
+				$candidates = array( $cycle[ $slot % 4 ], $calc, $hosting, $product( $slot + 2 ) );
+			} elseif ( 'sidebar' === $placement ) {
+				$candidates = array( $product( 2 ), $hosting, $calc );
+			} elseif ( 'slidein' === $placement ) {
+				$candidates = array( $product( 1 ), $product( 3 ), $calc, $hosting );
+			} else {
+				$candidates = array( $row, $calc, $hosting, $product( 4 ), array( 'type' => 'newsletter' ) );
+			}
 	}
 
-	// Smart mix.
-	if ( 'inline' === $placement ) {
-		$cycle = array( $product( 0 ), $calc, $product( 1 ), $hosting );
-		return $cycle[ $slot % 4 ] ?? $calc;
+	foreach ( array_filter( $candidates ) as $candidate ) {
+		if ( ! mm_promo_seen( $candidate ) ) {
+			return $candidate;
+		}
 	}
-	if ( 'sidebar' === $placement ) {
-		return $product( 2 ) ?? $hosting;
-	}
-	if ( 'slidein' === $placement ) {
-		return $product( 1 ) ?? $calc;
-	}
-	if ( 'end' === $placement ) {
-		return count( $products ) >= 3
-			? array( 'type' => 'products', 'products' => array_slice( $products, 0, 3 ), 'heading' => __( 'Hardware mentioned by miners like you', 'minemirth' ), 'button_text' => __( 'Browse all miners', 'minemirth' ), 'button_url' => '{shop}' )
-			: $hosting;
-	}
-	return null;
+	// Calculator / banner modes intentionally repeat their only option once per slot.
+	return in_array( $mode, array( 'calculator', 'hosting' ), true ) && 'inline' === $placement ? reset( $candidates ) : null;
 }
 
 /**
@@ -506,6 +558,7 @@ function mm_render_promo( $promo, string $context = 'inline' ): string {
 	);
 	$label = $spec['label'] ? $spec['label'] : (string) mm_opt( 'promo_label' );
 	$type  = $spec['type'];
+	mm_promo_mark_seen( $spec );
 
 	$attrs = sprintf(
 		' data-mm-promo="%1$s" data-mm-context="%2$s"%3$s',
@@ -688,7 +741,11 @@ function mm_promo_html_for( string $placement, ?WP_Post $post = null ): string {
 	}
 	$ids = mm_promos_for( $placement, $post );
 	foreach ( $ids as $id ) {
-		$html = mm_render_promo( $id, $placement );
+		$spec = mm_promo_spec( $id );
+		if ( ! $spec || mm_promo_seen( $spec ) ) {
+			continue;
+		}
+		$html = mm_render_promo( $spec, $placement );
 		if ( $html ) {
 			return $html;
 		}
