@@ -3,7 +3,7 @@ Contributors: minemirth
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 8.0
-Stable tag: 4.0.1
+Stable tag: 4.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -90,6 +90,9 @@ Widget areas: Blog sidebar, Shop sidebar, Page sidebar.
 * Icons and illustrations were drawn for this theme and are licensed GPLv2 or later.
 
 == Changelog ==
+
+= 4.0.2 =
+* New mm_logo_html filter so plugins can set separate header and footer logos per light and dark mode.
 
 = 4.0.1 =
 * Product gallery no longer covers the description while scrolling.

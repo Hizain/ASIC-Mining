@@ -247,6 +247,11 @@ function mm_get_template_html( string $slug, array $args = array() ): string {
  * Brand logo: custom logo (+ optional dark-mode logo) or text mark.
  */
 function mm_logo( string $context = 'header' ): string {
+	// Plugins (e.g. Mine Mirth Logos) can supply their own logo per context and mode.
+	$custom = apply_filters( 'mm_logo_html', '', $context );
+	if ( is_string( $custom ) && '' !== $custom ) {
+		return $custom;
+	}
 	$logo_id = (int) get_theme_mod( 'custom_logo' );
 	$dark_id = (int) mm_opt( 'logo_dark' );
 	$name    = get_bloginfo( 'name' );

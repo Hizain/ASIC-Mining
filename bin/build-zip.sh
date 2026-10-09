@@ -18,3 +18,4 @@ build mine-mirth-commerce mine-mirth-commerce.php
 build mine-mirth-contact mine-mirth-contact.php
 build mine-mirth-rig-optimizer mine-mirth-rig-optimizer.php
 build mine-mirth-market-scope mine-mirth-market-scope.php
+build mine-mirth-logos mine-mirth-logos.php
