@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Mine Mirth Shop Pro
  * Description:       Shop filters for Mine Mirth: In Stock / Pre-Order / Out of Stock, the full category tree, price range and every product attribute with live counts. Works with the Mine Mirth theme as installed.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            Mine Mirth, LLC
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MMSP_VERSION', '1.1.0' );
+define( 'MMSP_VERSION', '1.2.0' );
 define( 'MMSP_FILE', __FILE__ );
 define( 'MMSP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MMSP_URI', plugin_dir_url( __FILE__ ) );

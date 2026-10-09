@@ -179,10 +179,11 @@ add_action(
  *
  * @return int[]
  */
-function mmsp_context_ids(): array {
-	static $ids = null;
-	if ( null !== $ids ) {
-		return $ids;
+function mmsp_context_ids( bool $with_hidden_oos = false, bool $shop_wide = false ): array {
+	static $cache = array();
+	$ck = (int) $with_hidden_oos . (int) $shop_wide;
+	if ( isset( $cache[ $ck ] ) ) {
+		return $cache[ $ck ];
 	}
 	$args = array(
 		'post_type'              => 'product',
@@ -198,13 +199,19 @@ function mmsp_context_ids(): array {
 	if ( $hidden ) {
 		$args['tax_query'][] = array( 'taxonomy' => 'product_visibility', 'field' => 'term_taxonomy_id', 'terms' => array( (int) $hidden ), 'operator' => 'NOT IN' );
 	}
-	if ( is_product_taxonomy() ) {
+	// Count only what shoppers can see: sold-out products are left out when the store hides them
+	// (unless the shopper is filtering for Out of Stock).
+	$oos = (int) ( wc_get_product_visibility_term_ids()['outofstock'] ?? 0 );
+	if ( $oos && ! $with_hidden_oos && 'yes' === get_option( 'woocommerce_hide_out_of_stock_items' ) && ! in_array( 'outofstock', mmsp_state()['stock'], true ) ) {
+		$args['tax_query'][] = array( 'taxonomy' => 'product_visibility', 'field' => 'term_taxonomy_id', 'terms' => array( $oos ), 'operator' => 'NOT IN' );
+	}
+	if ( ! $shop_wide && is_product_taxonomy() ) {
 		$term = get_queried_object();
 		if ( $term instanceof WP_Term ) {
 			$args['tax_query'][] = array( 'taxonomy' => $term->taxonomy, 'field' => 'term_id', 'terms' => array( $term->term_id ), 'include_children' => true );
 		}
 	}
-	if ( is_search() ) {
+	if ( ! $shop_wide && is_search() ) {
 		$args['s'] = get_search_query();
 	}
 	$key = 'mmsp_ids_' . md5( wp_json_encode( $args ) . get_option( 'mmsp_cache_bust', '' ) );
@@ -213,7 +220,33 @@ function mmsp_context_ids(): array {
 		$ids = array_map( 'intval', get_posts( $args ) );
 		set_transient( $key, $ids, 15 * MINUTE_IN_SECONDS );
 	}
+	$cache[ $ck ] = $ids;
 	return $ids;
+}
+
+/**
+ * Products per category including subcategories, for the given product IDs.
+ *
+ * @return array<int,int> term_id => count
+ */
+function mmsp_category_counts( array $ids ): array {
+	$padded = array();
+	foreach ( array_chunk( $ids, 500 ) as $chunk ) {
+		$rows = wp_get_object_terms( $chunk, 'product_cat', array( 'fields' => 'all_with_object_id' ) );
+		$seen = array();
+		foreach ( is_wp_error( $rows ) ? array() : $rows as $row ) {
+			$tid = (int) $row->term_id;
+			while ( $tid ) {
+				if ( empty( $seen[ $row->object_id ][ $tid ] ) ) {
+					$seen[ $row->object_id ][ $tid ] = true;
+					$padded[ $tid ]                  = ( $padded[ $tid ] ?? 0 ) + 1;
+				}
+				$parent = get_term_field( 'parent', $tid, 'product_cat' );
+				$tid    = is_wp_error( $parent ) ? 0 : (int) $parent;
+			}
+		}
+	}
+	return $padded;
 }
 
 // Any product change clears the cached counts.
@@ -251,7 +284,7 @@ function mmsp_term_counts( string $taxonomy ): array {
  */
 function mmsp_stock_counts(): array {
 	global $wpdb;
-	$ids = mmsp_context_ids();
+	$ids = mmsp_context_ids( true );
 	$out = array_fill_keys( array_keys( mmsp_availability() ), 0 );
 	if ( ! $ids ) {
 		return $out;
@@ -467,29 +500,8 @@ function mmsp_filters_html(): string {
 		<?php
 		$cats = get_terms( array( 'taxonomy' => 'product_cat', 'hide_empty' => false, 'orderby' => 'name' ) );
 		if ( ! is_wp_error( $cats ) && $cats ) :
-			// Counts include products in subcategories.
-			$padded = array();
-			foreach ( $cats as $c ) {
-				$padded[ $c->term_id ] = 0;
-			}
-			$ids = mmsp_context_ids();
-			if ( $ids ) {
-				foreach ( array_chunk( $ids, 500 ) as $chunk ) {
-					$rows = wp_get_object_terms( $chunk, 'product_cat', array( 'fields' => 'all_with_object_id' ) );
-					$seen = array();
-					foreach ( is_wp_error( $rows ) ? array() : $rows as $row ) {
-						$tid = (int) $row->term_id;
-						while ( $tid ) {
-							if ( empty( $seen[ $row->object_id ][ $tid ] ) ) {
-								$seen[ $row->object_id ][ $tid ] = true;
-								$padded[ $tid ]                  = ( $padded[ $tid ] ?? 0 ) + 1;
-							}
-							$parent = get_term_field( 'parent', $tid, 'product_cat' );
-							$tid    = is_wp_error( $parent ) ? 0 : (int) $parent;
-						}
-					}
-				}
-			}
+			// Counts include products in subcategories, and only products shoppers can see.
+			$padded = mmsp_category_counts( mmsp_context_ids() );
 			$tree = mmsp_category_tree( $cats, $padded, 0, $s['cat'] );
 			if ( $tree ) :
 				?>
@@ -607,3 +619,56 @@ $mmsp_off = static function ( $value ) {
 };
 add_filter( 'option_mmc_settings', $mmsp_off );
 add_filter( 'default_option_mmc_settings', $mmsp_off );
+
+/* ---------------------------------------------------------------------------
+ * Keep the theme's category pills (above the products) in sync with the panel
+ * ------------------------------------------------------------------------- */
+
+/**
+ * The theme asks for top-level product categories, leaving out the default
+ * category and using WordPress's raw counts. Recognise that request.
+ */
+function mmsp_is_theme_pills_query( array $args ): bool {
+	$tax = (array) ( $args['taxonomy'] ?? array() );
+	return ! is_admin() && array( 'product_cat' ) === array_values( $tax ) && isset( $args['parent'] ) && 0 === (int) $args['parent'] && ! empty( $args['hide_empty'] ) && in_array( (int) get_option( 'default_product_cat' ), array_map( 'intval', (array) ( $args['exclude'] ?? array() ) ), true );
+}
+
+add_filter(
+	'get_terms_args',
+	static function ( $args, $taxonomies ) {
+		if ( mmsp_is_theme_pills_query( (array) $args ) && ( is_shop() || is_product_taxonomy() ) ) {
+			// Show the default category too when it holds products, like the filter panel does.
+			$args['exclude']    = array();
+			$args['hide_empty'] = false;
+			$args['mmsp_pills'] = true;
+		}
+		return $args;
+	},
+	10,
+	2
+);
+
+add_filter(
+	'get_terms',
+	static function ( $terms, $taxonomies, $args ) {
+		if ( empty( $args['mmsp_pills'] ) || ! is_array( $terms ) ) {
+			return $terms;
+		}
+		$counts = mmsp_category_counts( mmsp_context_ids( false, true ) );
+		$out    = array();
+		foreach ( $terms as $term ) {
+			if ( ! $term instanceof WP_Term ) {
+				continue;
+			}
+			$n = (int) ( $counts[ $term->term_id ] ?? 0 );
+			if ( $n > 0 || mmsp_opt( 'show_empty_cats' ) ) {
+				$term        = clone $term;
+				$term->count = $n;
+				$out[]       = $term;
+			}
+		}
+		return $out;
+	},
+	10,
+	3
+);

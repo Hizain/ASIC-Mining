@@ -1,7 +1,7 @@
 === Mine Mirth Shop Pro ===
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 
 Shop filters for Mine Mirth. Works with the Mine Mirth theme as installed, and needs WooCommerce.
@@ -19,6 +19,10 @@ The panel appears at the top of the shop sidebar automatically. You can also pla
 If Mine Mirth Commerce is also active, its older filter panel is switched off automatically so only one panel shows.
 
 == Changelog ==
+
+= 1.2.0 =
+* Category counts match what shoppers can see: sold-out products are not counted when the store hides them.
+* The theme's category pills above the products show the same categories and counts as the filter panel, including the default category.
 
 = 1.1.0 =
 * Removed the "Best choice" feature and its settings.
