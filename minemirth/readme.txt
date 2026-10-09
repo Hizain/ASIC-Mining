@@ -25,7 +25,7 @@ Mine Mirth 4.0 is a full rebuild of the minemirth.com theme. Its brand colour is
 
 = Customization =
 
-Everything is in Appearance › Customize, grouped into seven "Mine Mirth" panels (430+ settings). Most changes preview live.
+Everything is in Appearance › Customize, grouped into seven "Mine Mirth" panels (over 400 settings). Most changes preview live.
 
 1. Design System: style presets, brand colours, light and dark palettes, default mode, fonts, sizes, radius, container width, animation.
 2. Header: announcement bar, sticky or transparent header, logo (including a dark-mode logo), icons, call-to-action button, search.

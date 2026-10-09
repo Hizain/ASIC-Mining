@@ -6,7 +6,7 @@ The WordPress and WooCommerce theme for [minemirth.com](https://minemirth.com). 
 - An animated hero, a live Bitcoin network ticker, and profitability and hosting calculators
 - In-content blog promotions with de-duplication and a "continue reading" cue
 - Premium WooCommerce pages: shop, quick view, mini cart, focused checkout, order confirmation and customer account
-- 430+ Customizer settings in seven panels, most with live preview
+- 400+ Customizer settings in seven panels, most with live preview
 
 The full feature list, setup steps and shortcodes are in [`minemirth/readme.txt`](minemirth/readme.txt).
 
