@@ -520,9 +520,10 @@ p.no-comments {
 	text-transform: uppercase;
 }
 .woocommerce div.product { position: relative; }
+/* Not sticky: the grid also holds the description tabs, so a sticky gallery slid over them. */
 .woocommerce div.product .woocommerce-product-gallery {
-	position: sticky;
-	top: calc(var(--mm-header-h) + var(--mm-admin-bar) + 20px);
+	position: relative;
+	align-self: start;
 	grid-column: 1;
 	width: 100% !important;
 	margin: 0;

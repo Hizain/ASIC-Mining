@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
-# Builds dist/minemirth-<version>.zip with a top-level minemirth/ folder,
-# ready for Appearance › Themes › Add New › Upload Theme.
+# Builds installable zips in dist/: the theme (minemirth/) and the plugin
+# (mine-mirth-commerce/), each with its folder at the top level.
 set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
-version="$(sed -n 's/^Version: *//p' "$root/minemirth/style.css" | tr -d '\r')"
 mkdir -p "$root/dist"
-out="$root/dist/minemirth-$version.zip"
-rm -f "$out"
-(cd "$root" && zip -qr "$out" minemirth -x '*.DS_Store' -x '*/node_modules/*')
-echo "$out"
+build() {
+	local dir="$1" header="$2"
+	local version
+	version="$(sed -n "s/^[ *]*Version: *//p" "$root/$dir/$header" | head -1 | tr -d '\r')"
+	local out="$root/dist/$dir-$version.zip"
+	rm -f "$out"
+	(cd "$root" && zip -qr "$out" "$dir" -x '*.DS_Store' -x '*/node_modules/*')
+	echo "$out"
+}
+build minemirth style.css
+build mine-mirth-commerce mine-mirth-commerce.php
