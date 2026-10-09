@@ -1,7 +1,7 @@
 <?php
 /**
  * Shop filters: availability (In Stock / Pre-Order / Out of Stock), the full
- * category tree, price range, brand and every product attribute, with counts
+ * category tree, price range and every product attribute, with counts
  * for the products on the current page's category or search.
  *
  * Query arguments: mmsp_stock[], mmsp_cat[], mmsp_attr[taxonomy][], mmsp_min, mmsp_max.
@@ -47,30 +47,18 @@ function mmsp_preorder_meta(): array {
  * Taxonomies
  * ------------------------------------------------------------------------- */
 
-function mmsp_brand_taxonomy(): string {
-	foreach ( array( 'product_brand', 'pwb-brand', 'yith_product_brand', 'berocket_brand', 'pa_brand', 'pa_manufacturer' ) as $tax ) {
-		if ( taxonomy_exists( $tax ) ) {
-			return $tax;
-		}
-	}
-	return '';
-}
-
 /**
  * Attribute taxonomies to show, keyed by taxonomy with the label typed in Products › Attributes.
  *
  * @return array<string,string>
  */
 function mmsp_attribute_taxonomies(): array {
+	// Product attributes only (Products › Attributes); WooCommerce's separate Brands list is not used.
 	$out    = array();
 	$hidden = (array) mmsp_opt( 'hidden_attrs' );
-	$brand  = mmsp_brand_taxonomy();
-	if ( $brand && ! in_array( $brand, $hidden, true ) ) {
-		$out[ $brand ] = __( 'Brand', 'mine-mirth-shop-pro' );
-	}
 	foreach ( wc_get_attribute_taxonomies() as $attr ) {
 		$tax = wc_attribute_taxonomy_name( $attr->attribute_name );
-		if ( $tax === $brand || in_array( $tax, $hidden, true ) || ! taxonomy_exists( $tax ) ) {
+		if ( in_array( $tax, $hidden, true ) || ! taxonomy_exists( $tax ) ) {
 			continue;
 		}
 		$out[ $tax ] = $attr->attribute_label ? $attr->attribute_label : wc_attribute_label( $tax );

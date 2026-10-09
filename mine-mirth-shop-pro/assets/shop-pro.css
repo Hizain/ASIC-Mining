@@ -1,5 +1,5 @@
 /* Mine Mirth Shop Pro. Uses the Mine Mirth theme's colours and fonts, light and dark. */
-.mmsp-filters, .mmsp-best {
+.mmsp-filters {
 	--c: var(--mm-primary, #35a8f6);
 	--t: var(--mm-text, #0a1626);
 	--m: var(--mm-muted, #506279);
@@ -86,27 +86,3 @@
 .mmsp-price input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .mmsp-go { min-height: 40px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--c); color: var(--mm-on-primary, #03111f); font-weight: 700; cursor: pointer; }
 .mmsp-apply { width: 100%; min-height: 44px; margin-top: 10px; border: 0; border-radius: 999px; background: var(--c); color: var(--mm-on-primary, #03111f); font-weight: 700; }
-
-/* ---------- Best choices ---------- */
-.mmsp-best { position: relative; margin: 0 0 32px; padding: clamp(18px, 2.5vw, 28px); border-radius: var(--mm-radius-lg, 24px); border: 1px solid color-mix(in srgb, var(--c) 35%, var(--b)); background: radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--c) 12%, transparent), transparent 55%), var(--s); }
-.mmsp-best__head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 24px; margin-bottom: 18px; }
-.mmsp-best__head h2 { margin: 4px 0 0; font-size: clamp(1.3rem, 1rem + 1vw, 1.7rem); }
-.mmsp-best__eyebrow { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mm-font-mono, monospace); font-size: .72rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--c); }
-.mmsp-live { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent); animation: mmsp-pulse 2s infinite; }
-@keyframes mmsp-pulse { 70% { box-shadow: 0 0 0 8px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
-@media (prefers-reduced-motion: reduce) { .mmsp-live { animation: none; } }
-.mmsp-best__meta { margin: 0; color: var(--m); font-size: .82rem; font-variant-numeric: tabular-nums; }
-.mmsp-best ul.products { margin-bottom: 0 !important; }
-.mmsp-best__note { margin: 14px 0 0; color: var(--m); font-size: .78rem; }
-.mmsp-badge { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; margin: 10px 0 2px; padding: 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--mm-warning, #f5a524) 18%, transparent); color: var(--mm-text, #0a1626); font-size: .72rem; font-weight: 700; letter-spacing: .02em; }
-.mmsp-badge::before { content: "★"; color: var(--mm-warning, #f5a524); }
-.mmsp-badge.is-rank { background: color-mix(in srgb, var(--mm-primary, #35a8f6) 16%, transparent); }
-.mmsp-badge.is-rank::before { color: var(--mm-primary, #35a8f6); }
-.mmsp-reason { margin: 6px 0 4px; padding: 8px 10px; border-radius: 10px; background: var(--mm-bg-alt, #eaf2fa); color: var(--mm-muted, #506279); font-size: .78rem; line-height: 1.45; }
-
-/* Phones: picks scroll sideways instead of stacking, so the catalogue stays close. */
-@media (max-width: 700px) {
-	.woocommerce .mmsp-best ul.products { display: flex !important; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; margin: 0 -4px !important; grid-template-columns: none !important; }
-	.woocommerce .mmsp-best ul.products li.product { flex: 0 0 78%; width: auto !important; margin: 0 !important; scroll-snap-align: start; }
-	.mmsp-best { padding: 16px; }
-}

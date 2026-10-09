@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       Mine Mirth Shop Pro
- * Description:       Shop page upgrades for Mine Mirth: a clearer filter panel (full category tree, every attribute with live counts, In Stock / Pre-Order / Out of Stock, price range) and automatic "Best choice" miners picked from live market data, refreshed through the day. Works with the Mine Mirth theme as installed.
- * Version:           1.0.0
+ * Description:       Shop filters for Mine Mirth: In Stock / Pre-Order / Out of Stock, the full category tree, price range and every product attribute with live counts. Works with the Mine Mirth theme as installed.
+ * Version:           1.1.0
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            Mine Mirth, LLC
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MMSP_VERSION', '1.0.0' );
+define( 'MMSP_VERSION', '1.1.0' );
 define( 'MMSP_FILE', __FILE__ );
 define( 'MMSP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MMSP_URI', plugin_dir_url( __FILE__ ) );
@@ -31,13 +31,6 @@ function mmsp_defaults(): array {
 		'label_outofstock' => 'Out of Stock',
 		'show_empty_cats'  => 0,
 		'hidden_attrs'     => array(),
-		'best_enabled'     => 1,
-		'best_count'       => 4,
-		'best_power'       => '0.08',
-		'best_hours'       => 6,
-		'best_strip'       => 1,
-		'best_badge'       => 1,
-		'best_exclude'     => '',
 	);
 }
 
@@ -54,7 +47,6 @@ add_action(
 			return;
 		}
 		require_once MMSP_DIR . 'includes/filters.php';
-		require_once MMSP_DIR . 'includes/best-choice.php';
 		require_once MMSP_DIR . 'includes/admin.php';
 	},
 	25
@@ -69,15 +61,16 @@ add_action(
 	}
 );
 
-register_activation_hook(
-	__FILE__,
+// Version 1.0 scheduled a "best choice" refresh; that feature is removed, so clear it.
+add_action(
+	'init',
 	static function () {
-		if ( ! wp_next_scheduled( 'mmsp_refresh_best' ) ) {
-			wp_schedule_event( time() + 60, 'hourly', 'mmsp_refresh_best' );
+		if ( wp_next_scheduled( 'mmsp_refresh_best' ) ) {
+			wp_clear_scheduled_hook( 'mmsp_refresh_best' );
+			delete_option( 'mmsp_best' );
 		}
 	}
 );
-register_deactivation_hook( __FILE__, static fn() => wp_clear_scheduled_hook( 'mmsp_refresh_best' ) );
 
 add_action(
 	'wp_enqueue_scripts',
