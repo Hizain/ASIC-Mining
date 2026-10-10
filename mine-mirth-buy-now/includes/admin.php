@@ -42,7 +42,6 @@ add_action(
 						$out[ $k ] = '' !== $v || 'consent' === $k ? $v : $d[ $k ];
 					}
 					$out['buy_style']  = in_array( $in['buy_style'] ?? '', array( 'contrast', 'outline', 'primary' ), true ) ? $in['buy_style'] : 'contrast';
-					$out['min_change'] = max( 0, min( 50, (float) ( $in['min_change'] ?? 1 ) ) );
 					$out['delay']      = in_array( (int) ( $in['delay'] ?? 0 ), array( 0, 5, 15, 60 ), true ) ? (int) $in['delay'] : 0;
 					$out['show_count'] = max( 0, min( 1000, (int) ( $in['show_count'] ?? 3 ) ) );
 					return $out;
@@ -204,7 +203,6 @@ function mmbn_admin_page(): void {
 				<tr><th><?php esc_html_e( 'Send an alert when the price', 'mine-mirth-buy-now' ); ?></th><td>
 					<label><input type="checkbox" name="mmbn_settings[notify_down]" value="1" <?php checked( (int) $o( 'notify_down' ), 1 ); ?>> <?php esc_html_e( 'drops', 'mine-mirth-buy-now' ); ?></label> &nbsp;
 					<label><input type="checkbox" name="mmbn_settings[notify_up]" value="1" <?php checked( (int) $o( 'notify_up' ), 1 ); ?>> <?php esc_html_e( 'goes up', 'mine-mirth-buy-now' ); ?></label></td></tr>
-				<tr><th><label for="mmbn-mc"><?php esc_html_e( 'Smallest change', 'mine-mirth-buy-now' ); ?></label></th><td><input id="mmbn-mc" type="number" step="0.1" min="0" max="50" class="small-text" name="mmbn_settings[min_change]" value="<?php echo esc_attr( (string) $o( 'min_change' ) ); ?>"> % <p class="description"><?php esc_html_e( 'Smaller changes are skipped (they still add up toward the next alert).', 'mine-mirth-buy-now' ); ?></p></td></tr>
 				<tr><th><label for="mmbn-d"><?php esc_html_e( 'Send', 'mine-mirth-buy-now' ); ?></label></th><td><select id="mmbn-d" name="mmbn_settings[delay]">
 					<?php foreach ( array( 0 => __( 'Instantly', 'mine-mirth-buy-now' ), 5 => __( 'After 5 minutes', 'mine-mirth-buy-now' ), 15 => __( 'After 15 minutes', 'mine-mirth-buy-now' ), 60 => __( 'After 1 hour', 'mine-mirth-buy-now' ) ) as $k => $label ) : ?>
 						<option value="<?php echo esc_attr( (string) $k ); ?>" <?php selected( (int) $o( 'delay' ), $k ); ?>><?php echo esc_html( $label ); ?></option>

@@ -113,6 +113,17 @@ add_action(
 	31
 );
 
+// Lets the stylesheet hide the alert box until its entrance animation runs (only when scripts run).
+add_action(
+	'wp_head',
+	static function () {
+		if ( mmbn_opt( 'alerts' ) && function_exists( 'is_product' ) && is_product() ) {
+			echo "<script>document.documentElement.classList.add('mmbn-js');</script>\n";
+		}
+	},
+	1
+);
+
 /* ---------------------------------------------------------------------------
  * Sign-up
  * ------------------------------------------------------------------------- */
@@ -436,15 +447,8 @@ function mmbn_check_price( int $product_id, int $limit = 25 ): array {
 			$wpdb->update( $table, array( 'last_price' => $now ), array( 'id' => $w->id ) ); // phpcs:ignore WordPress.DB
 			continue;
 		}
-		$dir    = $now < $was ? 'down' : 'up';
-		$change = abs( $now - $was ) / $was * 100;
-		if ( $change + 1e-9 < (float) mmbn_opt( 'min_change' ) ) {
-			++$out['skipped'];
-			/* translators: %s: percent */
-			$out['note'] = sprintf( __( 'Not sent: the change is smaller than the %s%% minimum (Settings).', 'mine-mirth-buy-now' ), mmbn_opt( 'min_change' ) );
-			mmbn_log( $product_id, (string) $w->email, $was, $now, false, $out['note'] );
-			continue; // Keep their price so small changes can add up.
-		}
+		// Every change counts, however small (even a few cents).
+		$dir = $now < $was ? 'down' : 'up';
 		if ( ! mmbn_opt( 'down' === $dir ? 'notify_down' : 'notify_up' ) ) {
 			++$out['skipped'];
 			$out['note'] = 'down' === $dir ? __( 'Not sent: alerts for price drops are turned off.', 'mine-mirth-buy-now' ) : __( 'Not sent: alerts for price increases are turned off.', 'mine-mirth-buy-now' );
@@ -498,7 +502,8 @@ function mmbn_compose( object $w, WC_Product $product, float $was, float $now ):
 	$name   = $product->get_name();
 	$down   = $now < $was;
 	$diff   = abs( $now - $was );
-	$pct    = (int) round( $diff / $was * 100 );
+	$raw    = $diff / $was * 100;
+	$pct    = $raw >= 1 ? number_format_i18n( $raw, 0 ) : number_format_i18n( max( 0.01, $raw ), 2 ); // "0.02%" for tiny changes, never "0%".
 	$first  = ( (int) $w->sub_id && function_exists( 'mmm_sub_first_name' ) ) ? mmm_sub_first_name( (int) $w->sub_id ) : '';
 	$buy    = mmbn_buy_url( $product );
 	$view   = (string) get_permalink( $product->get_id() );
@@ -511,7 +516,7 @@ function mmbn_compose( object $w, WC_Product $product, float $was, float $now ):
 		/* translators: 1: product, 2: new price */
 		$subject = sprintf( __( 'Price drop: %1$s is now %2$s', 'mine-mirth-buy-now' ), $name, $nowf );
 		/* translators: 1: amount saved, 2: percent */
-		$pre     = sprintf( __( 'Save %1$s (%2$d%% off) on the miner you’re watching.', 'mine-mirth-buy-now' ), mmbn_plain_price( $diff ), $pct );
+		$pre     = sprintf( __( 'Save %1$s (%2$s%% off) on the miner you’re watching.', 'mine-mirth-buy-now' ), mmbn_plain_price( $diff ), $pct );
 		$eyebrow = __( 'Price drop', 'mine-mirth-buy-now' );
 		/* translators: %s: first name */
 		$head    = $first ? sprintf( __( 'Good news, %s: the price just dropped', 'mine-mirth-buy-now' ), $first ) : __( 'Good news: the price just dropped', 'mine-mirth-buy-now' );

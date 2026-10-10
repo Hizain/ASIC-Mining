@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Mine Mirth Buy Now & Price Alerts
  * Description:       Adds a "Buy it now" button that goes straight to checkout, and a "Get price alerts" sign-up on every product page. When you change a product's price, everyone watching it gets an email in your newsletter design. Works with the Mine Mirth theme and the Mine Mirth Mailer.
- * Version:           1.0.1
+ * Version:           1.0.2
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Mine Mirth, LLC
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MMBN_VERSION', '1.0.1' );
+define( 'MMBN_VERSION', '1.0.2' );
 define( 'MMBN_FILE', __FILE__ );
 define( 'MMBN_URI', plugin_dir_url( __FILE__ ) );
 define( 'MMBN_DB', 2 );
@@ -34,7 +34,6 @@ function mmbn_defaults(): array {
 		'consent'     => __( 'You’ll also get our weekly newsletter. Unsubscribe anytime.', 'mine-mirth-buy-now' ),
 		'notify_down' => 1,
 		'notify_up'   => 1,
-		'min_change'  => 1,
 		'delay'       => 0,
 		'show_count'  => 3,
 	);

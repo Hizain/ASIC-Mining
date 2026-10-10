@@ -32,6 +32,33 @@
 		var form = box.querySelector('.mmbn-alert__form');
 		var msg = box.querySelector('.mmbn-alert__msg');
 		var email = form.querySelector('input[type="email"]');
+		/* Attention animation: enter on view, then a gentle nudge every few seconds while on screen. */
+		var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		var touched = false, visible = false, timer = null;
+		function settle() { box.classList.remove('is-in'); box.classList.add('is-shown'); }
+		function nudge() {
+			if (touched || !visible || document.hidden || box.classList.contains('is-open')) { return; }
+			box.classList.remove('is-nudge');
+			void box.offsetWidth; // restart the animation
+			box.classList.add('is-nudge');
+		}
+		function stop() { touched = true; box.classList.remove('is-nudge'); if (timer) { clearInterval(timer); timer = null; } }
+		if (reduce || !('IntersectionObserver' in window)) {
+			box.classList.add('is-shown');
+		} else {
+			var io = new IntersectionObserver(function (entries) {
+				visible = entries[0].isIntersecting;
+				if (visible && !box.classList.contains('is-in') && !box.classList.contains('is-shown')) {
+					box.classList.add('is-in');
+					setTimeout(settle, 3600);
+					timer = setInterval(nudge, 7000);
+				}
+			}, { threshold: 0.6 });
+			io.observe(box);
+		}
+		box.addEventListener('animationend', function (e) { if (e.target === box && e.animationName === 'mmbn-glow') { box.classList.remove('is-nudge'); } });
+		['pointerenter', 'focusin'].forEach(function (ev) { box.addEventListener(ev, stop, { once: true }); });
+
 		toggle.addEventListener('click', function () {
 			var open = form.hidden;
 			form.hidden = !open;
