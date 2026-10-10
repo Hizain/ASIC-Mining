@@ -21,3 +21,4 @@ build mine-mirth-market-scope mine-mirth-market-scope.php
 build mine-mirth-logos mine-mirth-logos.php
 build mine-mirth-shop-pro mine-mirth-shop-pro.php
 build mine-mirth-newsletter-alerts mine-mirth-newsletter-alerts.php
+build mine-mirth-mailer mine-mirth-mailer.php
