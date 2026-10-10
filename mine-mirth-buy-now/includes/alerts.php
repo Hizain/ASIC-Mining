@@ -521,8 +521,18 @@ function mmbn_check_price( int $product_id, int $limit = 25 ): array {
 			mmbn_log( $product_id, (string) $w->email, $was, $now, false, __( 'Not sent: they unsubscribed from your emails.', 'mine-mirth-buy-now' ) );
 			continue;
 		}
-		[ $ok, $error ] = mmbn_send( $w, mmbn_compose( $w, $product, $was, $now ) );
-		mmbn_log( $product_id, (string) $w->email, $was, $now, $ok, $ok ? '' : $error );
+		$mail                 = mmbn_compose( $w, $product, $was, $now );
+		[ $ok, $error, $via ] = mmbn_send( $w, $mail );
+		mmbn_log( $product_id, (string) $w->email, $was, $now, $ok, $ok ? '' : $error, $via );
+		// Optional copy to the shop owner (once per price change) to confirm alerts arrive.
+		$copy = sanitize_email( (string) mmbn_opt( 'copy_to' ) );
+		if ( $ok && $copy && empty( $out['copied'] ) && strtolower( $copy ) !== strtolower( (string) $w->email ) ) {
+			$out['copied'] = true;
+			$owner         = (object) array( 'id' => 0, 'token' => '', 'sub_id' => 0, 'email' => $copy, 'created' => current_time( 'mysql', true ) );
+			$copy_mail     = mmbn_compose( $owner, $product, $was, $now ); // Its own email: no customer links inside.
+			$copy_mail['subject'] = '[' . __( 'Copy', 'mine-mirth-buy-now' ) . '] ' . $copy_mail['subject'];
+			mmbn_send( $owner, $copy_mail );
+		}
 		if ( $ok ) {
 			++$out['sent'];
 			$wpdb->query( $wpdb->prepare( "UPDATE $table SET notified = %s, alerts = alerts + 1 WHERE id = %d", current_time( 'mysql', true ), (int) $w->id ) ); // phpcs:ignore WordPress.DB
@@ -544,7 +554,8 @@ function mmbn_check_price( int $product_id, int $limit = 25 ): array {
  * Purge caches after an alert action (sign-up, alerts sent, alerts stopped, settings saved), so
  * visitors see the new price and watcher count straight away. Works with LiteSpeed Cache, WP Rocket,
  * W3 Total Cache, WP Super Cache, WP Fastest Cache, SiteGround, Cloudflare, Breeze, Hummingbird,
- * Nginx Helper, Autoptimize, Comet Cache and the WordPress object cache.
+ * Nginx Helper, Autoptimize and Comet Cache. The object cache is left alone on purpose: flushing it
+ * can throw away emails an SMTP plugin has queued.
  */
 function mmbn_purge( int $product_id = 0, bool $force_all = false ): void {
 	static $done = array();
@@ -590,9 +601,9 @@ function mmbn_purge( int $product_id = 0, bool $force_all = false ): void {
 	do_action( 'mmbn_purged', $product_id, $all );
 }
 
-function mmbn_log( int $product_id, string $email, float $was, float $now, bool $ok, string $note = '' ): void {
+function mmbn_log( int $product_id, string $email, float $was, float $now, bool $ok, string $note = '', string $via = '' ): void {
 	$log = (array) get_option( 'mmbn_log', array() );
-	array_unshift( $log, array( 't' => time(), 'p' => $product_id, 'e' => $email, 'was' => $was, 'now' => $now, 'ok' => $ok, 'note' => $note ) );
+	array_unshift( $log, array( 't' => time(), 'p' => $product_id, 'e' => $email, 'was' => $was, 'now' => $now, 'ok' => $ok, 'note' => $note, 'via' => $via ) );
 	update_option( 'mmbn_log', array_slice( $log, 0, 100 ), false );
 }
 
@@ -610,6 +621,28 @@ function mmbn_stop_url( object $w ): string {
  * @return array{subject:string,html:string,text:string}
  */
 function mmbn_compose( object $w, WC_Product $product, float $was, float $now ): array {
+	if ( ! mmbn_opt( 'track' ) ) {
+		// Plain links and no tracking pixel: alerts look personal, not bulk, so Gmail keeps them in the inbox.
+		$no_track = static function ( $v ) {
+			$v                 = is_array( $v ) ? $v : array();
+			$v['track_clicks'] = 0;
+			$v['track_opens']  = 0;
+			return $v;
+		};
+		add_filter( 'option_mmm_settings', $no_track, 99 );
+		add_filter( 'default_option_mmm_settings', $no_track, 99 );
+		$mail = mmbn_compose_inner( $w, $product, $was, $now );
+		remove_filter( 'option_mmm_settings', $no_track, 99 );
+		remove_filter( 'default_option_mmm_settings', $no_track, 99 );
+		return $mail;
+	}
+	return mmbn_compose_inner( $w, $product, $was, $now );
+}
+
+/**
+ * @return array{subject:string,html:string,text:string}
+ */
+function mmbn_compose_inner( object $w, WC_Product $product, float $was, float $now ): array {
 	$name   = $product->get_name();
 	$down   = $now < $was;
 	$diff   = abs( $now - $was );
@@ -697,22 +730,114 @@ function mmbn_compose( object $w, WC_Product $product, float $was, float $now ):
 }
 
 /**
- * @return array{0:bool,1:string}
+ * Send one alert and record how it left the site (SMTP host, API mailer or PHP mail()).
+ *
+ * @return array{0:bool,1:string,2:string}
  */
 function mmbn_send( object $w, array $mail ): array {
-	if ( function_exists( 'mmm_mail' ) ) {
-		[ $ok, $error ] = mmm_mail( (string) $w->email, $mail['subject'], $mail['html'], $mail['text'], (int) $w->sub_id, 0 );
-		return array( (bool) $ok, (string) $error );
-	}
+	$via   = '';
 	$error = '';
+	$probe = static function ( $pm ) use ( &$via ) {
+		$type = strtolower( (string) $pm->Mailer );
+		if ( 'smtp' === $type ) {
+			$via = 'SMTP ' . $pm->Host;
+		} elseif ( 'mail' === $type ) {
+			$via = 'PHP mail()';
+			// Match the envelope sender to the From address so SPF lines up.
+			if ( ! $pm->Sender && is_email( $pm->From ) ) {
+				$pm->Sender = $pm->From;
+			}
+		} else {
+			$via = $type;
+		}
+		if ( $pm->From ) {
+			$via .= ' · from ' . $pm->From;
+		}
+	};
 	$catch = static function ( $e ) use ( &$error ) {
 		$error = is_wp_error( $e ) ? $e->get_error_message() : 'Unknown error';
 	};
+	add_action( 'phpmailer_init', $probe, PHP_INT_MAX );
 	add_action( 'wp_mail_failed', $catch );
-	$headers = array( 'Content-Type: text/html; charset=UTF-8', 'List-Unsubscribe: <' . mmbn_stop_url( $w ) . '>', 'List-Unsubscribe-Post: List-Unsubscribe=One-Click' );
-	$ok      = (bool) wp_mail( (string) $w->email, $mail['subject'], $mail['html'], $headers );
+	if ( function_exists( 'mmm_mail' ) ) {
+		[ $ok, $err ] = mmm_mail( (string) $w->email, $mail['subject'], $mail['html'], $mail['text'], (int) $w->sub_id, 0 );
+		$error        = $error ? $error : (string) $err;
+	} else {
+		$headers = array( 'Content-Type: text/html; charset=UTF-8', 'List-Unsubscribe: <' . mmbn_stop_url( $w ) . '>', 'List-Unsubscribe-Post: List-Unsubscribe=One-Click' );
+		$ok      = (bool) wp_mail( (string) $w->email, $mail['subject'], $mail['html'], $headers );
+	}
+	remove_action( 'phpmailer_init', $probe, PHP_INT_MAX );
 	remove_action( 'wp_mail_failed', $catch );
-	return array( $ok, $ok ? '' : ( $error ? $error : __( 'The server did not accept the email. Check your SMTP plugin.', 'mine-mirth-buy-now' ) ) );
+	if ( '' === $via ) {
+		$plugin = mmbn_mail_plugin();
+		$via    = $plugin ? sprintf( /* translators: %s: plugin name */ __( 'handed to %s', 'mine-mirth-buy-now' ), $plugin['name'] ) : __( 'handed to another plugin', 'mine-mirth-buy-now' );
+	}
+	update_option( 'mmbn_last_via', $via, false );
+	return array( (bool) $ok, $ok ? '' : ( $error ? $error : __( 'The server did not accept the email. Check your SMTP plugin.', 'mine-mirth-buy-now' ) ), $via );
+}
+
+/**
+ * The SMTP/email plugin in charge of sending, and settings that silently stop delivery.
+ *
+ * @return array{name:string,mailer:string,blocked:string}|null
+ */
+function mmbn_mail_plugin(): ?array {
+	if ( defined( 'WPMS_PLUGIN_VER' ) || class_exists( 'WPMailSMTP\\Core' ) ) {
+		$o       = (array) get_option( 'wp_mail_smtp', array() );
+		$blocked = ( ! empty( $o['general']['do_not_send'] ) || ( defined( 'WPMS_DO_NOT_SEND' ) && WPMS_DO_NOT_SEND ) ) ? __( 'WP Mail SMTP › Settings › Misc › "Do Not Send" is turned on, so no email leaves your site even though WordPress reports it as sent.', 'mine-mirth-buy-now' ) : '';
+		return array( 'name' => 'WP Mail SMTP', 'mailer' => (string) ( $o['mail']['mailer'] ?? '' ), 'blocked' => $blocked );
+	}
+	if ( defined( 'FLUENTMAIL' ) || defined( 'FLUENTMAIL_PLUGIN_FILE' ) ) {
+		$o       = (array) get_option( 'fluentmail-settings', array() );
+		$blocked = 'yes' === ( $o['misc']['simulate_emails'] ?? '' ) ? __( 'FluentSMTP › Settings › "Email Simulation" is turned on, so emails are only logged, never sent.', 'mine-mirth-buy-now' ) : '';
+		return array( 'name' => 'FluentSMTP', 'mailer' => '', 'blocked' => $blocked );
+	}
+	foreach ( array(
+		'Post SMTP'     => defined( 'POST_SMTP_VER' ) || class_exists( 'PostmanWpMail' ),
+		'Easy WP SMTP'  => defined( 'EasyWPSMTP_PLUGIN_VERSION' ) || class_exists( 'EasyWPSMTP' ),
+		'SMTP Mailer'   => class_exists( 'SMTP_MAILER' ),
+		'Brevo'         => class_exists( 'SIB_Manager' ),
+		'Gmail SMTP'    => class_exists( 'GMAIL_SMTP' ),
+		'Mailgun'       => class_exists( 'Mailgun' ),
+		'SendGrid'      => class_exists( 'Sendgrid_Settings' ),
+		'Site Mailer'   => defined( 'SITE_MAILER_VERSION' ),
+	) as $name => $on ) {
+		if ( $on ) {
+			return array( 'name' => $name, 'mailer' => '', 'blocked' => '' );
+		}
+	}
+	return null;
+}
+
+/**
+ * Plain-language checks shown on the settings page.
+ *
+ * @return array<int,array{0:string,1:string}> [ level (ok|warn|bad), text ]
+ */
+function mmbn_mail_checks(): array {
+	$out    = array();
+	$plugin = mmbn_mail_plugin();
+	if ( ! $plugin ) {
+		$out[] = array( 'bad', __( 'No SMTP plugin found. Your site sends with PHP mail(), which Gmail and Outlook often drop without any error. Install "WP Mail SMTP" or "FluentSMTP", connect your mailbox (for example support@minemirth.com), then send a test alert below.', 'mine-mirth-buy-now' ) );
+	} else {
+		if ( $plugin['blocked'] ) {
+			$out[] = array( 'bad', $plugin['blocked'] );
+		}
+		if ( 'mail' === $plugin['mailer'] ) {
+			$out[] = array( 'bad', __( 'WP Mail SMTP is set to "Default (none)", which still uses PHP mail(). Choose a real mailer (Other SMTP, Gmail, Brevo…) in WP Mail SMTP › Settings.', 'mine-mirth-buy-now' ) );
+		}
+		if ( ! $plugin['blocked'] && 'mail' !== $plugin['mailer'] ) {
+			/* translators: %s: plugin name */
+			$out[] = array( 'ok', sprintf( __( 'Emails are sent by %s.', 'mine-mirth-buy-now' ), $plugin['name'] . ( $plugin['mailer'] ? ' (' . $plugin['mailer'] . ')' : '' ) ) );
+		}
+	}
+	$via = (string) get_option( 'mmbn_last_via' );
+	if ( $via ) {
+		/* translators: %s: transport details */
+		$out[] = array( false !== strpos( $via, 'PHP mail()' ) ? 'warn' : 'ok', sprintf( __( 'Last alert left your site via: %s.', 'mine-mirth-buy-now' ), $via ) );
+	}
+	$out[] = array( 'warn', __( '"Sent" means your mail server accepted the email. If it doesn’t arrive, check Spam, Promotions and All Mail (search for "Price drop"). If the alert is sent from and to the same Gmail account, Gmail may file it only under Sent. Test with a different address.', 'mine-mirth-buy-now' ) );
+	return $out;
 }
 
 /* ---------------------------------------------------------------------------

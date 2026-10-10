@@ -2,7 +2,7 @@
 Requires at least: 6.0
 Requires PHP: 7.4
 WC requires at least: 7.0
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 
 Adds two things to every product page, styled with the Mine Mirth theme (light and dark mode):
@@ -24,14 +24,18 @@ With the Mine Mirth Mailer active, alerts use your newsletter design and sender 
 
 == Cache purge ==
 
-After every price-alert action (a sign-up, alerts sent, alerts stopped, settings saved) the plugin purges caches automatically: LiteSpeed Cache (page, CSS/JS and object cache), WP Rocket, W3 Total Cache, WP Super Cache, WP Fastest Cache, SiteGround, Breeze, Hummingbird, Nginx Helper, Autoptimize, Comet Cache and the WordPress object cache. Choose "all caches" (default) or "only that product's page" in the settings, or click "Purge all caches now".
+After every price-alert action (a sign-up, alerts sent, alerts stopped, settings saved) the plugin purges caches automatically: LiteSpeed Cache (page, CSS/JS and object cache), WP Rocket, W3 Total Cache, WP Super Cache, WP Fastest Cache, SiteGround, Breeze, Hummingbird, Nginx Helper, Autoptimize, and Comet Cache. (The object cache is not flushed separately, because that can throw away emails an SMTP plugin has queued; LiteSpeed's own purge-all handles its object cache.) Choose "all caches" (default) or "only that product's page" in the settings, or click "Purge all caches now".
+
+== Email delivery ==
+
+"Sent" in the log means your mail server accepted the email. The settings page now shows how every alert left the site (SMTP host, mailer or PHP mail()), the exact error for failures, and warnings for settings that silently stop email (no SMTP plugin, WP Mail SMTP "Do Not Send", FluentSMTP "Email Simulation"). Alerts are sent without open/click tracking by default, which keeps them out of Spam/Promotions. You can send a test to any address and get a copy of every alert.
 
 == Settings: WooCommerce › Buy Now & Alerts ==
 
 * Button labels and style (solid dark, blue outline or blue gradient).
 * Whether "Buy it now" checks out only that product, or keeps the rest of the cart (default).
 * Alert box texts, whether to show "X people are watching", alerts on drops and/or increases, and sending delay.
-* Preview both emails, send yourself a test, see which products are watched and the last 100 alerts sent.
+* Preview both emails, send a test to any address, see which products are watched and the last 100 alerts sent (times in Pakistan time by default; change under Delivery and time).
 
 On a product's edit screen, a note under the price shows how many people will be alerted if you change it.
 

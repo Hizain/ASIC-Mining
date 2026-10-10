@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Mine Mirth Buy Now & Price Alerts
  * Description:       Adds a "Buy it now" button that goes straight to checkout, and a "Get price alerts" sign-up on every product page. When you change a product's price, everyone watching it gets an email in your newsletter design. Works with the Mine Mirth theme and the Mine Mirth Mailer.
- * Version:           1.0.3
+ * Version:           1.0.4
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Mine Mirth, LLC
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MMBN_VERSION', '1.0.3' );
+define( 'MMBN_VERSION', '1.0.4' );
 define( 'MMBN_FILE', __FILE__ );
 define( 'MMBN_URI', plugin_dir_url( __FILE__ ) );
 define( 'MMBN_DB', 3 );
@@ -38,6 +38,9 @@ function mmbn_defaults(): array {
 		'show_count'  => 3,
 		'purge'       => 1,
 		'purge_scope' => 'all',
+		'track'       => 0,
+		'copy_to'     => '',
+		'timezone'    => 'Asia/Karachi',
 	);
 }
 
@@ -48,6 +51,22 @@ function mmbn_opt( string $key ) {
 		$o     = array_merge( mmbn_defaults(), is_array( $saved ) ? $saved : array() );
 	}
 	return $o[ $key ] ?? null;
+}
+
+/**
+ * Time zone for dates shown by this plugin (Pakistan time by default).
+ */
+function mmbn_tz(): DateTimeZone {
+	try {
+		return new DateTimeZone( (string) mmbn_opt( 'timezone' ) );
+	} catch ( Exception $e ) {
+		return wp_timezone();
+	}
+}
+
+function mmbn_date( int $ts, string $format = '' ): string {
+	$format = $format ? $format : get_option( 'date_format' ) . ' ' . get_option( 'time_format' );
+	return wp_date( $format, $ts, mmbn_tz() ) . ' ' . wp_date( 'T', $ts, mmbn_tz() );
 }
 
 /**

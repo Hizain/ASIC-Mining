@@ -34,7 +34,7 @@ add_action(
 					$in  = is_array( $in ) ? $in : array();
 					$d   = mmbn_defaults();
 					$out = array();
-					foreach ( array( 'buy_now', 'buy_solo', 'alerts', 'notify_down', 'notify_up', 'purge' ) as $k ) {
+					foreach ( array( 'buy_now', 'buy_solo', 'alerts', 'notify_down', 'notify_up', 'purge', 'track' ) as $k ) {
 						$out[ $k ] = empty( $in[ $k ] ) ? 0 : 1;
 					}
 					foreach ( array( 'buy_label', 'pre_label', 'alert_title', 'alert_text', 'alert_btn', 'consent' ) as $k ) {
@@ -42,6 +42,9 @@ add_action(
 						$out[ $k ] = '' !== $v || 'consent' === $k ? $v : $d[ $k ];
 					}
 					$out['buy_style']  = in_array( $in['buy_style'] ?? '', array( 'contrast', 'outline', 'primary' ), true ) ? $in['buy_style'] : 'contrast';
+					$out['copy_to']     = sanitize_email( wp_unslash( $in['copy_to'] ?? '' ) );
+					$tz                 = sanitize_text_field( wp_unslash( $in['timezone'] ?? 'Asia/Karachi' ) );
+					$out['timezone']    = in_array( $tz, timezone_identifiers_list(), true ) ? $tz : 'Asia/Karachi';
 					$out['purge_scope'] = 'product' === ( $in['purge_scope'] ?? '' ) ? 'product' : 'all';
 					$out['delay']      = in_array( (int) ( $in['delay'] ?? 0 ), array( 0, 5, 15, 60 ), true ) ? (int) $in['delay'] : 0;
 					$out['show_count'] = max( 0, min( 1000, (int) ( $in['show_count'] ?? 3 ) ) );
@@ -70,15 +73,16 @@ add_action(
 		$down = 'up' !== sanitize_key( wp_unslash( $_GET['dir'] ?? 'down' ) );
 		$was  = $down ? round( $now * 1.1, 2 ) : round( $now / 1.1, 2 );
 		$user = wp_get_current_user();
-		$w    = (object) array( 'id' => 0, 'token' => 'preview', 'sub_id' => 0, 'email' => $user->user_email, 'created' => current_time( 'mysql', true ) );
+		$to   = sanitize_email( wp_unslash( $_GET['to'] ?? '' ) );
+		$w    = (object) array( 'id' => 0, 'token' => 'preview', 'sub_id' => 0, 'email' => is_email( $to ) ? $to : $user->user_email, 'created' => current_time( 'mysql', true ) );
 		if ( function_exists( 'mmm_sub_by_email' ) ) {
-			$w->sub_id = (int) mmm_sub_by_email( $user->user_email );
+			$w->sub_id = (int) mmm_sub_by_email( $w->email );
 		}
 		$mail = mmbn_compose( $w, $product, $was, $now );
 		if ( ! empty( $_GET['send'] ) ) {
 			$mail['subject'] = '[TEST] ' . $mail['subject'];
-			[ $ok, $error ]  = mmbn_send( $w, $mail );
-			update_option( 'mmbn_last_test_error', $error, false );
+			[ $ok, $error, $via ] = mmbn_send( $w, $mail );
+			update_option( 'mmbn_last_test_error', $ok ? sprintf( /* translators: 1: email, 2: route */ __( 'Sent to %1$s via %2$s.', 'mine-mirth-buy-now' ), $w->email, $via ) : $error, false );
 			wp_safe_redirect( admin_url( 'admin.php?page=mmbn&test=' . ( $ok ? 'ok' : 'fail' ) ) );
 			exit;
 		}
@@ -202,7 +206,7 @@ function mmbn_admin_page(): void {
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Buy Now & Price Alerts', 'mine-mirth-buy-now' ); ?></h1>
 		<?php if ( isset( $_GET['test'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification ?>
-			<div class="notice notice-<?php echo 'ok' === $_GET['test'] ? 'success' : 'error'; // phpcs:ignore WordPress.Security.NonceVerification ?> is-dismissible"><p><?php echo 'ok' === $_GET['test'] ? esc_html__( 'Test alert sent to your email.', 'mine-mirth-buy-now' ) : esc_html__( 'The test alert could not be sent. Check your SMTP plugin.', 'mine-mirth-buy-now' ) . ' ' . esc_html( (string) get_option( 'mmbn_last_test_error' ) ); // phpcs:ignore WordPress.Security.NonceVerification ?></p></div>
+			<div class="notice notice-<?php echo 'ok' === $_GET['test'] ? 'success' : 'error'; // phpcs:ignore WordPress.Security.NonceVerification ?> is-dismissible"><p><?php echo 'ok' === $_GET['test'] ? esc_html__( 'Test alert accepted by your mail server.', 'mine-mirth-buy-now' ) . ' ' . esc_html( (string) get_option( 'mmbn_last_test_error' ) ) : esc_html__( 'The test alert could not be sent. Check your SMTP plugin.', 'mine-mirth-buy-now' ) . ' ' . esc_html( (string) get_option( 'mmbn_last_test_error' ) ); // phpcs:ignore WordPress.Security.NonceVerification ?></p></div>
 		<?php endif; ?>
 		<?php if ( isset( $_GET['purged'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification ?>
 			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'All caches purged.', 'mine-mirth-buy-now' ); ?></p></div>
@@ -225,11 +229,29 @@ function mmbn_admin_page(): void {
 			<p>
 				<a class="button" target="_blank" href="<?php echo esc_url( $prev( 'down' ) ); ?>"><?php esc_html_e( 'Preview “price drop” email', 'mine-mirth-buy-now' ); ?></a>
 				<a class="button" target="_blank" href="<?php echo esc_url( $prev( 'up' ) ); ?>"><?php esc_html_e( 'Preview “price went up” email', 'mine-mirth-buy-now' ); ?></a>
-				<a class="button" href="<?php echo esc_url( $prev( 'down', 1 ) ); ?>"><?php esc_html_e( 'Send me a test alert', 'mine-mirth-buy-now' ); ?></a>
+			</p>
+			<form method="get" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0 0 12px">
+				<input type="hidden" name="action" value="mmbn_preview"><input type="hidden" name="product" value="<?php echo esc_attr( (string) $first ); ?>"><input type="hidden" name="dir" value="down"><input type="hidden" name="send" value="1">
+				<?php wp_nonce_field( 'mmbn_preview', '_wpnonce', false ); ?>
+				<label><?php esc_html_e( 'Send a test alert to', 'mine-mirth-buy-now' ); ?> <input type="email" name="to" class="regular-text" value="<?php echo esc_attr( (string) ( mmbn_opt( 'copy_to' ) ? mmbn_opt( 'copy_to' ) : wp_get_current_user()->user_email ) ); ?>"></label>
+				<button class="button button-primary"><?php esc_html_e( 'Send test', 'mine-mirth-buy-now' ); ?></button>
+				<span class="description"><?php esc_html_e( 'Tip: use an address on a different provider from your sending mailbox.', 'mine-mirth-buy-now' ); ?></span>
+			</form>
+			<p>
 				<a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=mmbn_purge' ), 'mmbn_purge' ) ); ?>"><?php esc_html_e( 'Purge all caches now', 'mine-mirth-buy-now' ); ?></a>
 				<span class="description"><?php echo esc_html( sprintf( /* translators: %s: product */ __( 'Using: %s', 'mine-mirth-buy-now' ), get_the_title( $first ) ) ); ?></span>
 			</p>
 		<?php endif; ?>
+
+		<div style="background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:12px 18px;max-width:1000px;margin:8px 0 16px">
+			<h2 style="margin:4px 0 8px"><?php esc_html_e( 'Email delivery', 'mine-mirth-buy-now' ); ?></h2>
+			<?php
+			$icons = array( 'ok' => array( 'yes-alt', '#16a34a' ), 'warn' => array( 'info', '#996800' ), 'bad' => array( 'warning', '#d63638' ) );
+			foreach ( mmbn_mail_checks() as $c ) :
+				?>
+				<p style="margin:6px 0"><span class="dashicons dashicons-<?php echo esc_attr( $icons[ $c[0] ][0] ); ?>" style="color:<?php echo esc_attr( $icons[ $c[0] ][1] ); ?>"></span> <?php echo esc_html( $c[1] ); ?></p>
+			<?php endforeach; ?>
+		</div>
 
 		<form method="post" action="options.php">
 			<?php settings_fields( 'mmbn' ); ?>
@@ -263,12 +285,19 @@ function mmbn_admin_page(): void {
 				</select><p class="description"><?php esc_html_e( 'A short wait lets you fix a typo in a price before anyone is emailed. The alert always uses the price at sending time, and nothing is sent if you put the old price back.', 'mine-mirth-buy-now' ); ?></p></td></tr>
 			</table>
 
+			<h2><?php esc_html_e( 'Delivery and time', 'mine-mirth-buy-now' ); ?></h2>
+			<table class="form-table" role="presentation">
+				<tr><th><label for="mmbn-cp"><?php esc_html_e( 'Send me a copy', 'mine-mirth-buy-now' ); ?></label></th><td><input id="mmbn-cp" type="email" class="regular-text" name="mmbn_settings[copy_to]" value="<?php echo esc_attr( (string) $o( 'copy_to' ) ); ?>" placeholder="you@example.com"><p class="description"><?php esc_html_e( 'One copy of each price alert (per price change) goes here, so you can see exactly what customers receive. Leave empty to turn off.', 'mine-mirth-buy-now' ); ?></p></td></tr>
+				<tr><th><?php esc_html_e( 'Tracking', 'mine-mirth-buy-now' ); ?></th><td><label><input type="checkbox" name="mmbn_settings[track]" value="1" <?php checked( (int) $o( 'track' ), 1 ); ?>> <?php esc_html_e( 'Track opens and clicks in price alerts', 'mine-mirth-buy-now' ); ?></label><p class="description"><?php esc_html_e( 'Off (recommended): plain links and no tracking pixel, so Gmail treats alerts as personal mail and keeps them out of Spam/Promotions.', 'mine-mirth-buy-now' ); ?></p></td></tr>
+				<tr><th><label for="mmbn-tz"><?php esc_html_e( 'Time zone', 'mine-mirth-buy-now' ); ?></label></th><td><select id="mmbn-tz" name="mmbn_settings[timezone]"><?php echo wp_timezone_choice( (string) $o( 'timezone' ), get_user_locale() ); // phpcs:ignore WordPress.Security.EscapeOutput ?></select><p class="description"><?php esc_html_e( 'Used for the times on this page. Default: Asia/Karachi (Pakistan time).', 'mine-mirth-buy-now' ); ?></p></td></tr>
+			</table>
+
 			<h2><?php esc_html_e( 'Cache', 'mine-mirth-buy-now' ); ?></h2>
 			<table class="form-table" role="presentation">
 				<tr><th><?php esc_html_e( 'Auto purge', 'mine-mirth-buy-now' ); ?></th><td>
 					<label><input type="checkbox" name="mmbn_settings[purge]" value="1" <?php checked( (int) $o( 'purge' ), 1 ); ?>> <?php esc_html_e( 'Purge caches after every price-alert action (sign-up, alerts sent, alerts stopped, settings saved)', 'mine-mirth-buy-now' ); ?></label>
 					<p><select name="mmbn_settings[purge_scope]">
-						<option value="all" <?php selected( $o( 'purge_scope' ), 'all' ); ?>><?php esc_html_e( 'Purge all caches (whole site, including object cache)', 'mine-mirth-buy-now' ); ?></option>
+						<option value="all" <?php selected( $o( 'purge_scope' ), 'all' ); ?>><?php esc_html_e( 'Purge all caches (whole site)', 'mine-mirth-buy-now' ); ?></option>
 						<option value="product" <?php selected( $o( 'purge_scope' ), 'product' ); ?>><?php esc_html_e( 'Purge only that product’s page (lighter on busy sites)', 'mine-mirth-buy-now' ); ?></option>
 					</select></p>
 					<p class="description"><?php echo esc_html( mmbn_cache_summary() ); ?></p>
@@ -303,7 +332,7 @@ function mmbn_admin_page(): void {
 			</tbody>
 		</table>
 
-		<h2><?php esc_html_e( 'Recent alerts', 'mine-mirth-buy-now' ); ?></h2>
+		<h2><?php esc_html_e( 'Recent alerts', 'mine-mirth-buy-now' ); ?> <small style="font-weight:400;color:#646970"><?php echo esc_html( sprintf( /* translators: %s: time zone */ __( 'times in %s', 'mine-mirth-buy-now' ), (string) mmbn_opt( 'timezone' ) ) ); ?></small></h2>
 		<table class="widefat striped" style="max-width:1000px">
 			<thead><tr><th><?php esc_html_e( 'When', 'mine-mirth-buy-now' ); ?></th><th><?php esc_html_e( 'Product', 'mine-mirth-buy-now' ); ?></th><th><?php esc_html_e( 'To', 'mine-mirth-buy-now' ); ?></th><th><?php esc_html_e( 'Price', 'mine-mirth-buy-now' ); ?></th><th><?php esc_html_e( 'Result', 'mine-mirth-buy-now' ); ?></th></tr></thead>
 			<tbody>
@@ -312,11 +341,11 @@ function mmbn_admin_page(): void {
 			<?php endif; ?>
 			<?php foreach ( array_slice( $log, 0, 50 ) as $l ) : ?>
 				<tr>
-					<td><?php echo esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) $l['t'] ) ); ?></td>
+					<td><?php echo esc_html( mmbn_date( (int) $l['t'] ) ); ?></td>
 					<td><?php echo esc_html( get_the_title( (int) $l['p'] ) ); ?></td>
 					<td><?php echo esc_html( (string) $l['e'] ); ?></td>
 					<td><?php echo esc_html( mmbn_plain_price( (float) $l['was'] ) . ' → ' . mmbn_plain_price( (float) $l['now'] ) ); ?></td>
-					<td><?php echo $l['ok'] ? '<span style="color:#16a34a">' . esc_html__( 'Sent', 'mine-mirth-buy-now' ) . '</span>' : '<span style="color:' . ( 0 === strpos( (string) ( $l['note'] ?? '' ), 'Not sent' ) ? '#996800' : '#d63638' ) . '">' . esc_html( ! empty( $l['note'] ) ? (string) $l['note'] : __( 'Failed', 'mine-mirth-buy-now' ) ) . '</span>'; ?></td>
+					<td><?php echo $l['ok'] ? '<span style="color:#16a34a">' . esc_html__( 'Sent', 'mine-mirth-buy-now' ) . '</span>' . ( ! empty( $l['via'] ) ? '<br><small style="color:#646970">' . esc_html( (string) $l['via'] ) . '</small>' : '' ) : '<span style="color:' . ( 0 === strpos( (string) ( $l['note'] ?? '' ), 'Not sent' ) ? '#996800' : '#d63638' ) . '">' . esc_html( ! empty( $l['note'] ) ? (string) $l['note'] : __( 'Failed', 'mine-mirth-buy-now' ) ) . '</span>'; ?></td>
 				</tr>
 			<?php endforeach; ?>
 			</tbody>
