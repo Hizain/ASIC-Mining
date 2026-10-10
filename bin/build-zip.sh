@@ -23,3 +23,4 @@ build mine-mirth-shop-pro mine-mirth-shop-pro.php
 build mine-mirth-newsletter-alerts mine-mirth-newsletter-alerts.php
 build mine-mirth-mailer mine-mirth-mailer.php
 build mine-mirth-tools mine-mirth-tools.php
+build mine-mirth-hide-wordmark mine-mirth-hide-wordmark.php
