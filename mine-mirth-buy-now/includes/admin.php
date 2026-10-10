@@ -77,12 +77,35 @@ add_action(
 		$mail = mmbn_compose( $w, $product, $was, $now );
 		if ( ! empty( $_GET['send'] ) ) {
 			$mail['subject'] = '[TEST] ' . $mail['subject'];
-			$ok              = mmbn_send( $w, $mail );
+			[ $ok, $error ]  = mmbn_send( $w, $mail );
+			update_option( 'mmbn_last_test_error', $error, false );
 			wp_safe_redirect( admin_url( 'admin.php?page=mmbn&test=' . ( $ok ? 'ok' : 'fail' ) ) );
 			exit;
 		}
 		// Don't count the preview as an open.
 		echo str_replace( home_url( '/?mmm=o' ), includes_url( 'images/blank.gif' ) . '?', $mail['html'] ); // phpcs:ignore WordPress.Security.EscapeOutput
+		exit;
+	}
+);
+
+add_action(
+	'admin_post_mmbn_run',
+	static function () {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( esc_html__( 'Not allowed.', 'mine-mirth-buy-now' ) );
+		}
+		$id = absint( wp_unslash( $_GET['product'] ?? 0 ) );
+		check_admin_referer( 'mmbn_run_' . $id );
+		$pending = mmbn_pending();
+		$pending[ $id ] = time();
+		update_option( 'mmbn_pending', $pending, true );
+		delete_transient( 'mmbn_lock' );
+		$r = mmbn_process( 100 );
+		if ( empty( $r['products'] ) ) {
+			$r['products'][ $id ] = array( 'sent' => 0, 'failed' => 0, 'skipped' => 1, 'note' => __( 'Nobody is waiting on a different price.', 'mine-mirth-buy-now' ), 'error' => '' );
+		}
+		set_transient( 'mmbn_notice_' . get_current_user_id(), $r, 10 * MINUTE_IN_SECONDS );
+		wp_safe_redirect( admin_url( 'admin.php?page=mmbn' ) );
 		exit;
 	}
 );
@@ -131,7 +154,7 @@ function mmbn_admin_page(): void {
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Buy Now & Price Alerts', 'mine-mirth-buy-now' ); ?></h1>
 		<?php if ( isset( $_GET['test'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification ?>
-			<div class="notice notice-<?php echo 'ok' === $_GET['test'] ? 'success' : 'error'; // phpcs:ignore WordPress.Security.NonceVerification ?> is-dismissible"><p><?php echo 'ok' === $_GET['test'] ? esc_html__( 'Test alert sent to your email.', 'mine-mirth-buy-now' ) : esc_html__( 'The test alert could not be sent. Check your SMTP plugin.', 'mine-mirth-buy-now' ); // phpcs:ignore WordPress.Security.NonceVerification ?></p></div>
+			<div class="notice notice-<?php echo 'ok' === $_GET['test'] ? 'success' : 'error'; // phpcs:ignore WordPress.Security.NonceVerification ?> is-dismissible"><p><?php echo 'ok' === $_GET['test'] ? esc_html__( 'Test alert sent to your email.', 'mine-mirth-buy-now' ) : esc_html__( 'The test alert could not be sent. Check your SMTP plugin.', 'mine-mirth-buy-now' ) . ' ' . esc_html( (string) get_option( 'mmbn_last_test_error' ) ); // phpcs:ignore WordPress.Security.NonceVerification ?></p></div>
 		<?php endif; ?>
 		<p style="max-width:820px"><?php esc_html_e( 'Every product page gets a "Buy it now" button that skips the cart and opens checkout, and a "Get price alerts" box. People who sign up join your newsletter list, and whenever you change that product\'s price (edit, quick edit, bulk edit or a scheduled sale), they get an email in your newsletter design.', 'mine-mirth-buy-now' ); ?></p>
 
@@ -141,6 +164,12 @@ function mmbn_admin_page(): void {
 			<?php endforeach; ?>
 		</div>
 
+		<?php
+		$waiting = array_filter( mmbn_pending(), static fn( $due ) => $due <= time() - 120 );
+		if ( $waiting ) :
+			?>
+			<div class="notice notice-warning inline"><p><?php echo esc_html( sprintf( /* translators: %s: product names */ __( 'Alerts are waiting to be sent for: %s. Use "Send alerts now" below.', 'mine-mirth-buy-now' ), implode( ', ', array_map( 'get_the_title', array_keys( $waiting ) ) ) ) ); ?></p></div>
+		<?php endif; ?>
 		<?php if ( $first ) : ?>
 			<p>
 				<a class="button" target="_blank" href="<?php echo esc_url( $prev( 'down' ) ); ?>"><?php esc_html_e( 'Preview “price drop” email', 'mine-mirth-buy-now' ); ?></a>
@@ -205,7 +234,7 @@ function mmbn_admin_page(): void {
 					<td><?php echo esc_html( number_format_i18n( (int) $r->n ) ); ?></td>
 					<td><?php echo null === $price ? '—' : wp_kses_post( wc_price( $price ) ); ?></td>
 					<td><?php echo $r->last_alert ? esc_html( sprintf( /* translators: %s: time */ __( '%s ago', 'mine-mirth-buy-now' ), human_time_diff( (int) strtotime( $r->last_alert . ' UTC' ) ) ) ) : '—'; ?></td>
-					<td><a class="button-link-delete" onclick="return confirm('<?php echo esc_js( __( 'Stop all price alerts for this product?', 'mine-mirth-buy-now' ) ); ?>')" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=mmbn_stop_all&product=' . $p->get_id() ), 'mmbn_stop_all_' . $p->get_id() ) ); ?>"><?php esc_html_e( 'Stop alerts', 'mine-mirth-buy-now' ); ?></a></td>
+					<td><a class="button button-small" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=mmbn_run&product=' . $p->get_id() ), 'mmbn_run_' . $p->get_id() ) ); ?>"><?php esc_html_e( 'Send alerts now', 'mine-mirth-buy-now' ); ?></a> &nbsp; <a class="button-link-delete" onclick="return confirm('<?php echo esc_js( __( 'Stop all price alerts for this product?', 'mine-mirth-buy-now' ) ); ?>')" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=mmbn_stop_all&product=' . $p->get_id() ), 'mmbn_stop_all_' . $p->get_id() ) ); ?>"><?php esc_html_e( 'Stop alerts', 'mine-mirth-buy-now' ); ?></a></td>
 				</tr>
 			<?php endforeach; ?>
 			</tbody>
@@ -224,7 +253,7 @@ function mmbn_admin_page(): void {
 					<td><?php echo esc_html( get_the_title( (int) $l['p'] ) ); ?></td>
 					<td><?php echo esc_html( (string) $l['e'] ); ?></td>
 					<td><?php echo esc_html( mmbn_plain_price( (float) $l['was'] ) . ' → ' . mmbn_plain_price( (float) $l['now'] ) ); ?></td>
-					<td><?php echo $l['ok'] ? '<span style="color:#16a34a">' . esc_html__( 'Sent', 'mine-mirth-buy-now' ) . '</span>' : '<span style="color:#d63638">' . esc_html__( 'Failed', 'mine-mirth-buy-now' ) . '</span>'; ?></td>
+					<td><?php echo $l['ok'] ? '<span style="color:#16a34a">' . esc_html__( 'Sent', 'mine-mirth-buy-now' ) . '</span>' : '<span style="color:' . ( 0 === strpos( (string) ( $l['note'] ?? '' ), 'Not sent' ) ? '#996800' : '#d63638' ) . '">' . esc_html( ! empty( $l['note'] ) ? (string) $l['note'] : __( 'Failed', 'mine-mirth-buy-now' ) ) . '</span>'; ?></td>
 				</tr>
 			<?php endforeach; ?>
 			</tbody>

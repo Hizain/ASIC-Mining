@@ -267,52 +267,170 @@ add_action(
  * Price-change detection
  * ------------------------------------------------------------------------- */
 
+/**
+ * Products waiting for a price check: [ product_id => due timestamp ]. Kept in an option so alerts
+ * never depend on WP-Cron or loopback requests, which many hosts block.
+ */
+function mmbn_pending(): array {
+	$p = get_option( 'mmbn_pending', array() );
+	return is_array( $p ) ? $p : array();
+}
+
 function mmbn_queue_check( int $product_id ): void {
 	static $seen = array();
 	if ( ! $product_id || isset( $seen[ $product_id ] ) || ! mmbn_watch_count( $product_id ) ) {
 		return;
 	}
-	$seen[ $product_id ] = true;
-	$when                = time() + max( 0, (int) mmbn_opt( 'delay' ) ) * MINUTE_IN_SECONDS;
-	$args                = array( $product_id );
-	if ( function_exists( 'as_enqueue_async_action' ) ) {
-		if ( function_exists( 'as_has_scheduled_action' ) && as_has_scheduled_action( 'mmbn_check_price', $args, 'mmbn' ) ) {
-			return;
-		}
-		if ( (int) mmbn_opt( 'delay' ) > 0 ) {
-			as_schedule_single_action( $when, 'mmbn_check_price', $args, 'mmbn' );
-		} else {
-			as_enqueue_async_action( 'mmbn_check_price', $args, 'mmbn' );
-		}
-		return;
-	}
-	if ( ! wp_next_scheduled( 'mmbn_check_price', $args ) ) {
-		wp_schedule_single_event( $when, 'mmbn_check_price', $args );
+	$seen[ $product_id ]      = true;
+	$pending                  = mmbn_pending();
+	$pending[ $product_id ]   = time() + max( 0, (int) mmbn_opt( 'delay' ) ) * MINUTE_IN_SECONDS;
+	update_option( 'mmbn_pending', $pending, true );
+	// Backup trigger for delayed sends on sites with working cron.
+	if ( ! wp_next_scheduled( 'mmbn_process' ) ) {
+		wp_schedule_single_event( $pending[ $product_id ] + 30, 'mmbn_process' );
 	}
 }
 
 add_action( 'woocommerce_update_product', static fn( $id ) => mmbn_queue_check( (int) $id ), 20 );
 add_action( 'woocommerce_update_product_variation', static fn( $id ) => mmbn_queue_check( (int) wp_get_post_parent_id( (int) $id ) ), 20 );
-add_action( 'mmbn_check_price', 'mmbn_check_price' );
+
+/**
+ * Send what's due. Runs at the end of the request that saved the price (so "Instantly" really is
+ * instant), on later page loads for anything left over or delayed, and from cron when available.
+ */
+function mmbn_process( int $budget = 25 ): array {
+	$pending = mmbn_pending();
+	$total   = array( 'sent' => 0, 'failed' => 0, 'skipped' => 0, 'products' => array() );
+	if ( ! $pending || get_transient( 'mmbn_lock' ) ) {
+		return $total;
+	}
+	set_transient( 'mmbn_lock', 1, 2 * MINUTE_IN_SECONDS );
+	if ( function_exists( 'set_time_limit' ) ) {
+		@set_time_limit( 300 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors
+	}
+	foreach ( $pending as $pid => $due ) {
+		if ( $due > time() || $budget <= 0 ) {
+			continue;
+		}
+		$r = mmbn_check_price( (int) $pid, $budget );
+		$budget -= $r['sent'] + $r['failed'];
+		foreach ( array( 'sent', 'failed', 'skipped' ) as $k ) {
+			$total[ $k ] += $r[ $k ];
+		}
+		$total['products'][ (int) $pid ] = $r;
+		$pending = mmbn_pending();
+		if ( empty( $r['more'] ) ) {
+			unset( $pending[ $pid ] );
+		}
+		update_option( 'mmbn_pending', $pending, true );
+	}
+	delete_transient( 'mmbn_lock' );
+	return $total;
+}
+
+add_action( 'mmbn_process', static fn() => mmbn_process( 100 ) );
+
+// Version 1.0.0 queued checks in Action Scheduler, which some hosts never run. Move them here once.
+add_action(
+	'init',
+	static function () {
+		if ( get_option( 'mmbn_migrated_101' ) || ! function_exists( 'as_get_scheduled_actions' ) ) {
+			return;
+		}
+		update_option( 'mmbn_migrated_101', 1, false );
+		$pending = mmbn_pending();
+		foreach ( (array) as_get_scheduled_actions( array( 'hook' => 'mmbn_check_price', 'status' => 'pending', 'per_page' => 200 ) ) as $action ) {
+			$args = $action->get_args();
+			if ( ! empty( $args[0] ) ) {
+				$pending[ (int) $args[0] ] = time();
+			}
+		}
+		as_unschedule_all_actions( 'mmbn_check_price' );
+		// Anyone whose remembered price differs from today's price is due an alert.
+		global $wpdb;
+		foreach ( (array) $wpdb->get_col( 'SELECT DISTINCT product_id FROM ' . mmbn_table() . " WHERE status = 'active'" ) as $pid ) { // phpcs:ignore WordPress.DB
+			$pending[ (int) $pid ] = $pending[ (int) $pid ] ?? time();
+		}
+		update_option( 'mmbn_pending', $pending, true );
+	},
+	30
+);
+add_action( 'mmbn_check_price', static fn( $id ) => mmbn_check_price( (int) $id, 100 ) ); // Actions queued by version 1.0.0.
+
+// After any request (including the product save), send what's due; tell the admin who saved it.
+add_action(
+	'shutdown',
+	static function () {
+		$pending = mmbn_pending();
+		if ( ! $pending || min( $pending ) > time() ) {
+			return;
+		}
+		$r = mmbn_process( is_admin() ? 25 : 10 );
+		if ( ( $r['sent'] || $r['failed'] || $r['skipped'] ) && is_user_logged_in() && current_user_can( 'edit_products' ) ) {
+			set_transient( 'mmbn_notice_' . get_current_user_id(), $r, 10 * MINUTE_IN_SECONDS );
+		}
+	},
+	1
+);
+
+add_action(
+	'admin_notices',
+	static function () {
+		$key = 'mmbn_notice_' . get_current_user_id();
+		$r   = get_transient( $key );
+		if ( ! $r ) {
+			return;
+		}
+		delete_transient( $key );
+		foreach ( (array) $r['products'] as $pid => $p ) {
+			$msg = sprintf(
+				/* translators: 1: product, 2: sent count */
+				__( 'Price alerts for %1$s: sent to %2$d.', 'mine-mirth-buy-now' ),
+				get_the_title( (int) $pid ),
+				(int) $p['sent']
+			);
+			if ( $p['failed'] ) {
+				/* translators: 1: count, 2: error */
+				$msg .= ' ' . sprintf( __( '%1$d could not be sent: %2$s', 'mine-mirth-buy-now' ), (int) $p['failed'], $p['error'] );
+			}
+			if ( $p['skipped'] && ! $p['sent'] ) {
+				$msg .= ' ' . $p['note'];
+			}
+			$type = $p['failed'] ? 'error' : ( $p['sent'] ? 'success' : 'info' );
+			echo '<div class="notice notice-' . esc_attr( $type ) . ' is-dismissible"><p><span class="dashicons dashicons-bell" style="color:#35a8f6"></span> ' . esc_html( $msg ) . ' <a href="' . esc_url( admin_url( 'admin.php?page=mmbn' ) ) . '">' . esc_html__( 'Alert log', 'mine-mirth-buy-now' ) . '</a></p></div>';
+		}
+	}
+);
 
 /**
  * Compare each watcher's last-seen price with the current price and send alerts.
+ *
+ * @return array{sent:int,failed:int,skipped:int,more:bool,note:string,error:string}
  */
-function mmbn_check_price( $product_id ): int {
+function mmbn_check_price( int $product_id, int $limit = 25 ): array {
 	global $wpdb;
-	$product_id = (int) $product_id;
-	$product    = wc_get_product( $product_id );
+	$out     = array( 'sent' => 0, 'failed' => 0, 'skipped' => 0, 'more' => false, 'note' => '', 'error' => '' );
+	$product = wc_get_product( $product_id );
 	if ( ! $product || 'publish' !== $product->get_status() ) {
-		return 0;
+		$out['note'] = __( 'The product isn’t published.', 'mine-mirth-buy-now' );
+		return $out;
 	}
 	$now = mmbn_current_price( $product );
 	if ( null === $now || $now <= 0 ) {
-		return 0;
+		$out['note'] = __( 'The product has no price.', 'mine-mirth-buy-now' );
+		return $out;
 	}
 	$table = mmbn_table();
-	$rows  = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table WHERE product_id = %d AND status = 'active' AND ABS(last_price - %f) > 0.000001 ORDER BY id ASC LIMIT 200", $product_id, $now ) ); // phpcs:ignore WordPress.DB
-	$sent  = 0;
-	foreach ( (array) $rows as $w ) {
+	$rows  = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table WHERE product_id = %d AND status = 'active' AND ABS(last_price - %f) > 0.000001 ORDER BY id ASC LIMIT %d", $product_id, $now, max( 1, $limit ) + 1 ) ); // phpcs:ignore WordPress.DB
+	if ( ! $rows ) {
+		$out['note'] = __( 'Nobody is waiting on a different price.', 'mine-mirth-buy-now' );
+		return $out;
+	}
+	if ( count( $rows ) > $limit ) {
+		$out['more'] = true;
+		array_pop( $rows );
+	}
+	foreach ( $rows as $w ) {
 		$was = (float) $w->last_price;
 		if ( $was <= 0 ) {
 			$wpdb->update( $table, array( 'last_price' => $now ), array( 'id' => $w->id ) ); // phpcs:ignore WordPress.DB
@@ -321,38 +439,45 @@ function mmbn_check_price( $product_id ): int {
 		$dir    = $now < $was ? 'down' : 'up';
 		$change = abs( $now - $was ) / $was * 100;
 		if ( $change + 1e-9 < (float) mmbn_opt( 'min_change' ) ) {
-			continue; // Too small; keep their price so small changes can add up.
+			++$out['skipped'];
+			/* translators: %s: percent */
+			$out['note'] = sprintf( __( 'Not sent: the change is smaller than the %s%% minimum (Settings).', 'mine-mirth-buy-now' ), mmbn_opt( 'min_change' ) );
+			mmbn_log( $product_id, (string) $w->email, $was, $now, false, $out['note'] );
+			continue; // Keep their price so small changes can add up.
 		}
 		if ( ! mmbn_opt( 'down' === $dir ? 'notify_down' : 'notify_up' ) ) {
+			++$out['skipped'];
+			$out['note'] = 'down' === $dir ? __( 'Not sent: alerts for price drops are turned off.', 'mine-mirth-buy-now' ) : __( 'Not sent: alerts for price increases are turned off.', 'mine-mirth-buy-now' );
 			$wpdb->update( $table, array( 'last_price' => $now ), array( 'id' => $w->id ) ); // phpcs:ignore WordPress.DB
 			continue;
 		}
 		// Respect a Mailer unsubscribe made after they set up the alert.
 		if ( (int) $w->sub_id && function_exists( 'mmm_sub_is_active' ) && ! mmm_sub_is_active( (int) $w->sub_id ) && (int) get_post_meta( (int) $w->sub_id, '_mmm_unsub_at', true ) > (int) strtotime( $w->created . ' UTC' ) ) {
+			++$out['skipped'];
 			$wpdb->update( $table, array( 'status' => 'stopped' ), array( 'id' => $w->id ) ); // phpcs:ignore WordPress.DB
+			mmbn_log( $product_id, (string) $w->email, $was, $now, false, __( 'Not sent: they unsubscribed from your emails.', 'mine-mirth-buy-now' ) );
 			continue;
 		}
-		$mail = mmbn_compose( $w, $product, $was, $now );
-		$ok   = mmbn_send( $w, $mail );
-		mmbn_log( $product_id, (string) $w->email, $was, $now, $ok );
+		[ $ok, $error ] = mmbn_send( $w, mmbn_compose( $w, $product, $was, $now ) );
+		mmbn_log( $product_id, (string) $w->email, $was, $now, $ok, $ok ? '' : $error );
 		if ( $ok ) {
-			++$sent;
+			++$out['sent'];
 			$wpdb->update( // phpcs:ignore WordPress.DB
 				$table,
 				array( 'last_price' => $now, 'notified' => current_time( 'mysql', true ), 'alerts' => (int) $w->alerts + 1 ),
 				array( 'id' => $w->id )
 			);
+		} else {
+			++$out['failed'];
+			$out['error'] = $error;
 		}
 	}
-	if ( count( (array) $rows ) >= 200 ) {
-		wp_schedule_single_event( time() + 60, 'mmbn_check_price', array( $product_id ) );
-	}
-	return $sent;
+	return $out;
 }
 
-function mmbn_log( int $product_id, string $email, float $was, float $now, bool $ok ): void {
+function mmbn_log( int $product_id, string $email, float $was, float $now, bool $ok, string $note = '' ): void {
 	$log = (array) get_option( 'mmbn_log', array() );
-	array_unshift( $log, array( 't' => time(), 'p' => $product_id, 'e' => $email, 'was' => $was, 'now' => $now, 'ok' => $ok ) );
+	array_unshift( $log, array( 't' => time(), 'p' => $product_id, 'e' => $email, 'was' => $was, 'now' => $now, 'ok' => $ok, 'note' => $note ) );
 	update_option( 'mmbn_log', array_slice( $log, 0, 100 ), false );
 }
 
@@ -455,13 +580,23 @@ function mmbn_compose( object $w, WC_Product $product, float $was, float $now ):
 	return array( 'subject' => $subject, 'html' => $html, 'text' => $intro . "\n\n" . $name . ': ' . $wasf . ' → ' . $nowf . "\n" . $view . "\n\n" . __( 'Stop alerts for this product:', 'mine-mirth-buy-now' ) . ' ' . $stop );
 }
 
-function mmbn_send( object $w, array $mail ): bool {
+/**
+ * @return array{0:bool,1:string}
+ */
+function mmbn_send( object $w, array $mail ): array {
 	if ( function_exists( 'mmm_mail' ) ) {
-		[ $ok ] = mmm_mail( (string) $w->email, $mail['subject'], $mail['html'], $mail['text'], (int) $w->sub_id, 0 );
-		return (bool) $ok;
+		[ $ok, $error ] = mmm_mail( (string) $w->email, $mail['subject'], $mail['html'], $mail['text'], (int) $w->sub_id, 0 );
+		return array( (bool) $ok, (string) $error );
 	}
+	$error = '';
+	$catch = static function ( $e ) use ( &$error ) {
+		$error = is_wp_error( $e ) ? $e->get_error_message() : 'Unknown error';
+	};
+	add_action( 'wp_mail_failed', $catch );
 	$headers = array( 'Content-Type: text/html; charset=UTF-8', 'List-Unsubscribe: <' . mmbn_stop_url( $w ) . '>', 'List-Unsubscribe-Post: List-Unsubscribe=One-Click' );
-	return (bool) wp_mail( (string) $w->email, $mail['subject'], $mail['html'], $headers );
+	$ok      = (bool) wp_mail( (string) $w->email, $mail['subject'], $mail['html'], $headers );
+	remove_action( 'wp_mail_failed', $catch );
+	return array( $ok, $ok ? '' : ( $error ? $error : __( 'The server did not accept the email. Check your SMTP plugin.', 'mine-mirth-buy-now' ) ) );
 }
 
 /* ---------------------------------------------------------------------------
