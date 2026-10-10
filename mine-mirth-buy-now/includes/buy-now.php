@@ -28,6 +28,17 @@ add_action(
 	20
 );
 
+// Keep the small front-end script out of "delay JS" optimisations (LiteSpeed, WP Rocket, Cloudflare),
+// so the price-alert box animates and responds on first view.
+add_filter(
+	'script_loader_tag',
+	static function ( $tag, $handle ) {
+		return 'mmbn' === $handle ? str_replace( ' src=', ' data-no-optimize="1" data-no-defer="1" data-cfasync="false" nowprocket src=', $tag ) : $tag;
+	},
+	10,
+	2
+);
+
 /**
  * The button sits inside the product form, right under "Add to cart", so it uses the same quantity and options.
  */

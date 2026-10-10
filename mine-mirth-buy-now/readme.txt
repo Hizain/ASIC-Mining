@@ -2,7 +2,7 @@
 Requires at least: 6.0
 Requires PHP: 7.4
 WC requires at least: 7.0
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 
 Adds two things to every product page, styled with the Mine Mirth theme (light and dark mode):
@@ -16,10 +16,15 @@ Adds two things to every product page, styled with the Mine Mirth theme (light a
 * Price drop: "Price drop: [miner] is now $X", with the old and new price, the saving, a "Buy it now" button that goes straight to checkout, the product card and a "Get a quote" box.
 * Price increase: "Heads up: the [miner] price went up", with a gentle nudge to order before it moves again.
 * Every change is sent, however small (even $0.50), compared with the price each person last saw. Re-saving without a price change sends nothing.
+* Alerts are sent while WordPress saves the price, reading prices and the send list straight from the database, so page caches and object caches (LiteSpeed, Redis, Memcached) can never hold them back.
 * Optional short wait before sending (5, 15 or 60 minutes) so you can fix a typo first. If you put the old price back in that time, nothing is sent.
 * Every alert has a "Stop alerts for this product" link and your newsletter's unsubscribe link.
 
 With the Mine Mirth Mailer active, alerts use your newsletter design and sender settings, opens and clicks are tracked, and replies arrive in Mailer › Inbox. Without it, a simpler email in your site colours is sent.
+
+== Cache purge ==
+
+After every price-alert action (a sign-up, alerts sent, alerts stopped, settings saved) the plugin purges caches automatically: LiteSpeed Cache (page, CSS/JS and object cache), WP Rocket, W3 Total Cache, WP Super Cache, WP Fastest Cache, SiteGround, Breeze, Hummingbird, Nginx Helper, Autoptimize, Comet Cache and the WordPress object cache. Choose "all caches" (default) or "only that product's page" in the settings, or click "Purge all caches now".
 
 == Settings: WooCommerce › Buy Now & Alerts ==
 

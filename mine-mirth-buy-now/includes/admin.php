@@ -34,7 +34,7 @@ add_action(
 					$in  = is_array( $in ) ? $in : array();
 					$d   = mmbn_defaults();
 					$out = array();
-					foreach ( array( 'buy_now', 'buy_solo', 'alerts', 'notify_down', 'notify_up' ) as $k ) {
+					foreach ( array( 'buy_now', 'buy_solo', 'alerts', 'notify_down', 'notify_up', 'purge' ) as $k ) {
 						$out[ $k ] = empty( $in[ $k ] ) ? 0 : 1;
 					}
 					foreach ( array( 'buy_label', 'pre_label', 'alert_title', 'alert_text', 'alert_btn', 'consent' ) as $k ) {
@@ -42,6 +42,7 @@ add_action(
 						$out[ $k ] = '' !== $v || 'consent' === $k ? $v : $d[ $k ];
 					}
 					$out['buy_style']  = in_array( $in['buy_style'] ?? '', array( 'contrast', 'outline', 'primary' ), true ) ? $in['buy_style'] : 'contrast';
+					$out['purge_scope'] = 'product' === ( $in['purge_scope'] ?? '' ) ? 'product' : 'all';
 					$out['delay']      = in_array( (int) ( $in['delay'] ?? 0 ), array( 0, 5, 15, 60 ), true ) ? (int) $in['delay'] : 0;
 					$out['show_count'] = max( 0, min( 1000, (int) ( $in['show_count'] ?? 3 ) ) );
 					return $out;
@@ -95,19 +96,32 @@ add_action(
 		}
 		$id = absint( wp_unslash( $_GET['product'] ?? 0 ) );
 		check_admin_referer( 'mmbn_run_' . $id );
-		$pending = mmbn_pending();
-		$pending[ $id ] = time();
-		update_option( 'mmbn_pending', $pending, true );
-		delete_transient( 'mmbn_lock' );
+		mmbn_touched( $id );
 		$r = mmbn_process( 100 );
 		if ( empty( $r['products'] ) ) {
 			$r['products'][ $id ] = array( 'sent' => 0, 'failed' => 0, 'skipped' => 1, 'note' => __( 'Nobody is waiting on a different price.', 'mine-mirth-buy-now' ), 'error' => '' );
 		}
-		set_transient( 'mmbn_notice_' . get_current_user_id(), $r, 10 * MINUTE_IN_SECONDS );
+		update_user_meta( get_current_user_id(), '_mmbn_notice', $r );
 		wp_safe_redirect( admin_url( 'admin.php?page=mmbn' ) );
 		exit;
 	}
 );
+
+add_action(
+	'admin_post_mmbn_purge',
+	static function () {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( esc_html__( 'Not allowed.', 'mine-mirth-buy-now' ) );
+		}
+		check_admin_referer( 'mmbn_purge' );
+		mmbn_purge( 0, true );
+		wp_safe_redirect( admin_url( 'admin.php?page=mmbn&purged=1' ) );
+		exit;
+	}
+);
+
+// Saving these settings changes button texts on cached product pages.
+add_action( 'update_option_mmbn_settings', static fn() => mmbn_purge( 0 ), 10, 0 );
 
 add_action(
 	'admin_post_mmbn_stop_all',
@@ -119,6 +133,7 @@ add_action(
 		check_admin_referer( 'mmbn_stop_all_' . $id );
 		global $wpdb;
 		$wpdb->update( mmbn_table(), array( 'status' => 'stopped' ), array( 'product_id' => $id, 'status' => 'active' ) ); // phpcs:ignore WordPress.DB
+		mmbn_purge( $id );
 		wp_safe_redirect( admin_url( 'admin.php?page=mmbn&stopped=1' ) );
 		exit;
 	}
@@ -139,6 +154,40 @@ add_action(
 	}
 );
 
+/**
+ * Which caches were found on this site.
+ */
+function mmbn_cache_summary(): string {
+	$found = array();
+	foreach (
+		array(
+			'LiteSpeed Cache'   => defined( 'LSCWP_V' ) || class_exists( 'LiteSpeed\\Core' ),
+			'WP Rocket'         => function_exists( 'rocket_clean_domain' ),
+			'W3 Total Cache'    => function_exists( 'w3tc_flush_all' ),
+			'WP Super Cache'    => function_exists( 'wp_cache_clear_cache' ),
+			'WP Fastest Cache'  => class_exists( 'WpFastestCache' ),
+			'SiteGround'        => function_exists( 'sg_cachepress_purge_cache' ),
+			'Breeze'            => class_exists( 'Breeze_Admin' ),
+			'Hummingbird'       => class_exists( 'Hummingbird\\WP_Hummingbird' ),
+			'Nginx Helper'      => class_exists( 'Nginx_Helper' ),
+			'Autoptimize'       => class_exists( 'autoptimizeCache' ),
+			__( 'Persistent object cache', 'mine-mirth-buy-now' ) => wp_using_ext_object_cache(),
+		) as $name => $on
+	) {
+		if ( $on ) {
+			$found[] = $name;
+		}
+	}
+	$last = (int) get_option( 'mmbn_last_purge' );
+	/* translators: %s: list of cache plugins */
+	$text = $found ? sprintf( __( 'Found: %s.', 'mine-mirth-buy-now' ), implode( ', ', $found ) ) : __( 'No cache plugin found.', 'mine-mirth-buy-now' );
+	if ( $last ) {
+		/* translators: %s: time ago */
+		$text .= ' ' . sprintf( __( 'Last purge: %s ago.', 'mine-mirth-buy-now' ), human_time_diff( $last ) );
+	}
+	return $text . ' ' . __( 'Price alerts themselves never depend on the cache: they read the database directly.', 'mine-mirth-buy-now' );
+}
+
 function mmbn_admin_page(): void {
 	global $wpdb;
 	$o     = static fn( $k ) => mmbn_opt( $k );
@@ -155,6 +204,9 @@ function mmbn_admin_page(): void {
 		<?php if ( isset( $_GET['test'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification ?>
 			<div class="notice notice-<?php echo 'ok' === $_GET['test'] ? 'success' : 'error'; // phpcs:ignore WordPress.Security.NonceVerification ?> is-dismissible"><p><?php echo 'ok' === $_GET['test'] ? esc_html__( 'Test alert sent to your email.', 'mine-mirth-buy-now' ) : esc_html__( 'The test alert could not be sent. Check your SMTP plugin.', 'mine-mirth-buy-now' ) . ' ' . esc_html( (string) get_option( 'mmbn_last_test_error' ) ); // phpcs:ignore WordPress.Security.NonceVerification ?></p></div>
 		<?php endif; ?>
+		<?php if ( isset( $_GET['purged'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification ?>
+			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'All caches purged.', 'mine-mirth-buy-now' ); ?></p></div>
+		<?php endif; ?>
 		<p style="max-width:820px"><?php esc_html_e( 'Every product page gets a "Buy it now" button that skips the cart and opens checkout, and a "Get price alerts" box. People who sign up join your newsletter list, and whenever you change that product\'s price (edit, quick edit, bulk edit or a scheduled sale), they get an email in your newsletter design.', 'mine-mirth-buy-now' ); ?></p>
 
 		<div style="display:flex;gap:12px;flex-wrap:wrap;margin:16px 0">
@@ -164,16 +216,17 @@ function mmbn_admin_page(): void {
 		</div>
 
 		<?php
-		$waiting = array_filter( mmbn_pending(), static fn( $due ) => $due <= time() - 120 );
+		$waiting = (array) $wpdb->get_col( $wpdb->prepare( 'SELECT product_id FROM ' . mmbn_queue_table() . ' WHERE due <= %s', gmdate( 'Y-m-d H:i:s', time() - 120 ) ) ); // phpcs:ignore WordPress.DB
 		if ( $waiting ) :
 			?>
-			<div class="notice notice-warning inline"><p><?php echo esc_html( sprintf( /* translators: %s: product names */ __( 'Alerts are waiting to be sent for: %s. Use "Send alerts now" below.', 'mine-mirth-buy-now' ), implode( ', ', array_map( 'get_the_title', array_keys( $waiting ) ) ) ) ); ?></p></div>
+			<div class="notice notice-warning inline"><p><?php echo esc_html( sprintf( /* translators: %s: product names */ __( 'Alerts are waiting to be sent for: %s. Use "Send alerts now" below.', 'mine-mirth-buy-now' ), implode( ', ', array_map( 'get_the_title', array_map( 'intval', $waiting ) ) ) ) ); ?></p></div>
 		<?php endif; ?>
 		<?php if ( $first ) : ?>
 			<p>
 				<a class="button" target="_blank" href="<?php echo esc_url( $prev( 'down' ) ); ?>"><?php esc_html_e( 'Preview “price drop” email', 'mine-mirth-buy-now' ); ?></a>
 				<a class="button" target="_blank" href="<?php echo esc_url( $prev( 'up' ) ); ?>"><?php esc_html_e( 'Preview “price went up” email', 'mine-mirth-buy-now' ); ?></a>
 				<a class="button" href="<?php echo esc_url( $prev( 'down', 1 ) ); ?>"><?php esc_html_e( 'Send me a test alert', 'mine-mirth-buy-now' ); ?></a>
+				<a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=mmbn_purge' ), 'mmbn_purge' ) ); ?>"><?php esc_html_e( 'Purge all caches now', 'mine-mirth-buy-now' ); ?></a>
 				<span class="description"><?php echo esc_html( sprintf( /* translators: %s: product */ __( 'Using: %s', 'mine-mirth-buy-now' ), get_the_title( $first ) ) ); ?></span>
 			</p>
 		<?php endif; ?>
@@ -208,6 +261,18 @@ function mmbn_admin_page(): void {
 						<option value="<?php echo esc_attr( (string) $k ); ?>" <?php selected( (int) $o( 'delay' ), $k ); ?>><?php echo esc_html( $label ); ?></option>
 					<?php endforeach; ?>
 				</select><p class="description"><?php esc_html_e( 'A short wait lets you fix a typo in a price before anyone is emailed. The alert always uses the price at sending time, and nothing is sent if you put the old price back.', 'mine-mirth-buy-now' ); ?></p></td></tr>
+			</table>
+
+			<h2><?php esc_html_e( 'Cache', 'mine-mirth-buy-now' ); ?></h2>
+			<table class="form-table" role="presentation">
+				<tr><th><?php esc_html_e( 'Auto purge', 'mine-mirth-buy-now' ); ?></th><td>
+					<label><input type="checkbox" name="mmbn_settings[purge]" value="1" <?php checked( (int) $o( 'purge' ), 1 ); ?>> <?php esc_html_e( 'Purge caches after every price-alert action (sign-up, alerts sent, alerts stopped, settings saved)', 'mine-mirth-buy-now' ); ?></label>
+					<p><select name="mmbn_settings[purge_scope]">
+						<option value="all" <?php selected( $o( 'purge_scope' ), 'all' ); ?>><?php esc_html_e( 'Purge all caches (whole site, including object cache)', 'mine-mirth-buy-now' ); ?></option>
+						<option value="product" <?php selected( $o( 'purge_scope' ), 'product' ); ?>><?php esc_html_e( 'Purge only that product’s page (lighter on busy sites)', 'mine-mirth-buy-now' ); ?></option>
+					</select></p>
+					<p class="description"><?php echo esc_html( mmbn_cache_summary() ); ?></p>
+				</td></tr>
 			</table>
 			<?php submit_button(); ?>
 		</form>

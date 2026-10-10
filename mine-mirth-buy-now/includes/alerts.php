@@ -16,6 +16,11 @@ function mmbn_table(): string {
 	return $wpdb->prefix . 'mmbn_watches';
 }
 
+function mmbn_queue_table(): string {
+	global $wpdb;
+	return $wpdb->prefix . 'mmbn_queue';
+}
+
 function mmbn_install(): void {
 	global $wpdb;
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -38,6 +43,15 @@ function mmbn_install(): void {
 			KEY email (email)
 		) $charset;"
 	);
+	$queue = mmbn_queue_table();
+	dbDelta(
+		"CREATE TABLE $queue (
+			product_id bigint(20) unsigned NOT NULL,
+			due datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+			PRIMARY KEY  (product_id),
+			KEY due (due)
+		) $charset;"
+	);
 	update_option( 'mmbn_db', MMBN_DB );
 }
 
@@ -56,6 +70,16 @@ add_action(
 function mmbn_current_price( WC_Product $product ): ?float {
 	$price = $product->is_type( 'variable' ) ? $product->get_variation_price( 'min', true ) : $product->get_price();
 	return '' === (string) $price || null === $price ? null : (float) $price;
+}
+
+/**
+ * The stored active price, read straight from the database so no object cache (LiteSpeed, Redis,
+ * Memcached) can hand back an old value. Variable products store one row per variation price.
+ */
+function mmbn_db_price( int $product_id ): ?float {
+	global $wpdb;
+	$v = $wpdb->get_var( $wpdb->prepare( "SELECT MIN(CAST(meta_value AS DECIMAL(20,6))) FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = '_price' AND meta_value <> ''", $product_id ) ); // phpcs:ignore WordPress.DB
+	return null === $v || '' === $v ? null : (float) $v;
 }
 
 function mmbn_plain_price( float $amount ): string {
@@ -118,7 +142,7 @@ add_action(
 	'wp_head',
 	static function () {
 		if ( mmbn_opt( 'alerts' ) && function_exists( 'is_product' ) && is_product() ) {
-			echo "<script>document.documentElement.classList.add('mmbn-js');</script>\n";
+			echo "<script data-no-optimize=\"1\" data-no-defer=\"1\" data-no-minify=\"1\" data-cfasync=\"false\" nowprocket>document.documentElement.classList.add('mmbn-js');</script>\n";
 		}
 	},
 	1
@@ -184,7 +208,7 @@ function mmbn_watch( int $product_id, string $email ): array {
 	set_transient( $key, $hits + 1, 10 * MINUTE_IN_SECONDS );
 
 	$table = mmbn_table();
-	$price = (float) mmbn_current_price( $product );
+	$price = mmbn_db_price( $product_id ) ?? (float) mmbn_current_price( $product );
 	$row   = $wpdb->get_row( $wpdb->prepare( "SELECT id, status FROM $table WHERE product_id = %d AND email = %s LIMIT 1", $product_id, $email ) ); // phpcs:ignore WordPress.DB
 	/* translators: %s: email address */
 	$done = sprintf( __( 'Done! We’ll email %s when this price changes.', 'mine-mirth-buy-now' ), $email );
@@ -194,6 +218,7 @@ function mmbn_watch( int $product_id, string $email ): array {
 	$sub = mmbn_subscriber( $email );
 	if ( $row ) {
 		$wpdb->update( $table, array( 'status' => 'active', 'last_price' => $price, 'sub_id' => $sub, 'created' => current_time( 'mysql', true ) ), array( 'id' => $row->id ) ); // phpcs:ignore WordPress.DB
+		mmbn_purge( $product_id );
 		return array( true, $done );
 	}
 	$wpdb->insert( // phpcs:ignore WordPress.DB
@@ -209,6 +234,7 @@ function mmbn_watch( int $product_id, string $email ): array {
 		)
 	);
 	do_action( 'mmbn_new_watch', $product_id, $email, $sub );
+	mmbn_purge( $product_id );
 	return array( true, $done );
 }
 
@@ -279,120 +305,144 @@ add_action(
  * ------------------------------------------------------------------------- */
 
 /**
- * Products waiting for a price check: [ product_id => due timestamp ]. Kept in an option so alerts
- * never depend on WP-Cron or loopback requests, which many hosts block.
+ * Products whose price was saved during this request.
  */
-function mmbn_pending(): array {
-	$p = get_option( 'mmbn_pending', array() );
-	return is_array( $p ) ? $p : array();
+function mmbn_touched( int $product_id = 0 ): array {
+	static $ids = array();
+	if ( $product_id ) {
+		$ids[ $product_id ] = true;
+	}
+	return array_keys( $ids );
+}
+
+/**
+ * Queue rows live in their own table and are read with plain SQL, never through options or
+ * transients, so caching plugins can't hide them.
+ */
+function mmbn_enqueue( int $product_id, int $when ): void {
+	global $wpdb;
+	$wpdb->replace( mmbn_queue_table(), array( 'product_id' => $product_id, 'due' => gmdate( 'Y-m-d H:i:s', $when ) ) ); // phpcs:ignore WordPress.DB
+	if ( ! wp_next_scheduled( 'mmbn_process' ) ) {
+		wp_schedule_single_event( $when + 30, 'mmbn_process' ); // Backup only.
+	}
 }
 
 function mmbn_queue_check( int $product_id ): void {
-	static $seen = array();
-	if ( ! $product_id || isset( $seen[ $product_id ] ) || ! mmbn_watch_count( $product_id ) ) {
+	if ( ! $product_id || in_array( $product_id, mmbn_touched(), true ) || ! mmbn_watch_count( $product_id ) ) {
 		return;
 	}
-	$seen[ $product_id ]      = true;
-	$pending                  = mmbn_pending();
-	$pending[ $product_id ]   = time() + max( 0, (int) mmbn_opt( 'delay' ) ) * MINUTE_IN_SECONDS;
-	update_option( 'mmbn_pending', $pending, true );
-	// Backup trigger for delayed sends on sites with working cron.
-	if ( ! wp_next_scheduled( 'mmbn_process' ) ) {
-		wp_schedule_single_event( $pending[ $product_id ] + 30, 'mmbn_process' );
+	$delay = max( 0, (int) mmbn_opt( 'delay' ) );
+	if ( $delay ) {
+		mmbn_enqueue( $product_id, time() + $delay * MINUTE_IN_SECONDS );
+		return;
 	}
+	mmbn_touched( $product_id ); // Sent at the end of this request (below).
 }
 
 add_action( 'woocommerce_update_product', static fn( $id ) => mmbn_queue_check( (int) $id ), 20 );
 add_action( 'woocommerce_update_product_variation', static fn( $id ) => mmbn_queue_check( (int) wp_get_post_parent_id( (int) $id ) ), 20 );
 
 /**
- * Send what's due. Runs at the end of the request that saved the price (so "Instantly" really is
- * instant), on later page loads for anything left over or delayed, and from cron when available.
+ * Send alerts for products saved in this request, then anything due in the queue.
+ *
+ * @return array{sent:int,failed:int,skipped:int,products:array}
  */
 function mmbn_process( int $budget = 25 ): array {
-	$pending = mmbn_pending();
-	$total   = array( 'sent' => 0, 'failed' => 0, 'skipped' => 0, 'products' => array() );
-	if ( ! $pending || get_transient( 'mmbn_lock' ) ) {
-		return $total;
-	}
-	set_transient( 'mmbn_lock', 1, 2 * MINUTE_IN_SECONDS );
-	if ( function_exists( 'set_time_limit' ) ) {
-		@set_time_limit( 300 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors
-	}
-	foreach ( $pending as $pid => $due ) {
-		if ( $due > time() || $budget <= 0 ) {
-			continue;
-		}
-		$r = mmbn_check_price( (int) $pid, $budget );
+	global $wpdb;
+	$total = array( 'sent' => 0, 'failed' => 0, 'skipped' => 0, 'products' => array() );
+	$run   = static function ( int $pid ) use ( &$total, &$budget ) {
+		$r       = mmbn_check_price( $pid, max( 1, $budget ) );
 		$budget -= $r['sent'] + $r['failed'];
 		foreach ( array( 'sent', 'failed', 'skipped' ) as $k ) {
 			$total[ $k ] += $r[ $k ];
 		}
-		$total['products'][ (int) $pid ] = $r;
-		$pending = mmbn_pending();
-		if ( empty( $r['more'] ) ) {
-			unset( $pending[ $pid ] );
+		$total['products'][ $pid ] = $r;
+		if ( $r['more'] ) {
+			mmbn_enqueue( $pid, time() );
 		}
-		update_option( 'mmbn_pending', $pending, true );
+		if ( $r['sent'] ) {
+			mmbn_purge( $pid );
+		}
+	};
+	foreach ( mmbn_touched() as $pid ) {
+		$run( (int) $pid );
 	}
-	delete_transient( 'mmbn_lock' );
+	$queue = mmbn_queue_table();
+	$due   = (array) $wpdb->get_col( $wpdb->prepare( "SELECT product_id FROM $queue WHERE due <= %s ORDER BY due ASC LIMIT 5", gmdate( 'Y-m-d H:i:s' ) ) ); // phpcs:ignore WordPress.DB
+	foreach ( $due as $pid ) {
+		if ( $budget <= 0 ) {
+			break;
+		}
+		// Claim the row first; if another request already took it, skip.
+		if ( 1 !== (int) $wpdb->query( $wpdb->prepare( "DELETE FROM $queue WHERE product_id = %d", (int) $pid ) ) ) { // phpcs:ignore WordPress.DB
+			continue;
+		}
+		$run( (int) $pid );
+	}
 	return $total;
 }
 
 add_action( 'mmbn_process', static fn() => mmbn_process( 100 ) );
+add_action( 'mmbn_check_price', static fn( $id ) => mmbn_enqueue( (int) $id, time() ) ); // Old 1.0.0 jobs.
 
-// Version 1.0.0 queued checks in Action Scheduler, which some hosts never run. Move them here once.
+// Move anything left by versions 1.0.0 / 1.0.1 into the queue table, once.
 add_action(
 	'init',
 	static function () {
-		if ( get_option( 'mmbn_migrated_101' ) || ! function_exists( 'as_get_scheduled_actions' ) ) {
+		if ( get_option( 'mmbn_migrated_102' ) || (int) get_option( 'mmbn_db' ) < 3 ) {
 			return;
 		}
-		update_option( 'mmbn_migrated_101', 1, false );
-		$pending = mmbn_pending();
-		foreach ( (array) as_get_scheduled_actions( array( 'hook' => 'mmbn_check_price', 'status' => 'pending', 'per_page' => 200 ) ) as $action ) {
-			$args = $action->get_args();
-			if ( ! empty( $args[0] ) ) {
-				$pending[ (int) $args[0] ] = time();
-			}
+		update_option( 'mmbn_migrated_102', 1, false );
+		foreach ( (array) get_option( 'mmbn_pending', array() ) as $pid => $due ) {
+			mmbn_enqueue( (int) $pid, min( time(), (int) $due ) );
 		}
-		as_unschedule_all_actions( 'mmbn_check_price' );
+		delete_option( 'mmbn_pending' );
+		delete_transient( 'mmbn_lock' );
+		if ( function_exists( 'as_get_scheduled_actions' ) ) {
+			foreach ( (array) as_get_scheduled_actions( array( 'hook' => 'mmbn_check_price', 'status' => 'pending', 'per_page' => 200 ) ) as $action ) {
+				$args = $action->get_args();
+				if ( ! empty( $args[0] ) ) {
+					mmbn_enqueue( (int) $args[0], time() );
+				}
+			}
+			as_unschedule_all_actions( 'mmbn_check_price' );
+		}
 		// Anyone whose remembered price differs from today's price is due an alert.
 		global $wpdb;
 		foreach ( (array) $wpdb->get_col( 'SELECT DISTINCT product_id FROM ' . mmbn_table() . " WHERE status = 'active'" ) as $pid ) { // phpcs:ignore WordPress.DB
-			$pending[ (int) $pid ] = $pending[ (int) $pid ] ?? time();
+			mmbn_enqueue( (int) $pid, time() );
 		}
-		update_option( 'mmbn_pending', $pending, true );
 	},
 	30
 );
-add_action( 'mmbn_check_price', static fn( $id ) => mmbn_check_price( (int) $id, 100 ) ); // Actions queued by version 1.0.0.
 
-// After any request (including the product save), send what's due; tell the admin who saved it.
+// Runs before caching plugins finish the response (LiteSpeed sends its purge header at priority 0).
 add_action(
 	'shutdown',
 	static function () {
-		$pending = mmbn_pending();
-		if ( ! $pending || min( $pending ) > time() ) {
-			return;
+		global $wpdb;
+		if ( ! mmbn_touched() ) {
+			$queue = mmbn_queue_table();
+			if ( ! $wpdb->get_var( $wpdb->prepare( "SELECT 1 FROM $queue WHERE due <= %s LIMIT 1", gmdate( 'Y-m-d H:i:s' ) ) ) ) { // phpcs:ignore WordPress.DB
+				return;
+			}
 		}
-		$r = mmbn_process( is_admin() ? 25 : 10 );
+		$r = mmbn_process( is_admin() ? 50 : 10 );
 		if ( ( $r['sent'] || $r['failed'] || $r['skipped'] ) && is_user_logged_in() && current_user_can( 'edit_products' ) ) {
-			set_transient( 'mmbn_notice_' . get_current_user_id(), $r, 10 * MINUTE_IN_SECONDS );
+			update_user_meta( get_current_user_id(), '_mmbn_notice', $r );
 		}
 	},
-	1
+	-20
 );
 
 add_action(
 	'admin_notices',
 	static function () {
-		$key = 'mmbn_notice_' . get_current_user_id();
-		$r   = get_transient( $key );
-		if ( ! $r ) {
+		$r = get_user_meta( get_current_user_id(), '_mmbn_notice', true );
+		if ( ! $r || ! is_array( $r ) ) {
 			return;
 		}
-		delete_transient( $key );
+		delete_user_meta( get_current_user_id(), '_mmbn_notice' );
 		foreach ( (array) $r['products'] as $pid => $p ) {
 			$msg = sprintf(
 				/* translators: 1: product, 2: sent count */
@@ -404,8 +454,11 @@ add_action(
 				/* translators: 1: count, 2: error */
 				$msg .= ' ' . sprintf( __( '%1$d could not be sent: %2$s', 'mine-mirth-buy-now' ), (int) $p['failed'], $p['error'] );
 			}
-			if ( $p['skipped'] && ! $p['sent'] ) {
+			if ( ! $p['sent'] && $p['note'] ) {
 				$msg .= ' ' . $p['note'];
+			}
+			if ( $p['sent'] && mmbn_opt( 'purge' ) ) {
+				$msg .= ' ' . __( 'Caches purged.', 'mine-mirth-buy-now' );
 			}
 			$type = $p['failed'] ? 'error' : ( $p['sent'] ? 'success' : 'info' );
 			echo '<div class="notice notice-' . esc_attr( $type ) . ' is-dismissible"><p><span class="dashicons dashicons-bell" style="color:#35a8f6"></span> ' . esc_html( $msg ) . ' <a href="' . esc_url( admin_url( 'admin.php?page=mmbn' ) ) . '">' . esc_html__( 'Alert log', 'mine-mirth-buy-now' ) . '</a></p></div>';
@@ -420,13 +473,19 @@ add_action(
  */
 function mmbn_check_price( int $product_id, int $limit = 25 ): array {
 	global $wpdb;
-	$out     = array( 'sent' => 0, 'failed' => 0, 'skipped' => 0, 'more' => false, 'note' => '', 'error' => '' );
-	$product = wc_get_product( $product_id );
-	if ( ! $product || 'publish' !== $product->get_status() ) {
+	$out = array( 'sent' => 0, 'failed' => 0, 'skipped' => 0, 'more' => false, 'note' => '', 'error' => '' );
+	// Fresh data only: drop any cached copy of this product first.
+	clean_post_cache( $product_id );
+	if ( function_exists( 'wc_delete_product_transients' ) ) {
+		wc_delete_product_transients( $product_id );
+	}
+	$status = $wpdb->get_var( $wpdb->prepare( "SELECT post_status FROM {$wpdb->posts} WHERE ID = %d", $product_id ) ); // phpcs:ignore WordPress.DB
+	$product = 'publish' === $status ? wc_get_product( $product_id ) : null;
+	if ( ! $product ) {
 		$out['note'] = __( 'The product isn’t published.', 'mine-mirth-buy-now' );
 		return $out;
 	}
-	$now = mmbn_current_price( $product );
+	$now = mmbn_db_price( $product_id ) ?? mmbn_current_price( $product );
 	if ( null === $now || $now <= 0 ) {
 		$out['note'] = __( 'The product has no price.', 'mine-mirth-buy-now' );
 		return $out;
@@ -443,8 +502,9 @@ function mmbn_check_price( int $product_id, int $limit = 25 ): array {
 	}
 	foreach ( $rows as $w ) {
 		$was = (float) $w->last_price;
-		if ( $was <= 0 ) {
-			$wpdb->update( $table, array( 'last_price' => $now ), array( 'id' => $w->id ) ); // phpcs:ignore WordPress.DB
+		// Claim this watcher for this price before emailing, so two requests can never send twice.
+		$claimed = $wpdb->query( $wpdb->prepare( "UPDATE $table SET last_price = %f WHERE id = %d AND last_price = %s", $now, (int) $w->id, (string) $w->last_price ) ); // phpcs:ignore WordPress.DB
+		if ( 1 !== (int) $claimed || $was <= 0 ) {
 			continue;
 		}
 		// Every change counts, however small (even a few cents).
@@ -452,7 +512,6 @@ function mmbn_check_price( int $product_id, int $limit = 25 ): array {
 		if ( ! mmbn_opt( 'down' === $dir ? 'notify_down' : 'notify_up' ) ) {
 			++$out['skipped'];
 			$out['note'] = 'down' === $dir ? __( 'Not sent: alerts for price drops are turned off.', 'mine-mirth-buy-now' ) : __( 'Not sent: alerts for price increases are turned off.', 'mine-mirth-buy-now' );
-			$wpdb->update( $table, array( 'last_price' => $now ), array( 'id' => $w->id ) ); // phpcs:ignore WordPress.DB
 			continue;
 		}
 		// Respect a Mailer unsubscribe made after they set up the alert.
@@ -466,17 +525,69 @@ function mmbn_check_price( int $product_id, int $limit = 25 ): array {
 		mmbn_log( $product_id, (string) $w->email, $was, $now, $ok, $ok ? '' : $error );
 		if ( $ok ) {
 			++$out['sent'];
-			$wpdb->update( // phpcs:ignore WordPress.DB
-				$table,
-				array( 'last_price' => $now, 'notified' => current_time( 'mysql', true ), 'alerts' => (int) $w->alerts + 1 ),
-				array( 'id' => $w->id )
-			);
+			$wpdb->query( $wpdb->prepare( "UPDATE $table SET notified = %s, alerts = alerts + 1 WHERE id = %d", current_time( 'mysql', true ), (int) $w->id ) ); // phpcs:ignore WordPress.DB
 		} else {
+			// Put their old price back so "Send alerts now" (or the next change) tries again.
+			$wpdb->update( $table, array( 'last_price' => $w->last_price ), array( 'id' => $w->id ) ); // phpcs:ignore WordPress.DB
 			++$out['failed'];
 			$out['error'] = $error;
 		}
 	}
 	return $out;
+}
+
+/* ---------------------------------------------------------------------------
+ * Cache purge
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Purge caches after an alert action (sign-up, alerts sent, alerts stopped, settings saved), so
+ * visitors see the new price and watcher count straight away. Works with LiteSpeed Cache, WP Rocket,
+ * W3 Total Cache, WP Super Cache, WP Fastest Cache, SiteGround, Cloudflare, Breeze, Hummingbird,
+ * Nginx Helper, Autoptimize, Comet Cache and the WordPress object cache.
+ */
+function mmbn_purge( int $product_id = 0, bool $force_all = false ): void {
+	static $done = array();
+	if ( ! mmbn_opt( 'purge' ) && ! $force_all ) {
+		return;
+	}
+	$all = $force_all || 'all' === mmbn_opt( 'purge_scope' ) || ! $product_id;
+	$key = $all ? 'all' : 'p' . $product_id;
+	if ( isset( $done[ $key ] ) || isset( $done['all'] ) ) {
+		return;
+	}
+	$done[ $key ] = true;
+
+	if ( $all ) {
+		do_action( 'litespeed_purge_all' );                                   // LiteSpeed Cache (page, CSS/JS, object).
+		function_exists( 'rocket_clean_domain' ) && rocket_clean_domain();     // WP Rocket.
+		function_exists( 'w3tc_flush_all' ) && w3tc_flush_all();               // W3 Total Cache.
+		function_exists( 'wp_cache_clear_cache' ) && wp_cache_clear_cache();   // WP Super Cache.
+		do_action( 'wpfc_clear_all_cache' );                                   // WP Fastest Cache.
+		function_exists( 'sg_cachepress_purge_everything' ) ? sg_cachepress_purge_everything() : ( function_exists( 'sg_cachepress_purge_cache' ) && sg_cachepress_purge_cache() ); // SiteGround.
+		do_action( 'breeze_clear_all_cache' );                                 // Breeze.
+		do_action( 'wphb_clear_page_cache' );                                  // Hummingbird.
+		do_action( 'rt_nginx_helper_purge_all' );                              // Nginx Helper.
+		do_action( 'cloudflare_purge_everything' );                            // Cloudflare (if hooked).
+		class_exists( 'autoptimizeCache' ) && method_exists( 'autoptimizeCache', 'clearall' ) && autoptimizeCache::clearall(); // Autoptimize.
+		class_exists( 'comet_cache' ) && method_exists( 'comet_cache', 'clear' ) && comet_cache::clear(); // Comet Cache.
+		wp_cache_flush();                                                      // Object cache (Redis, Memcached, LiteSpeed).
+	} else {
+		$url = (string) get_permalink( $product_id );
+		do_action( 'litespeed_purge_post', $product_id );
+		function_exists( 'rocket_clean_post' ) && rocket_clean_post( $product_id );
+		function_exists( 'w3tc_flush_post' ) && w3tc_flush_post( $product_id );
+		function_exists( 'wp_cache_post_change' ) && wp_cache_post_change( $product_id );
+		do_action( 'wpfc_clear_post_cache_by_id', false, $product_id );
+		function_exists( 'sg_cachepress_purge_cache' ) && sg_cachepress_purge_cache( $url );
+		do_action( 'rt_nginx_helper_purge_url', $url );
+		clean_post_cache( $product_id );
+		if ( function_exists( 'wc_delete_product_transients' ) ) {
+			wc_delete_product_transients( $product_id );
+		}
+	}
+	update_option( 'mmbn_last_purge', time(), false );
+	do_action( 'mmbn_purged', $product_id, $all );
 }
 
 function mmbn_log( int $product_id, string $email, float $was, float $now, bool $ok, string $note = '' ): void {
@@ -621,6 +732,7 @@ add_action(
 		$valid = $w && hash_equals( (string) $w->token, $token );
 		if ( $valid ) {
 			$wpdb->update( mmbn_table(), array( 'status' => 'stopped' ), array( 'id' => $id ) ); // phpcs:ignore WordPress.DB
+			mmbn_purge( (int) $w->product_id );
 		}
 		if ( 'POST' === ( $_SERVER['REQUEST_METHOD'] ?? '' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			status_header( 200 );
