@@ -1,0 +1,105 @@
+/* Mine Mirth Buy Now & Price Alerts — uses the theme's design tokens, so light/dark mode and colours follow the theme. */
+
+/* "Buy it now" sits on its own row inside the purchase card, under quantity + Add to cart. */
+.woocommerce div.product form.cart .mmbn-buy,
+.mmbn-buy {
+	flex: 1 1 100%;
+	width: 100%;
+	min-height: 52px;
+	gap: .55em;
+	font-size: 1rem;
+}
+.mmbn-buy .mm-icon { width: 1.15em; height: 1.15em; }
+.mmbn-buy--contrast {
+	color: var(--mm-bg, #fff);
+	background: var(--mm-text, #0f172a);
+	border-color: var(--mm-text, #0f172a);
+	box-shadow: 0 1px 2px rgb(0 0 0 / .08), 0 10px 26px -14px rgb(0 0 0 / .45);
+}
+.mmbn-buy--contrast:hover,
+.mmbn-buy--contrast:focus-visible {
+	color: var(--mm-bg, #fff);
+	background: color-mix(in srgb, var(--mm-text, #0f172a) 84%, var(--mm-primary, #35a8f6));
+	border-color: color-mix(in srgb, var(--mm-text, #0f172a) 84%, var(--mm-primary, #35a8f6));
+}
+.mmbn-buy:hover .mm-icon { transform: scale(1.12) rotate(-8deg); }
+.mmbn-buy.is-disabled { opacity: .55; }
+.mmbn-buy.is-loading { pointer-events: none; opacity: .75; }
+
+/* Price alert box — same shape as the theme's "Host this miner" box. */
+.mmbn-alert {
+	margin: -8px 0 14px;
+	border-radius: calc(var(--mm-radius, 16px) * .8);
+	border: 1px solid var(--mm-border, #d9e4ef);
+	background: var(--mm-surface, #fff);
+	transition: border-color .2s;
+}
+.mmbn-alert:hover,
+.mmbn-alert.is-open { border-color: var(--mm-primary-line, #9fd3fb); }
+.mmbn-alert__toggle {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	width: 100%;
+	padding: 14px 16px;
+	border: 0;
+	background: transparent;
+	color: var(--mm-text, #0f172a);
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	border-radius: inherit;
+}
+.mmbn-alert__toggle:focus-visible { outline: 2px solid var(--mm-primary, #35a8f6); outline-offset: 2px; }
+.mmbn-alert__icon {
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: 36px;
+	height: 36px;
+	border-radius: 10px;
+	background: var(--mm-primary-soft, #e6f4fe);
+	color: var(--mm-primary, #35a8f6);
+}
+.mmbn-alert__icon svg { width: 20px; height: 20px; }
+.mmbn-alert.is-watching .mmbn-alert__icon { background: var(--mm-primary, #35a8f6); color: var(--mm-on-primary, #04121f); }
+.mmbn-alert__toggle:hover .mmbn-alert__icon svg { animation: mmbn-ring .6s ease; }
+@keyframes mmbn-ring { 20% { transform: rotate(14deg); } 40% { transform: rotate(-12deg); } 60% { transform: rotate(8deg); } 80% { transform: rotate(-4deg); } }
+.mmbn-alert__text { flex: 1; min-width: 0; }
+.mmbn-alert__text strong { display: block; font-size: .92rem; }
+.mmbn-alert__text small { display: block; font-size: .8rem; color: var(--mm-muted, #64748b); }
+.mmbn-alert__chev { margin-left: auto; color: var(--mm-primary, #35a8f6); display: inline-flex; transition: transform .25s; }
+.mmbn-alert__chev .mm-icon { width: 18px; height: 18px; }
+.mmbn-alert.is-open .mmbn-alert__chev { transform: rotate(180deg); }
+.mmbn-alert__form { padding: 0 16px 16px; }
+.mmbn-alert [hidden] { display: none !important; }
+.mmbn-alert__row { display: flex; gap: 10px; }
+.mmbn-alert__row input[type="email"] {
+	flex: 1;
+	min-width: 0;
+	height: 46px;
+	padding: 0 14px;
+	border-radius: var(--mm-btn-radius, 999px);
+	border: 1px solid var(--mm-border, #d9e4ef);
+	background: var(--mm-bg, #f4f8fc);
+	color: var(--mm-text, #0f172a);
+	font: inherit;
+	font-size: .95rem;
+}
+.mmbn-alert__row input[type="email"]:focus { outline: none; border-color: var(--mm-primary, #35a8f6); box-shadow: 0 0 0 3px var(--mm-primary-soft, #e6f4fe); }
+.mmbn-alert__row .mm-btn { --h: 46px; flex: none; }
+.mmbn-alert__fine { margin: 8px 2px 0; font-size: .75rem; color: var(--mm-muted, #64748b); }
+.mmbn-alert__msg { margin: 8px 2px 0; font-size: .85rem; font-weight: 600; }
+.mmbn-alert__msg:empty { display: none; }
+.mmbn-alert__msg.is-ok { color: var(--mm-success, #16a34a); }
+.mmbn-alert__msg.is-error { color: var(--mm-danger, #dc2626); }
+.mmbn-alert__hp { position: absolute !important; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+@media (max-width: 480px) {
+	.mmbn-alert__row { flex-direction: column; }
+	.mmbn-alert__row .mm-btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.mmbn-alert__toggle:hover .mmbn-alert__icon svg { animation: none; }
+	.mmbn-buy:hover .mm-icon, .mmbn-alert__chev { transition: none; transform: none; }
+}
