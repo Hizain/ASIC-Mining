@@ -17,8 +17,10 @@ add_action(
 		add_submenu_page( 'mmm', __( 'Overview', 'mine-mirth-mailer' ), __( 'Overview', 'mine-mirth-mailer' ), 'manage_options', 'mmm', 'mmm_overview_page' );
 		add_submenu_page( 'mmm', __( 'New email', 'mine-mirth-mailer' ), __( 'New email', 'mine-mirth-mailer' ), 'edit_posts', 'post-new.php?post_type=mmm_campaign' );
 		add_submenu_page( 'mmm', __( 'Weekly email', 'mine-mirth-mailer' ), __( 'Weekly email', 'mine-mirth-mailer' ), 'manage_options', 'mmm-weekly', 'mmm_weekly_page' );
+		add_submenu_page( 'mmm', __( 'Introduction email', 'mine-mirth-mailer' ), __( 'Introduction email', 'mine-mirth-mailer' ), 'manage_options', 'mmm-intro', 'mmm_intro_page' );
 		add_submenu_page( 'mmm', __( 'Inbox', 'mine-mirth-mailer' ), __( 'Inbox', 'mine-mirth-mailer' ) . $bubble, 'manage_options', 'mmm-inbox', 'mmm_inbox_page' );
 		add_submenu_page( 'mmm', __( 'Subscribers', 'mine-mirth-mailer' ), __( 'Subscribers', 'mine-mirth-mailer' ), 'manage_options', 'mmm-subscribers', 'mmm_subscribers_page' );
+		add_submenu_page( 'mmm', __( 'Add subscribers', 'mine-mirth-mailer' ), __( 'Add subscribers', 'mine-mirth-mailer' ), 'manage_options', 'mmm-add', 'mmm_add_page' );
 		add_submenu_page( 'mmm', __( 'Settings', 'mine-mirth-mailer' ), __( 'Settings', 'mine-mirth-mailer' ), 'manage_options', 'mmm-settings', 'mmm_settings_page' );
 		add_submenu_page( 'options.php', __( 'Test & send', 'mine-mirth-mailer' ), '', 'edit_posts', 'mmm-send', 'mmm_send_page' );
 	},
@@ -108,7 +110,7 @@ function mmm_overview_page(): void {
 			<div class="mmm-card">
 				<h2><?php esc_html_e( 'Weekly email', 'mine-mirth-mailer' ); ?></h2>
 				<?php if ( mmm_weekly( 'enabled' ) ) : ?>
-					<p><span class="mmm-dot is-on"></span><?php echo esc_html( sprintf( /* translators: %s: date */ __( 'On. Next send: %s', 'mine-mirth-mailer' ), wp_date( 'l, ' . get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), mmm_weekly_next() ) ) ); ?></p>
+					<p><span class="mmm-dot is-on"></span><?php echo esc_html( sprintf( /* translators: %s: date */ __( 'On. Next send: %s', 'mine-mirth-mailer' ), mmm_date( 'l, ' . get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), mmm_weekly_next() ) ) ); ?></p>
 				<?php else : ?>
 					<p><span class="mmm-dot"></span><?php esc_html_e( 'Off. Each subscriber would get their own version based on what they did on the site.', 'mine-mirth-mailer' ); ?></p>
 				<?php endif; ?>
@@ -227,9 +229,9 @@ function mmm_weekly_page(): void {
 						<p><label class="mmm-switch"><input type="checkbox" name="mmm_weekly[enabled]" value="1" <?php checked( (int) $w( 'enabled' ), 1 ); ?>> <strong><?php esc_html_e( 'Send the weekly email automatically', 'mine-mirth-mailer' ); ?></strong></label></p>
 						<p><?php esc_html_e( 'Every', 'mine-mirth-mailer' ); ?>
 							<select name="mmm_weekly[day]"><?php foreach ( $days as $i => $name ) : ?><option value="<?php echo esc_attr( (string) $i ); ?>" <?php selected( (int) $w( 'day' ), $i ); ?>><?php echo esc_html( $name ); ?></option><?php endforeach; ?></select>
-							<?php esc_html_e( 'at', 'mine-mirth-mailer' ); ?> <input type="time" name="mmm_weekly[time]" value="<?php echo esc_attr( (string) $w( 'time' ) ); ?>"> <span class="description"><?php echo esc_html( wp_timezone_string() ); ?></span></p>
+							<?php esc_html_e( 'at', 'mine-mirth-mailer' ); ?> <input type="time" name="mmm_weekly[time]" value="<?php echo esc_attr( (string) $w( 'time' ) ); ?>"> <span class="description"><?php echo esc_html( mmm_tz()->getName() . " (" . mmm_date( "T" ) . ")" ); ?></span></p>
 						<?php if ( $w( 'enabled' ) ) : ?>
-							<p class="description"><?php echo esc_html( sprintf( /* translators: %s: date */ __( 'Next send: %s', 'mine-mirth-mailer' ), wp_date( 'l, ' . get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), mmm_weekly_next() ) ) ); ?></p>
+							<p class="description"><?php echo esc_html( sprintf( /* translators: %s: date */ __( 'Next send: %s', 'mine-mirth-mailer' ), mmm_date( 'l, ' . get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), mmm_weekly_next() ) ) ); ?></p>
 						<?php endif; ?>
 						<p><label><strong><?php esc_html_e( 'Subject line (optional)', 'mine-mirth-mailer' ); ?></strong><br><input type="text" class="widefat" name="mmm_weekly[subject]" value="<?php echo esc_attr( (string) $w( 'subject' ) ); ?>" placeholder="<?php esc_attr_e( 'Leave empty for a personal subject, e.g. “Still thinking about the Antminer S21 XP?”', 'mine-mirth-mailer' ); ?>"></label></p>
 						<p><label><strong><?php esc_html_e( 'Note from you this week (optional)', 'mine-mirth-mailer' ); ?></strong><br><textarea class="widefat" rows="3" name="mmm_weekly[intro]" placeholder="<?php esc_attr_e( 'For example: New S21 stock lands Friday. Reply to reserve one.', 'mine-mirth-mailer' ); ?>"><?php echo esc_textarea( (string) $w( 'intro' ) ); ?></textarea></label></p>
@@ -334,6 +336,10 @@ function mmm_event_label( object $ev ): string {
 			return __( 'Sent you a message', 'mine-mirth-mailer' );
 		case 'unsub':
 			return __( 'Unsubscribed', 'mine-mirth-mailer' );
+		case 'added':
+			$src = (string) get_post_meta( (int) $ev->sub_id, '_mmm_source', true );
+			/* translators: %s: where you met them */
+			return $src ? sprintf( __( 'Added by you (%s)', 'mine-mirth-mailer' ), $src ) : __( 'Added by you', 'mine-mirth-mailer' );
 	}
 	return (string) $ev->type;
 }
@@ -352,6 +358,7 @@ function mmm_subscribers_page(): void {
 		$names  = array( 'shop' => __( 'Shop browser', 'mine-mirth-mailer' ), 'blog' => __( 'Blog reader', 'mine-mirth-mailer' ), 'tools' => __( 'Tools user', 'mine-mirth-mailer' ), 'home' => __( 'General visitor', 'mine-mirth-mailer' ), 'none' => __( 'No activity yet', 'mine-mirth-mailer' ) );
 		echo '<p><a href="' . esc_url( mmm_admin_url( 'mmm-subscribers' ) ) . '">← ' . esc_html__( 'All subscribers', 'mine-mirth-mailer' ) . '</a></p>';
 		echo '<h1>' . esc_html( mmm_sub_email( $sub ) ) . ( $name ? ' <span class="mmm-pill">' . esc_html( $name ) . '</span>' : '' ) . ' <span class="mmm-pill ' . ( $active ? 'is-ok' : 'is-off' ) . '">' . ( $active ? esc_html__( 'Subscribed', 'mine-mirth-mailer' ) : esc_html__( 'Unsubscribed', 'mine-mirth-mailer' ) ) . '</span></h1>';
+		mmm_sub_details_card( $sub );
 		echo '<div class="mmm-grid"><div class="mmm-card"><h2>' . esc_html__( 'Interests (last 60 days)', 'mine-mirth-mailer' ) . '</h2><p><strong>' . esc_html( $names[ $p['top'] ] ?? $p['top'] ) . '</strong></p><ul class="mmm-bars">';
 		$max = max( 1, max( $p['areas'] ) );
 		foreach ( array( 'shop' => __( 'Shop', 'mine-mirth-mailer' ), 'blog' => __( 'Blog', 'mine-mirth-mailer' ), 'tools' => __( 'Hosting & tools', 'mine-mirth-mailer' ), 'home' => __( 'Homepage', 'mine-mirth-mailer' ) ) as $k => $label ) {
@@ -364,8 +371,6 @@ function mmm_subscribers_page(): void {
 		if ( $p['purchases'] ) {
 			echo '<p><strong>' . esc_html__( 'Bought:', 'mine-mirth-mailer' ) . '</strong> ' . esc_html( implode( ', ', array_map( 'get_the_title', $p['purchases'] ) ) ) . '</p>';
 		}
-		$phone = (string) get_post_meta( $sub, '_mmm_phone', true );
-		echo $phone ? '<p><strong>' . esc_html__( 'Phone:', 'mine-mirth-mailer' ) . '</strong> ' . esc_html( $phone ) . '</p>' : '';
 		echo '<p class="mmm-actions"><a class="button button-primary" href="' . esc_url( mmm_admin_url( 'mmm-inbox', array( 'sub' => $sub ) ) ) . '">' . esc_html__( 'Message them', 'mine-mirth-mailer' ) . '</a> <a class="button" href="' . esc_url( mmm_admin_url( 'mmm-weekly', array( 'sub' => $sub ) ) ) . '">' . esc_html__( 'Preview their weekly email', 'mine-mirth-mailer' ) . '</a> ';
 		echo '<a class="button-link" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=mmm_sub_status&sub=' . $sub . '&to=' . ( $active ? 'unsub' : 'resub' ) ), 'mmm_sub_status_' . $sub ) ) . '">' . ( $active ? esc_html__( 'Unsubscribe', 'mine-mirth-mailer' ) : esc_html__( 'Resubscribe', 'mine-mirth-mailer' ) ) . '</a></p></div>';
 		echo '<div class="mmm-card"><h2>' . esc_html__( 'Activity', 'mine-mirth-mailer' ) . '</h2>';
@@ -383,15 +388,16 @@ function mmm_subscribers_page(): void {
 	$search = sanitize_text_field( wp_unslash( $_GET['s'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	$paged  = max( 1, absint( wp_unslash( $_GET['paged'] ?? 1 ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	$q      = new WP_Query( array( 'post_type' => 'mm_subscriber', 'post_status' => 'any', 'posts_per_page' => 50, 'paged' => $paged, 's' => $search ) );
-	echo '<h1>' . esc_html__( 'Subscribers', 'mine-mirth-mailer' ) . ' <span class="mmm-pill">' . esc_html( number_format_i18n( $q->found_posts ) ) . '</span></h1>';
+	echo '<h1>' . esc_html__( 'Subscribers', 'mine-mirth-mailer' ) . ' <span class="mmm-pill">' . esc_html( number_format_i18n( $q->found_posts ) ) . '</span> <a class="page-title-action" href="' . esc_url( mmm_admin_url( 'mmm-add' ) ) . '">' . esc_html__( 'Add subscribers', 'mine-mirth-mailer' ) . '</a></h1>';
 	echo '<form method="get" class="mmm-search"><input type="hidden" name="page" value="mmm-subscribers"><input type="search" name="s" value="' . esc_attr( $search ) . '" placeholder="' . esc_attr__( 'Search by email', 'mine-mirth-mailer' ) . '"> <button class="button">' . esc_html__( 'Search', 'mine-mirth-mailer' ) . '</button> <a class="button-link" href="' . esc_url( admin_url( 'edit.php?post_type=mm_subscriber' ) ) . '">' . esc_html__( 'Export CSV', 'mine-mirth-mailer' ) . '</a></form>';
-	echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Email', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Status', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Interested in', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Last seen on site', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Opened', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Clicked', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Joined', 'mine-mirth-mailer' ) . '</th></tr></thead><tbody>';
+	echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Email', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Name', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Source', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Status', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Interested in', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Last seen on site', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Opened', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Clicked', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Joined', 'mine-mirth-mailer' ) . '</th></tr></thead><tbody>';
 	$names = array( 'shop' => __( 'Shop', 'mine-mirth-mailer' ), 'blog' => __( 'Blog', 'mine-mirth-mailer' ), 'tools' => __( 'Hosting & tools', 'mine-mirth-mailer' ), 'home' => __( 'Homepage', 'mine-mirth-mailer' ), 'none' => '—' );
 	foreach ( $q->posts as $s ) {
 		$prof = mmm_profile( $s->ID );
 		$seen = (int) get_post_meta( $s->ID, '_mmm_last_seen', true );
 		$cnt  = $wpdb->get_row( $wpdb->prepare( "SELECT SUM(CASE WHEN type = 'open' THEN 1 ELSE 0 END) o, SUM(CASE WHEN type = 'click' THEN 1 ELSE 0 END) c FROM $e WHERE sub_id = %d", $s->ID ) ); // phpcs:ignore WordPress.DB
 		echo '<tr><td><a href="' . esc_url( mmm_admin_url( 'mmm-subscribers', array( 'sub' => $s->ID ) ) ) . '"><strong>' . esc_html( $s->post_title ) . '</strong></a></td>';
+		echo '<td>' . esc_html( trim( (string) get_post_meta( $s->ID, '_mmm_first_name', true ) . ' ' . (string) get_post_meta( $s->ID, '_mmm_last_name', true ) ) ?: '—' ) . '</td><td>' . esc_html( mmm_sub_source_label( $s->ID ) ) . '</td>';
 		echo '<td>' . ( mmm_sub_is_active( $s->ID ) ? esc_html__( 'Subscribed', 'mine-mirth-mailer' ) : '<span style="color:#d63638">' . esc_html__( 'Unsubscribed', 'mine-mirth-mailer' ) . '</span>' ) . '</td>';
 		echo '<td>' . esc_html( $names[ $prof['top'] ] ?? '—' ) . '</td><td>' . ( $seen ? esc_html( human_time_diff( $seen ) . ' ' . __( 'ago', 'mine-mirth-mailer' ) ) : '—' ) . '</td>';
 		echo '<td>' . esc_html( (string) (int) ( $cnt->o ?? 0 ) ) . '</td><td>' . esc_html( (string) (int) ( $cnt->c ?? 0 ) ) . '</td><td>' . esc_html( get_the_date( '', $s ) ) . '</td></tr>';
@@ -423,6 +429,8 @@ function mmm_sanitize_settings( $in ): array {
 		'logo_id'        => absint( $in['logo_id'] ?? 0 ),
 		'brand_name'     => sanitize_text_field( (string) ( $in['brand_name'] ?? $d['brand_name'] ) ),
 		'footer_note'    => sanitize_text_field( (string) ( $in['footer_note'] ?? $d['footer_note'] ) ),
+		'footer_manual'  => sanitize_text_field( (string) ( $in['footer_manual'] ?? $d['footer_manual'] ) ),
+		'timezone'       => in_array( (string) ( $in['timezone'] ?? '' ), timezone_identifiers_list(), true ) ? (string) $in['timezone'] : 'Asia/Karachi',
 		'notify_replies' => empty( $in['notify_replies'] ) ? 0 : 1,
 		'imap_host'      => sanitize_text_field( (string) ( $in['imap_host'] ?? '' ) ),
 		'imap_port'      => absint( $in['imap_port'] ?? 993 ) ? absint( $in['imap_port'] ) : 993,
@@ -493,6 +501,8 @@ function mmm_settings_page(): void {
 					</td></tr>
 					<tr><th><label for="mmm-bn"><?php esc_html_e( 'Newsletter name', 'mine-mirth-mailer' ); ?></label></th><td><input id="mmm-bn" class="regular-text" name="mmm_settings[brand_name]" value="<?php echo esc_attr( (string) $o( 'brand_name' ) ); ?>"></td></tr>
 					<tr><th><label for="mmm-ft"><?php esc_html_e( 'Footer note', 'mine-mirth-mailer' ); ?></label></th><td><input id="mmm-ft" class="large-text" name="mmm_settings[footer_note]" value="<?php echo esc_attr( (string) $o( 'footer_note' ) ); ?>"></td></tr>
+					<tr><th><label for="mmm-fm"><?php esc_html_e( 'Footer note for people you added', 'mine-mirth-mailer' ); ?></label></th><td><input id="mmm-fm" class="large-text" name="mmm_settings[footer_manual]" value="<?php echo esc_attr( (string) $o( 'footer_manual' ) ); ?>"><p class="description"><?php esc_html_e( 'They didn’t sign up on the website, so their emails explain why they get them.', 'mine-mirth-mailer' ); ?></p></td></tr>
+					<tr><th><label for="mmm-tz"><?php esc_html_e( 'Time zone', 'mine-mirth-mailer' ); ?></label></th><td><select id="mmm-tz" name="mmm_settings[timezone]"><?php echo wp_timezone_choice( (string) $o( 'timezone' ), get_user_locale() ); // phpcs:ignore WordPress.Security.EscapeOutput ?></select><p class="description"><?php esc_html_e( 'Used for the weekly email schedule, scheduled campaigns and every date in the Mailer. Default: Asia/Karachi (Pakistan time).', 'mine-mirth-mailer' ); ?></p></td></tr>
 				</table>
 			</div>
 			<div class="mmm-card">

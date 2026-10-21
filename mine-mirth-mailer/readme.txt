@@ -1,14 +1,14 @@
 === Mine Mirth Mailer ===
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 
 Send email to your subscribers in your website's own design: a weekly email built for each person from what they did on the site, plus campaigns you write yourself with ready-made email blocks. Opens, clicks and replies are recorded, and you answer replies from WordPress. Uses the subscribers the Mine Mirth theme already collects; no theme change needed.
 
 == Where to find it ==
 
-Everything is under the new "Mailer" menu: Overview, New email, Weekly email, Inbox, Subscribers, Settings.
+Everything is under the "Mailer" menu: Overview, New email, Weekly email, Introduction email, Inbox, Subscribers, Add subscribers, Settings.
 
 == Before your first send ==
 
@@ -17,6 +17,34 @@ Everything is under the new "Mailer" menu: Overview, New email, Weekly email, In
 3. Send yourself a test from any email's "Test & send" page.
 
 The Overview page has a checklist that ticks these off.
+
+== Adding subscribers yourself (new in 1.1.0) ==
+
+Mailer › Add subscribers:
+
+* One person: email plus optional first and last name, phone/WhatsApp, company, where you met them and a private note.
+* Many at once: paste a list (one person per line: "email, first name, last name, phone, company", or "Name <email>"), or upload a CSV with a header row. Exports from Gmail, Outlook, WhatsApp Business and WooCommerce work.
+* Tick that they agreed to hear from you (required). People already on the list are skipped (missing details are filled in), anyone who unsubscribed before stays unsubscribed, and repeated addresses count once.
+
+People you add join the same subscriber list as website sign-ups, marked "Added by you", but:
+
+* They do NOT get the welcome email or trigger the "new sign-up" alert (those are for website sign-ups).
+* They get the introduction email instead, right away: what Mine Mirth offers and how you can help their mining operation. After that they get your weekly email and campaigns like everyone else.
+* Their email footer says "You're receiving this because you're in touch with Mine Mirth" instead of "you subscribed at our website" (editable in Settings).
+
+Each subscriber's profile now shows and edits their name, phone, company, source and note, and has a "Send the introduction email" button for anyone who hasn't had it.
+
+== The introduction email ==
+
+Mailer › Introduction email lets you edit the subject, opening text, the four "How we can help" cards (miners, hosting, free tools, expert help, each with its own link), how many popular miners and blog guides to include, the Bitcoin network snapshot and the closing reply box ("Tell us about your operation"). Preview it, send yourself a test and see sent, opened, clicked and replies. Each person gets it only once. Replies arrive in Mailer › Inbox.
+
+== Sending without WP-Cron (new in 1.1.0) ==
+
+Some hosts never run WordPress's scheduled tasks. The Mailer now also sends from normal site traffic: queued emails, scheduled campaigns and the weekly email go out on the next page view (at most once a minute), and emails you trigger from wp-admin (adding subscribers, Send now) go out immediately. Every step is claimed in the database first, so nothing is sent twice even with page and object caching, and an email interrupted mid-send is retried after 15 minutes.
+
+== Time zone ==
+
+The weekly email schedule, scheduled campaigns and all dates in the Mailer use Pakistan time (Asia/Karachi) by default. Change it in Mailer › Settings › Design.
 
 == The weekly email ==
 

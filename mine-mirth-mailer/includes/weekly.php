@@ -203,7 +203,7 @@ function mmm_weekly_compose( int $sub ): array {
  * Most recent scheduled moment (site time zone) at or before now.
  */
 function mmm_weekly_slot(): int {
-	$tz    = wp_timezone();
+	$tz    = mmm_tz();
 	$now   = new DateTimeImmutable( 'now', $tz );
 	[ $h, $m ] = array_map( 'intval', explode( ':', (string) mmm_weekly( 'time' ) ) + array( 9, 0 ) );
 	$day   = (int) mmm_weekly( 'day' );
@@ -233,7 +233,7 @@ function mmm_weekly_start(): int {
 			'post_type'   => 'mmm_campaign',
 			'post_status' => 'publish',
 			/* translators: %s: date */
-			'post_title'  => sprintf( __( 'Weekly email – %s', 'mine-mirth-mailer' ), wp_date( get_option( 'date_format' ) ) ),
+			'post_title'  => sprintf( __( 'Weekly email – %s', 'mine-mirth-mailer' ), mmm_date( get_option( 'date_format' ) ) ),
 		)
 	);
 	if ( ! $campaign || is_wp_error( $campaign ) ) {
@@ -246,17 +246,21 @@ function mmm_weekly_start(): int {
 	return (int) $campaign;
 }
 
-add_action(
-	'mmm_hourly',
-	static function () {
-		if ( ! mmm_weekly( 'enabled' ) ) {
-			return;
-		}
-		$slot = mmm_weekly_slot();
-		$last = (int) get_option( 'mmm_weekly_last', 0 );
-		// Run once per slot, and only within a day of it (so turning it on never sends a stale week).
-		if ( $last < $slot && time() - $slot < DAY_IN_SECONDS ) {
-			mmm_weekly_start();
-		}
+/**
+ * Start this week's run once, within a day of its slot. The slot is claimed in the database first so
+ * cron and site traffic can never both start it.
+ */
+function mmm_weekly_maybe_start(): void {
+	if ( ! mmm_weekly( 'enabled' ) ) {
+		return;
 	}
-);
+	$slot = mmm_weekly_slot();
+	if ( time() - $slot >= DAY_IN_SECONDS ) {
+		return; // Turning it on never sends a stale week.
+	}
+	if ( mmm_claim_option( 'mmm_weekly_last', time(), $slot ) ) {
+		mmm_weekly_start();
+	}
+}
+
+add_action( 'mmm_hourly', 'mmm_weekly_maybe_start' );

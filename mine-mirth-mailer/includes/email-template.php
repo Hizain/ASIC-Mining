@@ -457,7 +457,7 @@ a{color:<?php echo esc_html( $d['primary'] ); ?>}
 		<tr><td bgcolor="<?php echo esc_attr( $d['dark'] ); ?>" class="mmm-pad" style="background:<?php echo esc_attr( $d['dark'] ); ?>;background-image:radial-gradient(80% 160% at 100% 0%,rgba(53,168,246,.32),rgba(53,168,246,0) 60%);border-radius:20px 20px 0 0;padding:26px 32px">
 			<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
 				<td valign="middle"><a href="<?php echo esc_url( $home ); ?>" style="text-decoration:none"><?php echo $logo; // phpcs:ignore WordPress.Security.EscapeOutput ?></a></td>
-				<td valign="middle" align="right" class="mmm-hide" style="font-family:<?php echo esc_attr( $d['fm'] ); ?>;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:<?php echo esc_attr( $d['accent2'] ); ?>"><?php echo esc_html( $label ); ?><br><span style="color:#8ea3bb;font-weight:400;letter-spacing:.5px"><?php echo esc_html( wp_date( 'M j, Y' ) ); ?></span></td>
+				<td valign="middle" align="right" class="mmm-hide" style="font-family:<?php echo esc_attr( $d['fm'] ); ?>;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:<?php echo esc_attr( $d['accent2'] ); ?>"><?php echo esc_html( $label ); ?><br><span style="color:#8ea3bb;font-weight:400;letter-spacing:.5px"><?php echo esc_html( mmm_date( 'M j, Y' ) ); ?></span></td>
 			</tr></table>
 		</td></tr>
 		<tr><td height="4" style="height:4px;line-height:4px;font-size:0;background:<?php echo esc_attr( $d['primary'] ); ?>;background-image:linear-gradient(90deg,<?php echo esc_attr( $d['accent2'] ); ?>,<?php echo esc_attr( $d['primary'] ); ?>,<?php echo esc_attr( $d['accent'] ); ?>)">&nbsp;</td></tr>
@@ -469,7 +469,7 @@ a{color:<?php echo esc_html( $d['primary'] ); ?>}
 			<?php if ( $contact ) : ?><div><?php echo implode( ' &nbsp;·&nbsp; ', $contact ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div><?php endif; ?>
 			<?php if ( $social ) : ?><div style="padding-top:6px"><?php echo implode( ' &nbsp;·&nbsp; ', $social ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div><?php endif; ?>
 			<div style="height:1px;line-height:1px;font-size:0;background:#172a3f;margin:16px 0">&nbsp;</div>
-			<div><?php echo esc_html( (string) mmm_opt( 'footer_note' ) ); ?></div>
+			<div><!--mmm-reason--><?php echo esc_html( (string) mmm_opt( 'footer_note' ) ); ?><!--/mmm-reason--></div>
 			<?php if ( $address ) : ?><div><?php echo esc_html( $address ); ?></div><?php endif; ?>
 			<div style="padding-top:8px"><a href="%%MMM_UNSUB%%" style="color:#cfe0f2;text-decoration:underline"><?php esc_html_e( 'Unsubscribe', 'mine-mirth-mailer' ); ?></a> &nbsp;·&nbsp; <a href="<?php echo esc_url( $home ); ?>" style="color:#cfe0f2;text-decoration:underline"><?php echo esc_html( wp_parse_url( $home, PHP_URL_HOST ) ); ?></a></div>
 		</td></tr>
@@ -512,6 +512,10 @@ function mmm_personalize( string $html, int $sub, int $campaign ): string {
 		static fn( $m ) => esc_html( $first ? $first : ( $m[1] ?? '' ) ),
 		$html
 	);
+	// People you added by hand didn't "subscribe at our website": say why they get the email.
+	if ( 'manual' === get_post_meta( $sub, '_mm_context', true ) && '' !== trim( (string) mmm_opt( 'footer_manual' ) ) ) {
+		$html = (string) preg_replace( '#<!--mmm-reason-->.*?<!--/mmm-reason-->#s', esc_html( (string) mmm_opt( 'footer_manual' ) ), $html );
+	}
 	$open = mmm_opt( 'track_opens' ) ? esc_url( mmm_link( 'o', $campaign, $token ) ) : esc_url( includes_url( 'images/blank.gif' ) );
 	return strtr(
 		$html,

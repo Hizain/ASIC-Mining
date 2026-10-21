@@ -223,7 +223,7 @@ function mmm_inbox_page(): void {
 			$who          = 'in' === $r->direction ? $email : __( 'You', 'mine-mirth-mailer' );
 			$via          = array( 'form' => __( 'via the reply page', 'mine-mirth-mailer' ), 'imap' => __( 'by email', 'mine-mirth-mailer' ), 'admin' => '' )[ $r->source ] ?? '';
 			$camp         = (int) $r->campaign_id ? ' · ' . sprintf( /* translators: %s: campaign */ __( 'about “%s”', 'mine-mirth-mailer' ), get_the_title( (int) $r->campaign_id ) ) : '';
-			echo '<div class="mmm-msg is-' . esc_attr( $r->direction ) . '"><div class="mmm-msg__meta"><strong>' . esc_html( $who ) . '</strong> · ' . esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) strtotime( $r->created . ' UTC' ) ) ) . ( $via ? ' · ' . esc_html( $via ) : '' ) . esc_html( $camp ) . '</div>';
+			echo '<div class="mmm-msg is-' . esc_attr( $r->direction ) . '"><div class="mmm-msg__meta"><strong>' . esc_html( $who ) . '</strong> · ' . esc_html( mmm_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) strtotime( $r->created . ' UTC' ) ) ) . ( $via ? ' · ' . esc_html( $via ) : '' ) . esc_html( $camp ) . '</div>';
 			echo $r->subject ? '<div class="mmm-msg__subject">' . esc_html( $r->subject ) . '</div>' : '';
 			echo '<div class="mmm-msg__body">' . nl2br( esc_html( $r->body ) ) . '</div></div>';
 		}

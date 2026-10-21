@@ -8,7 +8,15 @@
 defined( 'ABSPATH' ) || exit;
 
 function mmm_campaign_kind( int $campaign ): string {
-	return 'weekly' === get_post_meta( $campaign, '_mmm_kind', true ) ? 'weekly' : 'manual';
+	$kind = (string) get_post_meta( $campaign, '_mmm_kind', true );
+	return in_array( $kind, array( 'weekly', 'intro' ), true ) ? $kind : 'manual';
+}
+
+/**
+ * Weekly and introduction emails are built automatically for each person (no block editor).
+ */
+function mmm_is_auto( int $campaign ): bool {
+	return 'manual' !== mmm_campaign_kind( $campaign );
 }
 
 /**
@@ -21,9 +29,9 @@ function mmm_compose( int $campaign, int $sub ): ?array {
 	if ( 'mmm_campaign' !== get_post_type( $campaign ) || ! $sub ) {
 		return null;
 	}
-	if ( 'weekly' === mmm_campaign_kind( $campaign ) ) {
-		$w    = mmm_weekly_compose( $sub );
-		$html = mmm_document( array( 'subject' => $w['subject'], 'preheader' => $w['preheader'], 'body' => $w['body'], 'campaign' => $campaign ) );
+	if ( mmm_is_auto( $campaign ) ) {
+		$w    = 'intro' === mmm_campaign_kind( $campaign ) ? mmm_intro_compose( $sub ) : mmm_weekly_compose( $sub );
+		$html = mmm_document( array( 'subject' => $w['subject'], 'preheader' => $w['preheader'], 'body' => $w['body'], 'campaign' => $campaign, 'label' => $w['label'] ?? '' ) );
 		$subj = $w['subject'];
 	} else {
 		if ( ! isset( $cache[ $campaign ] ) ) {
@@ -122,20 +130,23 @@ function mmm_queue_campaign( int $campaign, array $sub_ids ): int {
 	if ( ! wp_next_scheduled( 'mmm_send_now' ) ) {
 		wp_schedule_single_event( time(), 'mmm_send_now' );
 	}
+	if ( $added ) {
+		mmm_send_soon( true );
+	}
 	return $added;
 }
 
 /**
  * Send the next batch. Each row is claimed before sending so two runs never send twice.
  */
-function mmm_process_queue(): int {
+function mmm_process_queue( int $limit = 0 ): int {
 	global $wpdb;
 	$table = mmm_table( 'queue' );
-	$batch = max( 1, min( 200, (int) mmm_opt( 'batch' ) ) );
+	$batch = $limit > 0 ? $limit : max( 1, min( 200, (int) mmm_opt( 'batch' ) ) );
 	$rows  = $wpdb->get_results( $wpdb->prepare( "SELECT id, campaign_id, sub_id, email FROM $table WHERE status = 'pending' ORDER BY id ASC LIMIT %d", $batch ) ); // phpcs:ignore WordPress.DB
 	$sent  = 0;
 	foreach ( (array) $rows as $row ) {
-		$claimed = $wpdb->update( $table, array( 'status' => 'sending' ), array( 'id' => $row->id, 'status' => 'pending' ) ); // phpcs:ignore WordPress.DB
+		$claimed = $wpdb->update( $table, array( 'status' => 'sending', 'claimed' => current_time( 'mysql', true ) ), array( 'id' => $row->id, 'status' => 'pending' ) ); // phpcs:ignore WordPress.DB
 		if ( 1 !== (int) $claimed ) {
 			continue;
 		}
@@ -214,6 +225,73 @@ add_action(
 			wp_schedule_single_event( time() + 60, 'mmm_send_now' );
 		}
 	}
+);
+
+/* ---------------------------------------------------------------------------
+ * Sending without WP-Cron
+ *
+ * Many hosts never run WP-Cron (or block the loopback request it needs), so the queue, scheduled
+ * campaigns and the weekly email are also driven by normal site traffic. Every step is claimed in
+ * the database first, so two visitors at once can never send the same email twice, and nothing
+ * relies on options or transients that a caching plugin could serve stale.
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Ask for the queue to be sent at the end of this request (e.g. right after you add subscribers).
+ */
+function mmm_send_soon( ?bool $set = null ): bool {
+	static $soon = false;
+	if ( null !== $set ) {
+		$soon = $set;
+	}
+	return $soon;
+}
+
+/**
+ * Atomically take a numeric option "slot" if its value is below $below. Plain SQL, so object caches
+ * (LiteSpeed, Redis, Memcached) can't make two requests think they both own it.
+ */
+function mmm_claim_option( string $name, int $value, int $below ): bool {
+	global $wpdb;
+	add_option( $name, '0', '', false );
+	$done = (int) $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND CAST(option_value AS UNSIGNED) < %d", (string) $value, $name, $below ) ); // phpcs:ignore WordPress.DB
+	wp_cache_delete( $name, 'options' );
+	return 1 === $done;
+}
+
+/**
+ * Put rows back in the queue if a request died mid-send (host timeout, crash).
+ */
+function mmm_recover_stuck(): void {
+	global $wpdb;
+	$table = mmm_table( 'queue' );
+	$wpdb->query( $wpdb->prepare( "UPDATE $table SET status = 'pending' WHERE status = 'sending' AND ( claimed IS NULL OR claimed < %s )", gmdate( 'Y-m-d H:i:s', time() - 15 * MINUTE_IN_SECONDS ) ) ); // phpcs:ignore WordPress.DB
+}
+
+function mmm_background_jobs( int $budget ): void {
+	mmm_recover_stuck();
+	mmm_start_due();
+	mmm_weekly_maybe_start();
+	mmm_process_queue( $budget );
+}
+
+add_action(
+	'shutdown',
+	static function () {
+		if ( wp_doing_cron() || ( defined( 'WP_INSTALLING' ) && WP_INSTALLING ) ) {
+			return;
+		}
+		$soon = mmm_send_soon();
+		// Otherwise at most once a minute across all visitors (30s in wp-admin).
+		if ( ! $soon && ! mmm_claim_option( 'mmm_runner_at', time(), time() - ( is_admin() ? 30 : 60 ) ) ) {
+			return;
+		}
+		if ( function_exists( 'set_time_limit' ) ) {
+			@set_time_limit( 120 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors
+		}
+		mmm_background_jobs( $soon || is_admin() ? 25 : 10 );
+	},
+	-20
 );
 
 /**

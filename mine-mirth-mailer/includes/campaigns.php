@@ -50,7 +50,7 @@ add_action(
 add_action(
 	'add_meta_boxes_mmm_campaign',
 	static function ( $post ) {
-		if ( 'weekly' === get_post_meta( $post->ID, '_mmm_kind', true ) ) {
+		if ( in_array( get_post_meta( $post->ID, '_mmm_kind', true ), array( 'weekly', 'intro' ), true ) ) {
 			return;
 		}
 		add_meta_box( 'mmm-email', __( 'Email', 'mine-mirth-mailer' ), 'mmm_campaign_box', 'mmm_campaign', 'side', 'high' );
@@ -106,7 +106,7 @@ function mmm_state_label( int $id ): string {
 	$state = (string) get_post_meta( $id, '_mmm_state', true );
 	if ( 'scheduled' === $state ) {
 		/* translators: %s: date */
-		return sprintf( __( 'Scheduled for %s', 'mine-mirth-mailer' ), wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) get_post_meta( $id, '_mmm_scheduled', true ) ) );
+		return sprintf( __( 'Scheduled for %s', 'mine-mirth-mailer' ), mmm_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) get_post_meta( $id, '_mmm_scheduled', true ) ) );
 	}
 	return array( 'sending' => __( 'Sending…', 'mine-mirth-mailer' ), 'sent' => __( 'Sent', 'mine-mirth-mailer' ) )[ $state ] ?? __( 'Draft', 'mine-mirth-mailer' );
 }
@@ -137,7 +137,8 @@ add_action(
 		$pct = static fn( $n ) => ! empty( $s['sent'] ) ? ' <span style="color:#646970">(' . round( 100 * $n / $s['sent'] ) . '%)</span>' : '';
 		switch ( $col ) {
 			case 'mmm_type':
-				echo 'weekly' === mmm_campaign_kind( (int) $id ) ? esc_html__( 'Weekly (personalised)', 'mine-mirth-mailer' ) : esc_html__( 'Campaign', 'mine-mirth-mailer' );
+				$kind = mmm_campaign_kind( (int) $id );
+				echo 'weekly' === $kind ? esc_html__( 'Weekly (personalised)', 'mine-mirth-mailer' ) : ( 'intro' === $kind ? esc_html__( 'Introduction (automatic)', 'mine-mirth-mailer' ) : esc_html__( 'Campaign', 'mine-mirth-mailer' ) );
 				break;
 			case 'mmm_stat':
 				echo esc_html( mmm_state_label( (int) $id ) );
@@ -267,7 +268,7 @@ add_action(
 			$n   = mmm_queue_campaign( $id, mmm_audience_ids( $aud ) );
 			$msg = $n ? 'queued' : 'nobody';
 		} elseif ( 'schedule' === $do ) {
-			$when = strtotime( sanitize_text_field( wp_unslash( $_POST['when'] ?? '' ) ) . ' ' . wp_timezone_string() );
+			$when = strtotime( sanitize_text_field( wp_unslash( $_POST['when'] ?? '' ) ) . ' ' . mmm_tz()->getName() );
 			if ( $when && $when > time() ) {
 				wp_update_post( array( 'ID' => $id, 'post_status' => 'publish' ) );
 				update_post_meta( $id, '_mmm_state', 'scheduled' );
@@ -299,7 +300,7 @@ function mmm_send_page(): void {
 	$audience = (string) get_post_meta( $id, '_mmm_audience', true ) ?: 'all';
 	$msg      = sanitize_key( wp_unslash( $_GET['msg'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	$stats    = mmm_campaign_stats( $id );
-	$weekly   = 'weekly' === mmm_campaign_kind( $id );
+	$weekly   = mmm_is_auto( $id );
 	$messages = array(
 		'test_ok'     => array( 'success', __( 'Test email sent. Check your inbox (and spam folder).', 'mine-mirth-mailer' ) ),
 		'test_fail'   => array( 'error', __( 'The test email could not be sent:', 'mine-mirth-mailer' ) . ' ' . (string) get_option( 'mmm_last_test_error' ) ),
@@ -371,7 +372,7 @@ function mmm_send_page(): void {
 							</select></p>
 							<p><label><input type="radio" name="do" value="now" checked> <?php esc_html_e( 'Send now', 'mine-mirth-mailer' ); ?></label><br>
 							<label><input type="radio" name="do" value="schedule"> <?php esc_html_e( 'Schedule for', 'mine-mirth-mailer' ); ?></label>
-							<input type="datetime-local" name="when" value="<?php echo esc_attr( wp_date( 'Y-m-d\TH:i', time() + DAY_IN_SECONDS ) ); ?>"> <span class="description"><?php echo esc_html( wp_timezone_string() ); ?></span></p>
+							<input type="datetime-local" name="when" value="<?php echo esc_attr( mmm_date( 'Y-m-d\TH:i', time() + DAY_IN_SECONDS ) ); ?>"> <span class="description"><?php echo esc_html( wp_timezone_string() ); ?></span></p>
 							<p><button type="submit" class="button button-primary button-hero"><?php esc_html_e( 'Send', 'mine-mirth-mailer' ); ?></button></p>
 						</form>
 					</div>

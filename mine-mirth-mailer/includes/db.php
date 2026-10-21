@@ -40,6 +40,7 @@ function mmm_install(): void {
 			status varchar(12) NOT NULL DEFAULT 'pending',
 			error varchar(255) NOT NULL DEFAULT '',
 			sent datetime NULL DEFAULT NULL,
+			claimed datetime NULL DEFAULT NULL,
 			PRIMARY KEY  (id),
 			KEY campaign_status (campaign_id,status)
 		) $charset;"

@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       Mine Mirth Mailer
- * Description:       Email marketing in your website's design: a weekly email personalised to what each subscriber did on the site, campaigns written with ready-made email blocks, open and click tracking, and a reply inbox you answer from WordPress. Uses the subscribers the Mine Mirth theme already collects.
- * Version:           1.0.0
+ * Description:       Email marketing in your website's design: a weekly email personalised to what each subscriber did on the site, campaigns written with ready-made email blocks, subscribers you add by hand (one, a pasted list or a CSV) with an introduction email instead of a welcome email, open and click tracking, and a reply inbox you answer from WordPress. Uses the subscribers the Mine Mirth theme already collects.
+ * Version:           1.1.0
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            Mine Mirth, LLC
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MMM_VERSION', '1.0.0' );
+define( 'MMM_VERSION', '1.1.0' );
 define( 'MMM_FILE', __FILE__ );
 define( 'MMM_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MMM_URI', plugin_dir_url( __FILE__ ) );
@@ -28,6 +28,7 @@ require_once MMM_DIR . 'includes/weekly.php';
 require_once MMM_DIR . 'includes/campaigns.php';
 require_once MMM_DIR . 'includes/sender.php';
 require_once MMM_DIR . 'includes/inbox.php';
+require_once MMM_DIR . 'includes/manual.php';
 require_once MMM_DIR . 'includes/admin.php';
 
 register_activation_hook(
@@ -96,6 +97,8 @@ function mmm_defaults(): array {
 		'logo_id'       => 0,
 		'brand_name'    => 'The Miner’s Brief',
 		'footer_note'   => __( 'You’re receiving this because you subscribed at our website.', 'mine-mirth-mailer' ),
+		'footer_manual' => __( 'You’re receiving this because you’re in touch with Mine Mirth.', 'mine-mirth-mailer' ),
+		'timezone'      => 'Asia/Karachi',
 		'notify_replies'=> 1,
 		'imap_host'     => '',
 		'imap_port'     => 993,
@@ -104,6 +107,25 @@ function mmm_defaults(): array {
 		'imap_pass'     => '',
 		'imap_folder'   => 'INBOX',
 	);
+}
+
+/**
+ * Time zone for the weekly schedule, scheduled sends and dates shown by the Mailer (Pakistan time by default).
+ */
+function mmm_tz(): DateTimeZone {
+	static $tz = null;
+	if ( null === $tz ) {
+		try {
+			$tz = new DateTimeZone( (string) mmm_opt( 'timezone' ) );
+		} catch ( Exception $e ) {
+			$tz = wp_timezone();
+		}
+	}
+	return $tz;
+}
+
+function mmm_date( string $format, ?int $ts = null ): string {
+	return (string) wp_date( $format, $ts ?? time(), mmm_tz() );
 }
 
 function mmm_opt( string $key ) {

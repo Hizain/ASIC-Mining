@@ -232,3 +232,37 @@
 	.mmm-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 	.mmm-msg { max-width: 100%; }
 }
+
+/* Add subscribers, introduction email, subscriber details (1.1.0) */
+.mmm-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; margin: 8px 0 12px; }
+.mmm-fields label { display: flex; flex-direction: column; gap: 5px; font-weight: 600; color: var(--mmm-ink); }
+.mmm-fields label.is-wide { grid-column: 1 / -1; }
+.mmm-fields input[type="text"], .mmm-fields input[type="email"], .mmm-fields input[type="url"], .mmm-fields textarea {
+	width: 100%;
+	font-weight: 400;
+	border: 1px solid #c3c4c7;
+	border-radius: 8px;
+	padding: 6px 10px;
+	min-height: 36px;
+}
+.mmm-fields input:focus, .mmm-fields textarea:focus { border-color: var(--mmm-blue); box-shadow: 0 0 0 2px rgba(53, 168, 246, .2); outline: none; }
+.mmm-fields .required { color: var(--mmm-off); }
+.mmm-service { grid-template-columns: 70px minmax(0, 1fr) minmax(0, 1fr); padding: 12px; border: 1px dashed var(--mmm-line); border-radius: 12px; background: var(--mmm-soft); }
+.mmm-service label.is-title, .mmm-service label.is-wide { grid-column: 2 / -1; }
+.mmm-service label.is-link { grid-column: 2; }
+.mmm-service label.is-url { grid-column: 3; }
+.mmm-service label.is-icon { grid-row: span 3; }
+.mmm-service label.is-icon input { text-align: center; font-size: 20px; }
+.mmm-block-label { display: block; font-weight: 600; margin: 12px 0 6px; }
+.mmm-block-label textarea { display: block; margin-top: 6px; border-radius: 8px; }
+.mmm-add-footer { display: grid; gap: 8px; margin: 16px 0 4px; padding: 12px 14px; border-radius: 10px; background: var(--mmm-soft); border: 1px solid var(--mmm-line); }
+.mmm-result { border-left: 4px solid var(--mmm-ok); }
+.mmm-result .mmm-check li .description { display: block; margin-top: 2px; }
+.mmm-test { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.mmm-details h2 .mmm-pill { font-weight: 500; }
+.mmm-timeline li.is-added::before { background: #0ea5e9; }
+@media (max-width: 960px) {
+	.mmm-fields, .mmm-service { grid-template-columns: 1fr; }
+	.mmm-service label.is-wide, .mmm-service label.is-title, .mmm-service label.is-link, .mmm-service label.is-url { grid-column: 1 / -1; }
+	.mmm-service label.is-icon { grid-row: auto; }
+}
