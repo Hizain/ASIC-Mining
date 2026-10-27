@@ -153,7 +153,7 @@ return array(
 				),
 			)
 		)
-		. mm_bs( 'reviews', array( 'eyebrow' => __( 'Reviews', 'minemirth' ), 'title' => __( 'From verified *buyers*', 'minemirth' ), 'limit' => 6, 'link_label' => __( 'All reviews', 'minemirth' ), 'link_url' => '{page:reviews}' ) )
+		. mm_bs( 'reviews', array( 'eyebrow' => __( 'Reviews', 'minemirth' ), 'title' => __( 'From verified *buyers*', 'minemirth' ), 'limit' => 6, 'hide_empty' => true, 'link_label' => __( 'All reviews', 'minemirth' ), 'link_url' => '{page:reviews}' ) )
 		. mm_bs(
 			'links',
 			array(
@@ -334,7 +334,7 @@ return array(
 				'tone'      => 'alt',
 			)
 		)
-		. mm_bs( 'reviews', array( 'eyebrow' => __( 'Reviews', 'minemirth' ), 'title' => __( 'What buyers *say*', 'minemirth' ), 'limit' => 3 ) )
+		. mm_bs( 'reviews', array( 'eyebrow' => __( 'Reviews', 'minemirth' ), 'title' => __( 'What buyers *say*', 'minemirth' ), 'limit' => 3, 'hide_empty' => true ) )
 		. mm_bcta( __( 'See the numbers for *your* power price', 'minemirth' ), __( 'Compare every miner we stock at your electricity rate, then talk to us about the shortlist.', 'minemirth' ), array( array( __( 'Compare miners', 'minemirth' ), '{tool:compare}' ), array( __( 'Talk to us', 'minemirth' ), '{page:contact}' ) ) );
 	},
 

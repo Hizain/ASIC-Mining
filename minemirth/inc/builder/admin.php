@@ -44,6 +44,7 @@ function mm_builder_screen(): void {
 	$counts = array_count_values( array_column( $plan, 'state' ) );
 	?>
 	<div class="wrap mm-builder">
+		<hr class="wp-header-end" style="display:none">
 		<style>
 			.mm-builder{max-width:1180px}
 			.mm-builder .mm-bhero{margin:20px 0;padding:28px 32px;border-radius:16px;color:#e7f0fa;background:radial-gradient(60% 120% at 100% 0%,rgba(53,168,246,.45),transparent 60%),linear-gradient(160deg,#0a1b2f,#040b15)}

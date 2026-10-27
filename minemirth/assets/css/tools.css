@@ -2,6 +2,7 @@
 
 .mm-tool {
 	--mm-tool-pad: clamp(16px, 3vw, 28px);
+	container: mm-tool / inline-size;
 	position: relative;
 	display: grid;
 	gap: clamp(16px, 2.4vw, 24px);
@@ -495,6 +496,61 @@ a.mm-leader:hover { border-color: var(--mm-primary); transform: translateY(-2px)
 @media (max-width: 400px) {
 	.mm-tool-card { grid-template-columns: auto minmax(0, 1fr); }
 	.mm-tool-card__go { display: none; }
+}
+
+/* Tools respond to their own width too (for example inside a narrow guide column). */
+@container mm-tool (max-width: 1060px) {
+	.mm-tool__grid { grid-template-columns: minmax(0, 1fr); }
+	.mm-tool__inputs { position: static; }
+	.mm-tool__strip { grid-template-columns: minmax(0, 1fr); }
+	.mm-badges-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container mm-tool (max-width: 620px) {
+	.mm-kpis, .mm-kpis--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.mm-versus { grid-template-columns: minmax(0, 1fr); }
+	.mm-versus__arrow { transform: rotate(90deg); }
+	.mm-countdown { gap: 6px; }
+	.mm-countdown > div { padding: 12px 2px; border-radius: 14px; }
+	.mm-countdown small { font-size: .62rem; letter-spacing: .04em; }
+	.mm-tool__foot [data-mm-share] { margin-left: 0; }
+	.mm-ttable { font-size: .82rem; }
+	.mm-ttable th, .mm-ttable td { padding: 9px 10px; }
+	.mm-kpi { padding: 10px 12px; }
+	.mm-kpi strong { font-size: 1rem; }
+}
+@container mm-tool (max-width: 620px) {
+	/* Ranking table becomes one card per miner. */
+	.mm-table-wrap--sticky { max-height: none; overflow: visible; border: 0; background: transparent; }
+	.mm-ttable--rank, .mm-ttable--rank tbody { display: block; }
+	.mm-ttable--rank thead { display: none; }
+	.mm-ttable--rank tbody tr {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 10px 12px;
+		margin-bottom: 10px;
+		padding: 14px;
+		border: 1px solid var(--mm-border);
+		border-radius: 14px;
+		background: var(--mm-surface);
+	}
+	.mm-ttable--rank tbody tr.is-picked { border-color: var(--mm-primary); box-shadow: 0 0 0 3px var(--mm-primary-soft); }
+	.mm-ttable--rank tbody tr > * { padding: 0; border: 0; text-align: left; white-space: normal; background: none !important; }
+	.mm-ttable--rank tbody th { position: static; grid-column: 1 / -1; min-width: 0; padding-right: 34px; font-size: .95rem; }
+	.mm-ttable--rank td.mm-ttable__pick { position: absolute; }
+	.mm-ttable--rank tbody tr { position: relative; }
+	.mm-ttable--rank td.mm-ttable__pick { top: 14px; right: 14px; }
+	.mm-ttable--rank td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 2px; color: var(--mm-muted); font-size: .68rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; }
+	.mm-ttable--rank td.mm-ttable__key { font-weight: 800; }
+	.mm-ttable tbody th { white-space: normal; }
+	.mm-ttable--compact th, .mm-ttable--compact td { white-space: normal; }
+	.mm-ttable--compact tbody th { min-width: 110px; }
+	.mm-ttable--matrix th, .mm-ttable--matrix td { padding: 8px 6px; font-size: .76rem; }
+	.mm-ttable--matrix small { font-size: .68rem; }
+}
+@container mm-tool (max-width: 330px) {
+	.mm-tool__fields, .mm-tool__fields--row { grid-template-columns: minmax(0, 1fr); }
+	.mm-badges-row { grid-template-columns: minmax(0, 1fr); }
+	.mm-ttable--rank tbody tr { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) {
 	.mm-tool *, .mm-tool-card { transition: none !important; animation: none !important; }

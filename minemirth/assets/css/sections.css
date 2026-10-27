@@ -502,3 +502,8 @@ a.mm-s-cmethod:hover { border-color: var(--mm-primary); transform: translateX(3p
 .mm-prose .mm-s :is(a.mm-lcard, a.mm-feat, a.mm-brand, a.mm-leader, a.mm-tool-card, a.mm-s-cmethod, .mm-pcard__title a, a.mm-pcard__media, a.mm-s-mcard__link):not(.mm-btn):not(.wp-block-button__link):not(.button) { color: var(--mm-text); text-decoration: none; }
 .mm-prose .mm-s a.mm-s-mcard__link:not(.mm-btn):not(.wp-block-button__link):not(.button) { color: var(--mm-link); }
 .mm-prose .mm-tool-card:not(.mm-btn):not(.wp-block-button__link):not(.button) { color: var(--mm-text); text-decoration: none; }
+
+/* Phones: keep product grids short. */
+@media (max-width: 640px) {
+	.mm-s--products .mm-pcards > .mm-pcard:nth-child(n+7) { display: none; }
+}

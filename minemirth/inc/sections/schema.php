@@ -129,7 +129,7 @@ function mm_sections_schema(): array {
 		'reviews'    => array(
 			'label'  => __( 'Customer reviews', 'minemirth' ),
 			'icon'   => 'star-filled',
-			'fields' => array_merge( $head, array( mm_sf( 'limit', 'number', __( 'How many', 'minemirth' ) ), mm_sf( 'empty', 'textarea', __( 'Message when there are no reviews yet', 'minemirth' ) ) ) ),
+			'fields' => array_merge( $head, array( mm_sf( 'limit', 'number', __( 'How many', 'minemirth' ) ), mm_sf( 'empty', 'textarea', __( 'Message when there are no reviews yet', 'minemirth' ) ), mm_sf( 'hide_empty', 'toggle', __( 'Hide this section until there are reviews', 'minemirth' ) ) ) ),
 			'data'   => array( 'title' => __( 'What buyers *say*', 'minemirth' ), 'limit' => 6 ),
 		),
 		'pricing'    => array(

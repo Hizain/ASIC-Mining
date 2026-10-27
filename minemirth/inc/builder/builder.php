@@ -38,6 +38,10 @@ function mm_bl( array $items, bool $ordered = false ): string {
 
 /** A Mine Mirth section block. */
 function mm_bs( string $variant, array $data ): string {
+	// Steps may be written as [icon, title, text] rows.
+	if ( 'steps' === $variant && ! empty( $data['items'] ) ) {
+		$data['items'] = array_map( static fn( $r ) => isset( $r[0] ) ? array( 'icon' => $r[0], 'title' => $r[1] ?? '', 'text' => $r[2] ?? '' ) : $r, $data['items'] );
+	}
 	return serialize_block(
 		array(
 			'blockName'    => 'mm/section',

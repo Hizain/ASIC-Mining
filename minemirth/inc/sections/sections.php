@@ -603,6 +603,9 @@ function mm_s_render_reviews( array $d ): string {
 		$short  = $parts[0] . ( isset( $parts[1] ) ? ' ' . mb_substr( $parts[1], 0, 1 ) . '.' : '' );
 		$cards .= '<figure class="mm-rcard" data-mm-reveal style="--d:' . ( $i % 3 ) . '">' . $stars( (float) $rating ) . '<blockquote>' . esc_html( wp_trim_words( (string) $c->comment_content, 60 ) ) . '</blockquote><figcaption><span class="mm-rcard__avatar">' . esc_html( mb_strtoupper( mb_substr( $short, 0, 1 ) ) ) . '</span><span><b>' . esc_html( $short ) . '</b>' . ( get_comment_meta( $c->comment_ID, 'verified', true ) ? ' <em>' . esc_html__( 'Verified buyer', 'minemirth' ) . '</em>' : '' ) . '<small>' . esc_html( get_the_title( (int) $c->comment_post_ID ) ) . ' · ' . esc_html( get_comment_date( '', $c ) ) . '</small></span></figcaption></figure>';
 	}
+	if ( ! $cards && ! empty( $d['hide_empty'] ) ) {
+		return '';
+	}
 	if ( ! $cards ) {
 		$cards = '<div class="mm-s-empty" data-mm-reveal>' . mm_icon( 'star' ) . '<p>' . esc_html( $d['empty'] ?? __( 'Reviews from verified buyers appear here as soon as they are published. Bought from us? Leave a review on your miner’s product page; it helps other miners choose.', 'minemirth' ) ) . '</p>' . ( function_exists( 'wc_get_account_endpoint_url' ) ? '<div class="mm-btn-row mm-btn-row--center"><a class="mm-btn mm-btn--ghost" href="' . esc_url( wc_get_account_endpoint_url( 'orders' ) ) . '"><span>' . esc_html__( 'Review a past order', 'minemirth' ) . '</span></a></div>' : '' ) . '</div>';
 	} else {

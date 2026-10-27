@@ -3,15 +3,40 @@ Contributors: minemirth
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 8.0
-Stable tag: 4.0.2
+Stable tag: 5.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 Premium WooCommerce theme for minemirth.com: ASIC miners, miner hosting and mining education, with light and dark mode.
 
+== What's new in 5.0 ==
+
+Mine Mirth 5.0 rebuilds the whole website, not just the theme:
+
+* **An 80-page site in one click.** Appearance › Site builder creates (or updates) 80 premium pages: home, about, contact, why us, FAQ, reviews, payment, shipping, warranty and returns; 8 service pages including hosting; 20 miner collections and brand pages that list your real stock; 13 tool pages; a Learn hub with 24 practical guides; a live market page, partners, privacy and terms. It also builds the main menu (with mega menus) and footer menus and sets the new homepage.
+* **12 new live mining tools** built from today's market: profitability with a 24-month outlook, hashprice tracker with history, break-even electricity price, ASIC miner comparison (your store, ranked at your power price), ROI and payback scenarios, halving countdown and impact, difficulty adjustment estimator, hosting vs home, power and circuit planner, upgrade calculator, solo mining odds, and Litecoin/Dogecoin/Kaspa earnings. They use live price, difficulty and fees, your products and your hosting plans.
+* **Premium section block.** Every page is made of the new "Mine Mirth section" block, with 22 layouts (hero, feature grid, text and visual, live stats, steps, FAQ, comparison table, miners from the shop, link cards, live network, tools, real reviews, hosting plans, contact, callout, brands, articles, newsletter, trust badges, rich text). Change any text, link, layout or background in the editor's sidebar. Live values such as {btc_price}, {hashprice}, {difficulty} and {halving_days} can be typed into any text.
+* **Every page works on every device**, from 320px phones to wide desktops, in light and dark mode.
+
+= Upgrading from 4.x =
+
+1. Back up your site.
+2. Appearance › Themes › Add New › Upload Theme, choose minemirth-5.0.0.zip and click "Replace active with uploaded". Your settings, logo, products, hosting plans and posts stay as they are.
+3. Deactivate the old tool plugins: Mine Mirth Rig Optimizer, Mine Mirth Market Scope and Mine Mirth Tools (showcase). The new tools replace them.
+4. Open Appearance › Site builder. Review the list (nothing changes until you click Build), keep the options ticked and click "Build the ticked pages".
+5. Purge your cache (LiteSpeed Cache › Purge All) and view the site.
+
+How the builder protects your work:
+
+* Pages you already have at the same address (for example /about/ or /miner-hosting/) are updated in place, and their previous content is kept in Revisions.
+* Your shipping, warranty, returns, privacy and terms pages are kept unless you tick them.
+* WooCommerce pages (shop, cart, checkout, account) and your blog page are never touched.
+* After the first build, pages you edit are left alone on later builds unless you tick them.
+* Old tool pages are moved to drafts and their addresses redirect (301) to the matching new tool. The /free-calculators/ address and the Bitcoin mining calculator address stay the same.
+
 == Description ==
 
-Mine Mirth 4.0 is a full rebuild of the minemirth.com theme. Its brand colour is #35a8f6 and it includes:
+Mine Mirth is a full rebuild of the minemirth.com theme. Its brand colour is #35a8f6 and it includes:
 
 * Light and dark mode. Visitors can switch with an animated toggle, the site can follow their device setting, and the page never flashes the wrong theme while loading.
 * An animated hero with a rotating hash-network globe, an isometric ASIC rig, floating live-data cards, a rotating headline word and a particle background. You can choose each effect or turn it off, and the theme respects "reduce motion".
@@ -60,6 +85,8 @@ In the block editor, add the "Mine Mirth promo" block anywhere in a post.
 
 == Shortcodes ==
 
+[mm_tool id="profit"]                        One live tool. Ids: profit, hashprice, breakeven, compare, roi, halving, difficulty, hosting, power, upgrade, solo, altcoin.
+[mm_tools_grid limit="6" exclude="" group=""]  Tool cards (groups: profit, market, planning).
 [mm_market]                                  Live Bitcoin network snapshot.
 [mm_calculator variant="full|compact" title=""]  Profitability calculator.
 [mm_hosting_calculator]                      Hosting cost calculator.
@@ -71,7 +98,7 @@ In the block editor, add the "Mine Mirth promo" block anywhere in a post.
 
 == Page templates ==
 
-Miner Hosting, Mining Calculator, Contact, Full width, Page with sidebar, Landing (canvas for page builders).
+Premium sections (full-width pages made of Mine Mirth sections), Guide (table of contents, reading time, related guides), Mining Tool (shows the page's tool with its guide below), Miner Hosting, Mining Calculator, Contact, Full width, Page with sidebar, Landing (canvas for page builders).
 
 == Menus and widgets ==
 
@@ -90,6 +117,15 @@ Widget areas: Blog sidebar, Shop sidebar, Page sidebar.
 * Icons and illustrations were drawn for this theme and are licensed GPLv2 or later.
 
 == Changelog ==
+
+= 5.0.0 =
+* New: Site builder (Appearance › Site builder) with 80 premium pages, mega menu, footer menus and new homepage.
+* New: 12 live mining tools with shared market data engine, daily hashprice and difficulty history, altcoin data and store catalog.
+* New: "Mine Mirth section" block with 22 editable layouts and live value tokens.
+* New: Premium sections, Guide and Mining Tool page templates.
+* New: SEO title and description for every built page (also written to Yoast, Rank Math, AIOSEO or SEOPress when active).
+* Changed: the Mining Calculator template and [mm_calculator] now show the new profitability tool. Old tool shortcodes fall back to the new tools when their plugins are switched off.
+* Customize › Mine Mirth · Pages, Data & Advanced › Mining tools: tools address, and optional Litecoin, Dogecoin and Kaspa network hashrate overrides.
 
 = 4.0.2 =
 * New mm_logo_html filter so plugins can set separate header and footer logos per light and dark mode.
