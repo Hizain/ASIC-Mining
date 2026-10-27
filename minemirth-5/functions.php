@@ -10,7 +10,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MM_VERSION', '5.0.0' );
+define( 'MM_VERSION', '5.1.0' );
 define( 'MM_DIR', get_template_directory() );
 define( 'MM_URI', get_template_directory_uri() );
 

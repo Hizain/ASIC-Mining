@@ -1,27 +1,34 @@
 # Mine Mirth theme
 
-The WordPress and WooCommerce theme for [minemirth.com](https://minemirth.com). Version 4.0 is a full rebuild that replaces Nova Pro 3.x.
+The WordPress and WooCommerce theme for [minemirth.com](https://minemirth.com). Mine Mirth 5 (folder `minemirth-5`) installs next to the current Mine Mirth theme, so it can be tested privately before it goes live.
 
 - Brand colour `#35a8f6`, with light and dark mode (visitor toggle, follows the device setting, no flash on load)
-- An animated hero, a live Bitcoin network ticker, and profitability and hosting calculators
-- In-content blog promotions with de-duplication and a "continue reading" cue
+- An 80-page site builder with a private test mode and "Go live", 12 live mining tools and an editable premium section block
+- An animated hero, a live Bitcoin network ticker, crypto vector shapes and a live guide that explains today's numbers
+- A focus keyword, keyword placement and density on every builder page
 - Premium WooCommerce pages: shop, quick view, mini cart, focused checkout, order confirmation and customer account
 - 400+ Customizer settings in seven panels, most with live preview
 
-The full feature list, setup steps and shortcodes are in [`minemirth/readme.txt`](minemirth/readme.txt).
+The Mine Mirth Launch plugin (`mine-mirth-launch/`) runs the test drive and keeps every existing address working with 301 redirects after launch.
+
+The full feature list, install steps and shortcodes are in [`minemirth-5/readme.txt`](minemirth-5/readme.txt).
 
 ## Layout
 
 ```
-minemirth/                 the theme (upload this folder, zipped)
+minemirth-5/               the theme (upload this folder, zipped)
   inc/options.php          single schema for every Customizer setting
   inc/customizer/          controls, sanitising, live preview wiring
   inc/modules/             market data, calculator, hosting, promos, newsletter, schema
+  inc/sections/            the "Mine Mirth section" block and its layouts
+  inc/builder/             site builder, test mode and the content of the 80 pages
+  inc/motion.php           crypto shapes and the live guide (assets/js/motion.js)
   inc/woocommerce/         store hooks and helpers
   woocommerce/             template overrides (checkout, thank-you, account, login)
-  template-parts/home/     the 15 homepage sections
+  template-parts/home/     homepage sections (also used by the animated hero and ticker)
   assets/css, assets/js    no build step; plain CSS custom properties and vanilla JS
-bin/build-zip.sh           builds dist/minemirth-<version>.zip
+mine-mirth-launch/         test drive, address memory, redirects and 404 log
+bin/build-zip.sh           builds dist/minemirth-5-<version>.zip and the plugin zips
 ```
 
 ## Build
@@ -30,7 +37,7 @@ bin/build-zip.sh           builds dist/minemirth-<version>.zip
 bin/build-zip.sh
 ```
 
-Upload the zip in **Appearance › Themes › Add New › Upload Theme**. It needs WordPress 6.4+ and PHP 8.0+. WooCommerce is optional.
+Install the Launch plugin, then upload the theme zip in **Appearance › Themes › Add New › Upload Theme** without activating it, and follow the steps in the Launch screen. It needs WordPress 6.4+ and PHP 8.0+. WooCommerce is optional.
 
 ## Adding a setting
 

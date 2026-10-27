@@ -3,28 +3,43 @@ Contributors: minemirth
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 8.0
-Stable tag: 5.0.0
+Stable tag: 5.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 Premium WooCommerce theme for minemirth.com: ASIC miners, miner hosting and mining education, with light and dark mode.
 
-== What's new in 5.0 ==
+== What's new in 5.1 ==
 
-Mine Mirth 5.0 rebuilds the whole website, not just the theme:
+* **Installs next to your current theme.** Mine Mirth 5 has its own folder (minemirth-5) and name, so you can upload it without replacing the theme your visitors see. It copies your current settings on first use.
+* **Test it privately first** with the Mine Mirth Launch plugin: only you see Mine Mirth 5, on the site, in wp-admin and in the editor. The site builder creates new pages as private and keeps changes to existing pages as drafts until you click "Go live".
+* **Every existing address keeps working.** Mine Mirth Launch remembers every page, post, product, category and tag address, and sends old or changed addresses to the right place with a 301 redirect. Anything it cannot match appears in a 404 log with a suggested page.
+* **Animations are back on the homepage**, and premium motion runs across the whole site: the animated hero with the 3D hash sphere or mining rig, live floating cards and a rotating coin word; the live ticker; crypto vector shapes (coins, blocks, a blockchain that confirms new blocks, circuit traces, network nodes) behind sections, page headers, articles, the shop, product pages and the footer; typed eyebrows, word-by-word headings, drawn step lines, counters and a cursor spotlight. Shapes are pure CSS and pause when off screen, so pages stay fast.
+* **A live guide talks to visitors.** A small assistant explains what today's numbers mean for the page they are reading: what this miner earns per day and its break-even power price on a product page, hashprice and the next difficulty change on articles, the halving countdown, and a link to the right tool. It never covers the opening screen, stays quiet on cart, checkout and account pages, and can be turned off in Customize › Animation & effects.
+* **SEO on every page.** Each of the 80 pages has a focus keyword, written into its SEO title, meta description, H1, opening paragraph and headings, and passed to Yoast, Rank Math or SEOPress. Every page has at least 400 words (guides at least 800) with a keyword density between 0.5% and 2.5%. The Site builder shows the keyword, density and word count of each page.
+* **No long dashes** in the page content or the theme's own text; number ranges read "200 to 240 V".
 
-* **An 80-page site in one click.** Appearance › Site builder creates (or updates) 80 premium pages: home, about, contact, why us, FAQ, reviews, payment, shipping, warranty and returns; 8 service pages including hosting; 20 miner collections and brand pages that list your real stock; 13 tool pages; a Learn hub with 24 practical guides; a live market page, partners, privacy and terms. It also builds the main menu (with mega menus) and footer menus and sets the new homepage.
-* **12 new live mining tools** built from today's market: profitability with a 24-month outlook, hashprice tracker with history, break-even electricity price, ASIC miner comparison (your store, ranked at your power price), ROI and payback scenarios, halving countdown and impact, difficulty adjustment estimator, hosting vs home, power and circuit planner, upgrade calculator, solo mining odds, and Litecoin/Dogecoin/Kaspa earnings. They use live price, difficulty and fees, your products and your hosting plans.
-* **Premium section block.** Every page is made of the new "Mine Mirth section" block, with 22 layouts (hero, feature grid, text and visual, live stats, steps, FAQ, comparison table, miners from the shop, link cards, live network, tools, real reviews, hosting plans, contact, callout, brands, articles, newsletter, trust badges, rich text). Change any text, link, layout or background in the editor's sidebar. Live values such as {btc_price}, {hashprice}, {difficulty} and {halving_days} can be typed into any text.
-* **Every page works on every device**, from 320px phones to wide desktops, in light and dark mode.
-
-= Upgrading from 4.x =
+== Install and test before going live ==
 
 1. Back up your site.
-2. Appearance › Themes › Add New › Upload Theme, choose minemirth-5.0.0.zip and click "Replace active with uploaded". Your settings, logo, products, hosting plans and posts stay as they are.
-3. Deactivate the old tool plugins: Mine Mirth Rig Optimizer, Mine Mirth Market Scope and Mine Mirth Tools (showcase). The new tools replace them.
-4. Open Appearance › Site builder. Review the list (nothing changes until you click Build), keep the options ticked and click "Build the ticked pages".
-5. Purge your cache (LiteSpeed Cache › Purge All) and view the site.
+2. Plugins › Add New › Upload Plugin: install and activate mine-mirth-launch-1.0.0.zip. It immediately remembers every address your site has today.
+3. Appearance › Themes › Add New › Upload Theme: install minemirth-5-5.1.0.zip. Do not activate it. It appears as "Mine Mirth 5" next to your current theme.
+4. Open Launch (in the admin menu) and click "Start test drive". From now on only you see Mine Mirth 5. Visitors keep your current theme and pages.
+5. Open Appearance › Site builder and click "Build the ticked pages". New pages are created as private, and changes to existing pages are saved as drafts inside them, visible only to you.
+6. Browse the site, edit any page in the block editor and check everything on your phone too. To compare with the live site, open it in a private window.
+7. When you are happy, click "Go live" at the top of the Site builder. It applies the drafts (the old content stays in Revisions), publishes the new pages, sets the homepage, moves the old tool pages to drafts with redirects, and activates Mine Mirth 5 for everyone.
+8. Purge your cache (LiteSpeed Cache › Purge All). For the first week, check Launch › 404 log and fix anything left with one click.
+
+Changed your mind? Click "Mine Mirth 5: test drive ON" in the admin bar to turn it off. Nothing changed for visitors.
+
+After going live, deactivate the old tool plugins (Mine Mirth Rig Optimizer, Mine Mirth Market Scope and Mine Mirth Tools showcase); the new tools replace them. Keep Mine Mirth Launch active: it keeps the old addresses redirecting.
+
+== What's new in 5.0 ==
+
+* **An 80-page site in one click.** Appearance › Site builder creates (or updates) 80 premium pages: home, about, contact, why us, FAQ, reviews, payment, shipping, warranty and returns; 8 service pages including hosting; 20 miner collections and brand pages that list your real stock; 13 tool pages; a Learn hub with 24 practical guides; a live market page, partners, privacy and terms. It also builds the main menu (with mega menus) and footer menus and sets the new homepage.
+* **12 live mining tools** built from today's market: profitability with a 24-month outlook, hashprice tracker with history, break-even electricity price, ASIC miner comparison (your store, ranked at your power price), ROI and payback scenarios, halving countdown and impact, difficulty adjustment estimator, hosting vs home, power and circuit planner, upgrade calculator, solo mining odds, and Litecoin, Dogecoin and Kaspa earnings.
+* **Premium section block.** Every page is made of the "Mine Mirth section" block, with 24 layouts including the animated hero and the live ticker. Change any text, link, layout, background or animated shapes in the editor's sidebar. Live values such as {btc_price}, {hashprice}, {difficulty} and {halving_days} can be typed into any text.
+* **Every page works on every device**, from 320px phones to wide desktops, in light and dark mode.
 
 How the builder protects your work:
 
@@ -65,8 +80,8 @@ Appearance › Mine Mirth has a setup checklist, shortcuts into each panel, one-
 == Installation ==
 
 1. Back up your site.
-2. Go to Appearance › Themes › Add New › Upload Theme and upload minemirth.zip.
-3. Activate "Mine Mirth". Your custom logo and menu locations carry over from Nova Pro automatically.
+2. To test first, follow "Install and test before going live" above. To switch straight away, go to Appearance › Themes › Add New › Upload Theme, upload minemirth-5-5.1.0.zip and activate "Mine Mirth 5".
+3. Your settings, logo and menu locations are copied from the current Mine Mirth theme automatically.
 4. Open Appearance › Mine Mirth and follow the checklist: set menus, create any missing pages (Hosting, Calculator, Contact), and choose a homepage.
 WooCommerce is optional. The shop features turn on automatically when it is active.
 
@@ -102,7 +117,7 @@ Premium sections (full-width pages made of Mine Mirth sections), Guide (table of
 
 == Menus and widgets ==
 
-Menus: Primary, Mobile, Footer columns 1–3, Footer bottom. In a primary menu item, add the CSS class "mm-mega" to show its sub-menu as a mega menu, or "icon-server" (any icon name) to show an icon next to it.
+Menus: Primary, Mobile, Footer columns 1 to 3, Footer bottom. In a primary menu item, add the CSS class "mm-mega" to show its sub-menu as a mega menu, or "icon-server" (any icon name) to show an icon next to it.
 Widget areas: Blog sidebar, Shop sidebar, Page sidebar.
 
 == Notes ==
@@ -117,6 +132,15 @@ Widget areas: Blog sidebar, Shop sidebar, Page sidebar.
 * Icons and illustrations were drawn for this theme and are licensed GPLv2 or later.
 
 == Changelog ==
+
+= 5.1.0 =
+* New: separate theme folder and name (Mine Mirth 5) so it installs next to the current theme; settings are copied on first use.
+* New: test mode for the site builder with "Go live", working with the Mine Mirth Launch plugin (test drive, address memory, 301 redirects, 404 log).
+* New: "Animated hero" and "Live ticker" sections; the homepage opens with them again.
+* New: crypto vector shapes and premium motion across the site, and the live guide bubble. New Customizer options: Crypto vector shapes, Live guide bubble, Guide appears after.
+* New: focus keywords, keyword placement and density on all 80 pages, with a keyword, density and word count column in the Site builder.
+* Changed: no long dashes in content and theme text.
+* Fixed: a spinning orbit ring could make phones scroll sideways.
 
 = 5.0.0 =
 * New: Site builder (Appearance › Site builder) with 80 premium pages, mega menu, footer menus and new homepage.

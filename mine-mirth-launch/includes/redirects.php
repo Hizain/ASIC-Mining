@@ -180,6 +180,15 @@ function mml_resolve( string $path ): ?array {
 		return array( $u, 'retired', 301 );
 	}
 
+	// 2b. Old addresses the site builder knows belong to one of its pages (for example /hosting/).
+	if ( function_exists( 'mm_builder_pages' ) ) {
+		foreach ( mm_builder_pages() as $key => $def ) {
+			if ( in_array( $path, array_map( static fn( $a ) => trim( (string) $a, '/' ), (array) ( $def['alias'] ?? array() ) ), true ) && ( $u = mml_key_url( (string) $key ) ) && mml_normalize_path( $u ) !== $path ) { // phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition
+				return array( $u, 'replaced', 301 );
+			}
+		}
+	}
+
 	// 3. URL memory: what used to live here.
 	$mem = mml_memory_get( $path );
 	if ( $mem ) {
@@ -281,7 +290,8 @@ function mml_resolve_object( object $mem, string $path ): ?array {
 }
 
 /**
- * Same slug elsewhere, topic keywords, then a confident search match.
+ * Same slug elsewhere, a category of that name, an address that starts the same way, topic
+ * keywords, then a confident search match.
  *
  * @return array{0:string,1:string}|null
  */
@@ -301,6 +311,16 @@ function mml_smart_match( string $path ): ?array {
 			return array( $u, 'slug' );
 		}
 	}
+	// A product category, blog category or brand with exactly that name.
+	foreach ( array( 'product_cat', 'category', 'product_brand' ) as $tax ) {
+		$exact = taxonomy_exists( $tax ) ? get_term_by( 'slug', sanitize_title( $last ), $tax ) : false;
+		if ( $exact ) {
+			$u = get_term_link( $exact );
+			if ( ! is_wp_error( $u ) && mml_normalize_path( $u ) !== $path ) {
+				return array( $u, 'category' );
+			}
+		}
+	}
 	// An address that starts the same way (a shortened or truncated old link).
 	if ( strlen( $last ) >= 6 ) {
 		global $wpdb;
@@ -314,13 +334,12 @@ function mml_smart_match( string $path ): ?array {
 			}
 		}
 	}
-	// A product category or blog category with that name.
+	// A category or brand whose name contains those words.
 	foreach ( array( 'product_cat', 'category', 'product_brand' ) as $tax ) {
 		if ( ! taxonomy_exists( $tax ) ) {
 			continue;
 		}
-		$exact = get_term_by( 'slug', sanitize_title( $last ), $tax );
-		$terms = $exact ? array( $exact ) : get_terms( array( 'taxonomy' => $tax, 'hide_empty' => false, 'search' => str_replace( '-', ' ', $last ), 'number' => 2 ) );
+		$terms = get_terms( array( 'taxonomy' => $tax, 'hide_empty' => false, 'search' => str_replace( '-', ' ', $last ), 'number' => 2 ) );
 		if ( ! is_wp_error( $terms ) && 1 === count( $terms ) ) {
 			$u = get_term_link( $terms[0] );
 			if ( ! is_wp_error( $u ) && mml_normalize_path( $u ) !== $path ) {

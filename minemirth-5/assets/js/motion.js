@@ -276,7 +276,7 @@
 			if (!data || !data.display) { return; }
 			market = data;
 			// The first message may have been waiting for live numbers.
-			if (started && auto && !quiet && !shown && !box.classList.contains('is-open') && say(-1)) { setOpen(true); }
+			if (started && auto && !quiet && !shown && past() && !box.classList.contains('is-open') && say(-1)) { setOpen(true); }
 		});
 
 		// Speak once the visitor has had time to look and has moved past the first screen, so the

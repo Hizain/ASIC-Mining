@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Builds installable zips in dist/: the theme (minemirth/) and the plugin
-# (mine-mirth-commerce/), each with its folder at the top level.
+# Builds installable zips in dist/: the theme (minemirth-5/) and the plugins, each with its
+# folder at the top level.
 set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 mkdir -p "$root/dist"
@@ -14,6 +14,7 @@ build() {
 	echo "$out"
 }
 build minemirth-5 style.css
+build mine-mirth-launch mine-mirth-launch.php
 build mine-mirth-commerce mine-mirth-commerce.php
 build mine-mirth-contact mine-mirth-contact.php
 build mine-mirth-rig-optimizer mine-mirth-rig-optimizer.php
