@@ -346,6 +346,7 @@ function mm_market_display( ?array $data = null ): array {
 		'updated'      => $updated,
 		'spark_path'   => mm_spark_path( (array) ( $d['spark'] ?? array() ) ),
 		'spark_down'   => is_numeric( $d['change'] ?? null ) && $d['change'] < 0,
+		'hashprice'    => function_exists( 'mm_btc_economics' ) && ( $e = mm_btc_economics( $d ) ) && $e['hashprice_ph'] ? $sym . number_format_i18n( (float) $e['hashprice_ph'], 2 ) : '—', // phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition
 	);
 }
 
