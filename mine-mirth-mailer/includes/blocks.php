@@ -4,8 +4,9 @@
  *
  * Campaigns are written in the normal WordPress editor. Standard blocks
  * (paragraph, heading, list, image, buttons, quote, columns, separator,
- * spacer) are converted to email-safe markup, and six email blocks are added:
- * Hero, Products, Articles, Bitcoin network, Call to action and Ask us anything.
+ * spacer) are converted to email-safe markup, and seven email blocks are added:
+ * Hero, Products, Articles (or guides), Bitcoin network, Free tools, Call to action and
+ * Ask us anything.
  *
  * @package MineMirthMailer
  */
@@ -22,6 +23,13 @@ function mmm_product_ids( string $source, int $count, string $category = '', str
 		return array();
 	}
 	$count = max( 1, min( 9, $count ) );
+	// Best sellers: miners first (not power supplies or parts) when the theme has its catalog.
+	if ( 'popular' === $source && function_exists( 'mm_catalog_filter' ) ) {
+		$ids = array_values( array_diff( array_map( static fn( $r ) => (int) $r['id'], mm_catalog_filter( array( 'sort' => 'popular', 'limit' => $count + count( $exclude ), 'stock' => 'available', 'miners' => true ) ) ), $exclude ) );
+		if ( $ids ) {
+			return array_slice( $ids, 0, $count );
+		}
+	}
 	if ( 'ids' === $source ) {
 		return array_slice( array_values( array_diff( array_filter( array_map( 'absint', explode( ',', $ids ) ) ), $exclude ) ), 0, $count );
 	}
@@ -66,6 +74,9 @@ function mmm_post_ids( string $source, int $count, string $category = '', array 
 		'ignore_sticky_posts' => true,
 		'post__not_in'        => $exclude,
 	);
+	if ( 'guides' === $source && function_exists( 'mmm_guide_ids' ) ) {
+		return mmm_guide_ids( $count, array(), $exclude );
+	}
 	if ( 'category' === $source && $category ) {
 		$args['category_name'] = sanitize_title( $category );
 	}
@@ -97,6 +108,10 @@ function mmm_block_defs(): array {
 		'network'  => array(
 			'attributes' => array(),
 			'render'     => static fn() => mmm_c_network(),
+		),
+		'tools'    => array(
+			'attributes' => array( 'title' => array( 'type' => 'string', 'default' => 'Free tools on live data' ), 'eyebrow' => $s, 'tools' => array( 'type' => 'string', 'default' => 'profit,hashprice,breakeven,hosting' ) ),
+			'render'     => static fn( $a ) => mmm_c_tools( array_filter( array_map( 'sanitize_key', explode( ',', (string) $a['tools'] ) ) ), (string) $a['title'], (string) $a['eyebrow'] ),
 		),
 		'cta'      => array(
 			'attributes' => array( 'eyebrow' => $s, 'title' => array( 'type' => 'string', 'default' => 'Host your miners with us' ), 'text' => $s, 'buttonText' => array( 'type' => 'string', 'default' => 'Explore hosting' ), 'buttonUrl' => $s ),
@@ -188,6 +203,121 @@ function mmm_render_blocks( string $content ): string {
 	return $out;
 }
 
+/**
+ * Classic editor HTML (paragraphs, headings, lists, images, quotes, lines) as email sections.
+ * Each paragraph keeps its own spacing instead of running into one block of text.
+ */
+function mmm_render_freeform( string $html ): string {
+	$html = trim( $html );
+	if ( '' === $html ) {
+		return '';
+	}
+	$html = wpautop( $html );
+	if ( ! class_exists( 'DOMDocument' ) ) {
+		$out = '';
+		foreach ( preg_split( '#</p>\s*#i', $html ) as $chunk ) {
+			$chunk = trim( (string) preg_replace( '#^<p[^>]*>#i', '', $chunk ) );
+			$out  .= '' !== $chunk ? mmm_c_text( $chunk ) : '';
+		}
+		return $out;
+	}
+	$doc  = new DOMDocument();
+	$prev = libxml_use_internal_errors( true );
+	$doc->loadHTML( '<?xml encoding="utf-8"?><div id="mmm-root">' . $html . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+	libxml_clear_errors();
+	libxml_use_internal_errors( $prev );
+	$root = $doc->getElementById( 'mmm-root' );
+	return $root ? mmm_render_nodes( $root, $doc ) : mmm_c_text( $html );
+}
+
+function mmm_node_html( DOMNode $node, DOMDocument $doc ): string {
+	$out = '';
+	foreach ( $node->childNodes as $child ) {
+		$out .= $doc->saveHTML( $child );
+	}
+	return trim( $out );
+}
+
+function mmm_node_align( DOMNode $node ): string {
+	$style = $node instanceof DOMElement ? strtolower( $node->getAttribute( 'style' ) . ' ' . $node->getAttribute( 'class' ) ) : '';
+	if ( preg_match( '/text-align:\s*(center|right)|align(center|right)|has-text-align-(center|right)/', $style, $m ) ) {
+		return (string) ( $m[1] ?: ( $m[2] ?: $m[3] ) );
+	}
+	return 'left';
+}
+
+function mmm_render_nodes( DOMNode $parent, DOMDocument $doc ): string {
+	$out = '';
+	foreach ( $parent->childNodes as $node ) {
+		if ( XML_TEXT_NODE === $node->nodeType ) {
+			$text = trim( (string) $node->textContent );
+			$out .= '' !== $text ? mmm_c_text( esc_html( $text ) ) : '';
+			continue;
+		}
+		if ( ! $node instanceof DOMElement ) {
+			continue;
+		}
+		$tag = strtolower( $node->tagName );
+		switch ( $tag ) {
+			case 'p':
+				$inner = mmm_node_html( $node, $doc );
+				// A paragraph that only holds an image (optionally linked) becomes an image.
+				if ( preg_match( '#^(?:<a[^>]+href="([^"]+)"[^>]*>)?\s*<img[^>]+src="([^"]+)"[^>]*>\s*(?:</a>)?$#i', $inner, $m ) ) {
+					$alt  = preg_match( '#alt="([^"]*)"#i', $inner, $a ) ? html_entity_decode( $a[1] ) : '';
+					$out .= mmm_c_image( html_entity_decode( $m[2] ), $alt, html_entity_decode( (string) $m[1] ) );
+				} elseif ( '' !== trim( wp_strip_all_tags( $inner ) ) ) {
+					$out .= mmm_c_text( $inner, mmm_node_align( $node ) );
+				}
+				break;
+			case 'h1':
+			case 'h2':
+			case 'h3':
+			case 'h4':
+			case 'h5':
+			case 'h6':
+				$out .= mmm_c_heading( mmm_node_html( $node, $doc ), min( 4, (int) substr( $tag, 1 ) ), '', mmm_node_align( $node ) );
+				break;
+			case 'ul':
+			case 'ol':
+				$items = array();
+				foreach ( $node->childNodes as $li ) {
+					if ( $li instanceof DOMElement && 'li' === strtolower( $li->tagName ) ) {
+						$items[] = mmm_node_html( $li, $doc );
+					}
+				}
+				$out .= $items ? mmm_c_list( $items, 'ol' === $tag ) : '';
+				break;
+			case 'blockquote':
+				$out .= mmm_c_quote( (string) preg_replace( '#</?p[^>]*>#i', '<br>', mmm_node_html( $node, $doc ) ) );
+				break;
+			case 'hr':
+				$out .= mmm_c_divider();
+				break;
+			case 'img':
+				$out .= mmm_c_image( $node->getAttribute( 'src' ), $node->getAttribute( 'alt' ) );
+				break;
+			case 'figure':
+				$img  = $node->getElementsByTagName( 'img' )->item( 0 );
+				$cap  = $node->getElementsByTagName( 'figcaption' )->item( 0 );
+				$link = $node->getElementsByTagName( 'a' )->item( 0 );
+				$out .= $img ? mmm_c_image( $img->getAttribute( 'src' ), $img->getAttribute( 'alt' ), $link ? $link->getAttribute( 'href' ) : '', $cap ? trim( (string) $cap->textContent ) : '' ) : '';
+				break;
+			case 'div':
+			case 'section':
+			case 'article':
+				$out .= mmm_render_nodes( $node, $doc );
+				break;
+			case 'table':
+				$out .= mmm_c_text( esc_html( trim( (string) preg_replace( '/\s+/', ' ', (string) $node->textContent ) ) ) );
+				break;
+			default:
+				$inner = $doc->saveHTML( $node );
+				$out  .= '' !== trim( wp_strip_all_tags( (string) $inner ) ) ? mmm_c_text( (string) $inner ) : '';
+		}
+	}
+	return $out;
+}
+
 function mmm_strip_wrapper( string $html, string $tag ): string {
 	$html = trim( $html );
 	$html = (string) preg_replace( '#^<' . $tag . '\b[^>]*>#i', '', $html );
@@ -220,8 +350,9 @@ function mmm_render_block( array $b ): string {
 
 	switch ( $name ) {
 		case '':
-			$text = trim( $html );
-			return '' !== $text ? mmm_c_text( wpautop( $text ) ) : '';
+		case 'core/freeform':
+			// Classic editor content, or text written in "Write an email".
+			return mmm_render_freeform( $html );
 
 		case 'core/paragraph':
 			$text = mmm_strip_wrapper( $html, 'p' );

@@ -1,14 +1,27 @@
 === Mine Mirth Mailer ===
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 
-Send email to your subscribers in your website's own design: a weekly email built for each person from what they did on the site, plus campaigns you write yourself with ready-made email blocks. Opens, clicks and replies are recorded, and you answer replies from WordPress. Uses the subscribers the Mine Mirth theme already collects; no theme change needed.
+Send email to your subscribers in your website's own design: a designed welcome email for every new sign-up, a weekly email built for each person from what they did on the site, plus emails you write yourself in a simple text editor or with ready-made email blocks. Opens, clicks and replies are recorded, and you answer replies from WordPress. Uses the subscribers the Mine Mirth theme already collects; no theme change needed.
 
 == Where to find it ==
 
-Everything is under the "Mailer" menu: Overview, New email, Weekly email, Introduction email, Inbox, Subscribers, Add subscribers, Settings.
+Everything is under the "Mailer" menu: Overview, Write an email, Weekly email, Welcome email, Introduction email, Inbox, Subscribers, Add subscribers, Settings, Campaigns.
+
+== What's new in 1.2.0 ==
+
+* Welcome email in your website's design. Everyone who subscribes on the website (footer, homepage, articles, price alerts) now gets a designed welcome right away: your logo and colours, today's Bitcoin network numbers, your free tools, starter guides and popular miners. Edit it in Mailer › Welcome email. The plain-text welcome from Mine Mirth Newsletter Alerts is switched off automatically while this one is on, so nobody gets two (its sign-up alerts to you keep working).
+* Write an email. Mailer › Write an email is a simple screen: subject, preview text, your message in a normal text editor (bold, links, lists, headings, images), optional banner and button, optional extras (network numbers, free tools, miners, articles, reply box) and a live preview. Save a draft, send yourself a test, send now or schedule it, all from the same screen.
+* Send to specific people. Paste email addresses instead of picking an audience. Addresses not on your list are skipped (or added, if you tick that they agreed to hear from you), and unsubscribed people are never emailed.
+* Emails written in the classic editor, or pasted from another app, now keep all their paragraphs, headings, lists and images. Before, they could arrive as one block of text.
+* "Test & send…" in the block editor saves your changes first, so the email you test is the email you wrote.
+* In sync with Mine Mirth 5: emails link to the new tool pages (profit, hashprice, breakeven, hosting cost and the other calculators), the Mining guides and the Hosting, Tools and Learn pages. New "Email tools" block, a "Mining guides" choice in Email articles, hashprice and the halving countdown in the network snapshot, and "Best sellers" now shows miners only (no power supplies or parts). Visits to tool and guide pages count towards each subscriber's interests.
+
+== The welcome email ==
+
+Mailer › Welcome email: turn it on or off, edit the subject, preview text, headline, opening text, button, the "What lands in your inbox" points, how many guides and miners to include, the network numbers, the free tools and the closing reply box. Preview it, send yourself a test and see sent, opened, clicked and replies. Each person gets it once. People you add by hand get the introduction email instead.
 
 == Before your first send ==
 
@@ -51,8 +64,8 @@ The weekly email schedule, scheduled campaigns and all dates in the Mailer use P
 Turn it on in Mailer › Weekly email and pick the day and time. Each subscriber gets their own version, based on what they did on the site in the last 30 days:
 
 * Looked at miners in the shop: "Still thinking about the …?" with those miners (current price and stock), similar miners to compare, the profit calculator or hosting, and a "Get a quote" button.
-* Read the blog: new articles in the topics they read, this week's Bitcoin network numbers, two miners and the calculator.
-* Used the calculators or hosting pages: network numbers, miners and hosting.
+* Read the blog or the guides: new articles in the topics they read, more Mining guides, this week's Bitcoin network numbers and two miners.
+* Used the tools or hosting pages: network numbers, the tools they haven't tried yet, miners and hosting.
 * Visited the homepage, or no activity yet: the best of everything: network numbers, new miners, new articles and hosting.
 
 Sold-out products are never promoted. You can add a personal note for the week and set a fixed subject line, or leave it empty for the personal subjects. Preview any subscriber's version before it goes out, or send this week's email right away.
@@ -61,18 +74,21 @@ How visits are recorded: when someone subscribes, or clicks a link in one of you
 
 == Writing your own emails ==
 
-Mailer › New email opens the block editor with a starter layout. Besides normal text, headings, lists, images, buttons, quotes, columns and separators, you get these email blocks:
+The quickest way is Mailer › Write an email (see What's new in 1.2.0). Your email is wrapped in the website's design automatically, and the preview shows exactly what subscribers will see.
+
+For full layouts, Mailer › Campaigns › Add New opens the block editor with a starter layout. Besides normal text, headings, lists, images, buttons, quotes, columns and separators, you get these email blocks:
 
 * Email hero: big headline, intro text, button and an optional image.
 * Email products: product cards (image, hashrate and power, price, stock and a button). Choose newest, best sellers, on sale, featured, a category, or specific product IDs.
-* Email articles: latest articles, or one category.
-* Bitcoin network snapshot: price, hashrate, difficulty and the next adjustment at send time.
+* Email articles: latest articles, the Mining guides, or one category.
+* Email tools: cards for the free tools you pick (profit, hashprice, breakeven, hosting cost and more), each linking to its page.
+* Bitcoin network snapshot: price, hashprice, hashrate, difficulty, the next adjustment and the halving countdown at send time.
 * Email call to action: dark card with headline, text and button.
 * Ask us anything: invites a reply; answers land in Mailer › Inbox.
 
 Write {first_name} anywhere (or {first_name|friend} for a fallback). The name comes from their account or orders.
 
-In the "Email" box on the right, set the subject, the preview text (shown after the subject in the inbox) and who it goes to: everyone, shop visitors, blog readers, tool users, engaged, inactive, customers or non-customers. Then click "Test & send…" to send a test, send now or schedule it. Emails go out in batches every minute (Settings › Emails per minute), so large lists never overload your mail service.
+In the "Email" box on the right, set the subject, the preview text (shown after the subject in the inbox) and who it goes to: everyone, shop visitors, blog and guide readers, tool users, engaged, inactive, customers or non-customers. Then click "Test & send…" (it saves your changes first) to send a test, send now or schedule it. On the Test & send page you can also choose "Specific people" and paste their addresses. Emails go out in batches every minute (Settings › Emails per minute), so large lists never overload your mail service.
 
 Each email's page shows sent, opened, clicked, replies and unsubscribes, plus the list of recipients. Duplicate an email from the list to reuse its layout.
 

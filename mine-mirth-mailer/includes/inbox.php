@@ -252,7 +252,7 @@ function mmm_inbox_page(): void {
 		$last = $wpdb->get_row( $wpdb->prepare( "SELECT direction, subject, body FROM $m WHERE sub_id = %d ORDER BY created DESC, id DESC LIMIT 1", (int) $t->sub_id ) ); // phpcs:ignore WordPress.DB
 		$url  = admin_url( 'admin.php?page=mmm-inbox&sub=' . (int) $t->sub_id );
 		echo '<tr' . ( (int) $t->unread ? ' class="is-unread"' : '' ) . '><td><a href="' . esc_url( $url ) . '"><strong>' . esc_html( mmm_sub_email( (int) $t->sub_id ) ) . '</strong></a>' . ( (int) $t->unread ? ' <span class="mmm-badge">' . esc_html( (string) (int) $t->unread ) . '</span>' : '' ) . '</td>';
-		echo '<td>' . ( 'out' === $last->direction ? '<span class="description">' . esc_html__( 'You:', 'mine-mirth-mailer' ) . '</span> ' : '' ) . '<strong>' . esc_html( (string) $last->subject ) . '</strong> — ' . esc_html( wp_trim_words( (string) $last->body, 16, '…' ) ) . '</td>';
+		echo '<td>' . ( 'out' === $last->direction ? '<span class="description">' . esc_html__( 'You:', 'mine-mirth-mailer' ) . '</span> ' : '' ) . '<strong>' . esc_html( (string) $last->subject ) . '</strong> · ' . esc_html( wp_trim_words( (string) $last->body, 16, '…' ) ) . '</td>';
 		echo '<td>' . esc_html( human_time_diff( (int) strtotime( $t->last_at . ' UTC' ) ) ) . ' ' . esc_html__( 'ago', 'mine-mirth-mailer' ) . '</td></tr>';
 	}
 	echo '</tbody></table></div>';

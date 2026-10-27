@@ -266,3 +266,15 @@
 	.mmm-service label.is-wide, .mmm-service label.is-title, .mmm-service label.is-link, .mmm-service label.is-url { grid-column: 1 / -1; }
 	.mmm-service label.is-icon { grid-row: auto; }
 }
+
+/* Write an email */
+.mmm-compose .mmm-grid--preview { align-items: start; }
+.mmm-compose .mmm-card + .mmm-card { margin-top: 16px; }
+.mmm-compose .mmm-sticky-preview { position: sticky; top: 46px; }
+.mmm-compose .mmm-banner { margin: 0 0 14px; padding: 10px 14px; border: 1px dashed #c7d2de; border-radius: 10px; background: #f8fbfe; }
+.mmm-compose .mmm-banner summary { cursor: pointer; font-weight: 600; }
+.mmm-compose .mmm-banner .mmm-fields { margin-top: 12px; }
+.mmm-compose .mmm-checks label { display: inline-block; margin: 0 0 6px; }
+.mmm-compose .mmm-actions-card p { margin: 0 0 12px; }
+.mmm-compose .wp-editor-wrap { margin-top: 4px; }
+@media (max-width: 1100px) { .mmm-compose .mmm-sticky-preview { position: static; } }

@@ -9,11 +9,11 @@ defined( 'ABSPATH' ) || exit;
 
 function mmm_campaign_kind( int $campaign ): string {
 	$kind = (string) get_post_meta( $campaign, '_mmm_kind', true );
-	return in_array( $kind, array( 'weekly', 'intro' ), true ) ? $kind : 'manual';
+	return in_array( $kind, array( 'weekly', 'intro', 'welcome' ), true ) ? $kind : 'manual';
 }
 
 /**
- * Weekly and introduction emails are built automatically for each person (no block editor).
+ * Weekly, welcome and introduction emails are built automatically for each person (no block editor).
  */
 function mmm_is_auto( int $campaign ): bool {
 	return 'manual' !== mmm_campaign_kind( $campaign );
@@ -30,7 +30,8 @@ function mmm_compose( int $campaign, int $sub ): ?array {
 		return null;
 	}
 	if ( mmm_is_auto( $campaign ) ) {
-		$w    = 'intro' === mmm_campaign_kind( $campaign ) ? mmm_intro_compose( $sub ) : mmm_weekly_compose( $sub );
+		$kind = mmm_campaign_kind( $campaign );
+		$w    = 'intro' === $kind ? mmm_intro_compose( $sub ) : ( 'welcome' === $kind ? mmm_welcome_compose( $sub ) : mmm_weekly_compose( $sub ) );
 		$html = mmm_document( array( 'subject' => $w['subject'], 'preheader' => $w['preheader'], 'body' => $w['body'], 'campaign' => $campaign, 'label' => $w['label'] ?? '' ) );
 		$subj = $w['subject'];
 	} else {
@@ -204,7 +205,8 @@ function mmm_start_due(): void {
 		)
 	);
 	foreach ( $due as $id ) {
-		mmm_queue_campaign( (int) $id, mmm_audience_ids( (string) get_post_meta( $id, '_mmm_audience', true ) ?: 'all' ) );
+		$aud = (string) get_post_meta( $id, '_mmm_audience', true );
+		mmm_queue_campaign( (int) $id, 'list' === $aud ? array_map( 'intval', (array) get_post_meta( $id, '_mmm_to_ids', true ) ) : mmm_audience_ids( $aud ? $aud : 'all' ) );
 	}
 }
 

@@ -33,9 +33,24 @@ function mmm_weekly( string $key ) {
 }
 
 /**
- * URL of the first page using one of the theme's page templates, or a matching slug.
+ * URL of a page on the site: the Mine Mirth 5 site-builder page first, then the first page using
+ * one of the theme's page templates, then a page with a matching slug.
+ * Kinds: hosting, calculator, tools, learn, contact, market, miners.
  */
 function mmm_page_url( string $kind ): string {
+	$keys = array( 'hosting' => 'hosting', 'calculator' => 'tool-profit', 'tools' => 'tools', 'learn' => 'learn', 'contact' => 'contact', 'market' => 'market', 'miners' => 'miners' );
+	if ( isset( $keys[ $kind ] ) && function_exists( 'mmm_builder_page' ) ) {
+		$url = mmm_builder_page( $keys[ $kind ] );
+		if ( $url ) {
+			return $url;
+		}
+	}
+	if ( 'calculator' === $kind && function_exists( 'mm_tool_url' ) ) {
+		return (string) mm_tool_url( 'profit' );
+	}
+	if ( 'miners' === $kind && function_exists( 'wc_get_page_permalink' ) ) {
+		return (string) wc_get_page_permalink( 'shop' );
+	}
 	$template = array( 'hosting' => 'page-templates/hosting.php', 'calculator' => 'page-templates/calculator.php' )[ $kind ] ?? '';
 	if ( $template ) {
 		$pages = get_pages( array( 'meta_key' => '_wp_page_template', 'meta_value' => $template, 'number' => 1 ) ); // phpcs:ignore WordPress.DB.SlowDBQuery
@@ -48,7 +63,7 @@ function mmm_page_url( string $kind ): string {
 			return (string) get_permalink( $page );
 		}
 	}
-	return 'calculator' === $kind && function_exists( 'wc_get_page_permalink' ) ? home_url( '/' ) : home_url( '/' );
+	return home_url( '/' );
 }
 
 /**
@@ -119,6 +134,12 @@ function mmm_weekly_compose( int $sub ): array {
 	$reads        = static fn( int $n, string $title ) => mmm_c_posts( mmm_reading_list( $p['post_cats'], $p['posts'], $n ), $title, __( 'Mining Academy', 'mine-mirth-mailer' ) );
 	$network      = mmm_weekly( 'network' ) ? mmm_c_network() : '';
 	$calc_cta     = mmm_c_cta( __( 'Run the numbers before you buy', 'mine-mirth-mailer' ), __( 'Profit, power cost and payback for any miner, using today’s Bitcoin price and network difficulty.', 'mine-mirth-mailer' ), __( 'Open the calculator', 'mine-mirth-mailer' ), mmm_page_url( 'calculator' ), __( 'Free tool', 'mine-mirth-mailer' ) );
+	$has_tools    = (bool) mmm_tools_list();
+	$tool_cards   = static function ( array $wanted, int $n, string $title ) use ( $p ): string {
+		$fresh = array_values( array_diff( $wanted, $p['used_tools'] ) );
+		return mmm_c_tools( array_slice( $fresh ? $fresh : $wanted, 0, $n ), $title, __( 'Free tools', 'mine-mirth-mailer' ) );
+	};
+	$guides       = static fn( int $n ) => mmm_builder_page( 'learn' ) ? mmm_c_posts( mmm_guide_ids( $n, array(), $p['guides'] ), __( 'Guides to read next', 'mine-mirth-mailer' ), __( 'Mining guides', 'mine-mirth-mailer' ) ) : '';
 	$host_cta     = mmm_c_cta( __( 'Need somewhere to run your miners?', 'mine-mirth-mailer' ), __( 'Partner facilities with published rates, setup and monitoring, so your machines earn from day one.', 'mine-mirth-mailer' ), __( 'Explore hosting', 'mine-mirth-mailer' ), mmm_page_url( 'hosting' ), __( 'Hosting', 'mine-mirth-mailer' ) );
 
 	// Lead product name for the subject line.
@@ -147,6 +168,7 @@ function mmm_weekly_compose( int $sub ): array {
 			$subject = __( 'Your mining reads for this week', 'mine-mirth-mailer' );
 			$intro   = __( 'Thanks for reading the Mining Academy. Here are this week’s articles picked from the topics you read most.', 'mine-mirth-mailer' );
 			$sec[]   = $reads( $n_post, __( 'Picked for you', 'mine-mirth-mailer' ) );
+			$sec[]   = $guides( 2 );
 			$sec[]   = $network;
 			$sec[]   = $new_in_shop( 2, __( 'Miners our readers are looking at', 'mine-mirth-mailer' ) );
 			$sec[]   = $calc_cta;
@@ -158,7 +180,8 @@ function mmm_weekly_compose( int $sub ): array {
 			$intro   = __( 'You’ve been running the numbers. Here’s this week’s network picture and the options that fit.', 'mine-mirth-mailer' );
 			$sec[]   = $network;
 			$sec[]   = $p['product_cats'] ? $similar( $n_prod, __( 'Miners that fit your numbers', 'mine-mirth-mailer' ) ) : $new_in_shop( $n_prod, __( 'Efficient miners in stock', 'mine-mirth-mailer' ) );
-			$sec[]   = in_array( 'hosting', $p['tools'], true ) || $bought ? $host_cta : $calc_cta;
+			$sec[]   = $has_tools ? $tool_cards( array( 'breakeven', 'roi', 'halving', 'compare', 'hosting', 'upgrade' ), 4, __( 'More tools for your numbers', 'mine-mirth-mailer' ) ) : '';
+			$sec[]   = in_array( 'hosting', $p['tools'], true ) || $bought ? $host_cta : ( $has_tools ? '' : $calc_cta );
 			$sec[]   = mmm_c_reply( __( 'Want us to check your numbers?', 'mine-mirth-mailer' ), __( 'Send us your power price and target hashrate, and we’ll suggest the setup with the fastest payback.', 'mine-mirth-mailer' ), __( 'Ask our team', 'mine-mirth-mailer' ), 'hosting' );
 			break;
 
@@ -168,7 +191,7 @@ function mmm_weekly_compose( int $sub ): array {
 			$sec[]   = $network;
 			$sec[]   = $new_in_shop( $n_prod, __( 'Just landed', 'mine-mirth-mailer' ) );
 			$sec[]   = $reads( 2, __( 'Worth reading', 'mine-mirth-mailer' ) );
-			$sec[]   = $bought ? $host_cta : $calc_cta;
+			$sec[]   = $bought ? $host_cta : ( $has_tools ? $tool_cards( array( 'profit', 'halving' ), 2, __( 'Plan with today’s numbers', 'mine-mirth-mailer' ) ) : $calc_cta );
 			$sec[]   = mmm_c_reply();
 	}
 
@@ -233,7 +256,7 @@ function mmm_weekly_start(): int {
 			'post_type'   => 'mmm_campaign',
 			'post_status' => 'publish',
 			/* translators: %s: date */
-			'post_title'  => sprintf( __( 'Weekly email – %s', 'mine-mirth-mailer' ), mmm_date( get_option( 'date_format' ) ) ),
+			'post_title'  => sprintf( __( 'Weekly email, %s', 'mine-mirth-mailer' ), mmm_date( get_option( 'date_format' ) ) ),
 		)
 	);
 	if ( ! $campaign || is_wp_error( $campaign ) ) {

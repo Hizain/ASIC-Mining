@@ -50,7 +50,7 @@ add_action(
 add_action(
 	'add_meta_boxes_mmm_campaign',
 	static function ( $post ) {
-		if ( in_array( get_post_meta( $post->ID, '_mmm_kind', true ), array( 'weekly', 'intro' ), true ) ) {
+		if ( in_array( get_post_meta( $post->ID, '_mmm_kind', true ), array( 'weekly', 'intro', 'welcome' ), true ) ) {
 			return;
 		}
 		add_meta_box( 'mmm-email', __( 'Email', 'mine-mirth-mailer' ), 'mmm_campaign_box', 'mmm_campaign', 'side', 'high' );
@@ -79,8 +79,34 @@ function mmm_campaign_box( WP_Post $post ): void {
 	<?php if ( in_array( $state, array( 'sending', 'sent' ), true ) ) : ?>
 		<a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=mmm-send&id=' . $post->ID ) ); ?>"><?php esc_html_e( 'Results', 'mine-mirth-mailer' ); ?></a></p>
 	<?php else : ?>
-		<a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=mmm-send&id=' . $post->ID ) ); ?>"><?php esc_html_e( 'Test & send…', 'mine-mirth-mailer' ); ?></a></p>
-		<p style="color:#646970;font-size:12px"><?php esc_html_e( 'Save your changes first.', 'mine-mirth-mailer' ); ?></p>
+		<a class="button button-primary" id="mmm-send-link" href="<?php echo esc_url( admin_url( 'admin.php?page=mmm-send&id=' . $post->ID ) ); ?>"><?php esc_html_e( 'Test & send…', 'mine-mirth-mailer' ); ?></a></p>
+		<p style="color:#646970;font-size:12px"><?php esc_html_e( 'Your changes are saved first. Publishing on its own does not send anything.', 'mine-mirth-mailer' ); ?></p>
+		<script>
+		( function () {
+			var send = <?php echo wp_json_encode( admin_url( 'admin.php?page=mmm-send&id=' . $post->ID ) ); ?>;
+			function ready( fn ) { if ( document.readyState !== 'loading' ) { fn(); } else { document.addEventListener( 'DOMContentLoaded', fn ); } }
+			ready( function () {
+				var w = window.wp;
+				// Save the email (and this box) before opening Test & send.
+				document.addEventListener( 'click', function ( e ) {
+					var link = e.target.closest && e.target.closest( '#mmm-send-link' );
+					if ( ! link || ! w || ! w.data || ! w.data.select( 'core/editor' ) ) { return; }
+					e.preventDefault();
+					link.textContent = <?php echo wp_json_encode( __( 'Saving…', 'mine-mirth-mailer' ) ); ?>;
+					Promise.resolve( w.data.dispatch( 'core/editor' ).savePost() ).then( function () {
+						var tries = 0;
+						( function wait() {
+							var boxes = w.data.select( 'core/edit-post' );
+							if ( boxes && boxes.isSavingMetaBoxes && boxes.isSavingMetaBoxes() && tries++ < 50 ) { return setTimeout( wait, 200 ); }
+							window.location.href = link.href;
+						} )();
+					} );
+				} );
+				if ( ! w || ! w.data || ! w.data.dispatch( 'core/notices' ) ) { return; }
+				w.data.dispatch( 'core/notices' ).createInfoNotice( <?php echo wp_json_encode( __( 'Write your email, then click “Test & send” in the Email box on the right to send it. Publishing on its own does not send anything.', 'mine-mirth-mailer' ) ); ?>, { id: 'mmm-how-to-send', isDismissible: true, actions: [ { label: <?php echo wp_json_encode( __( 'Test & send', 'mine-mirth-mailer' ) ); ?>, url: send } ] } );
+			} );
+		} )();
+		</script>
 	<?php endif; ?>
 	<?php
 }
@@ -138,7 +164,7 @@ add_action(
 		switch ( $col ) {
 			case 'mmm_type':
 				$kind = mmm_campaign_kind( (int) $id );
-				echo 'weekly' === $kind ? esc_html__( 'Weekly (personalised)', 'mine-mirth-mailer' ) : ( 'intro' === $kind ? esc_html__( 'Introduction (automatic)', 'mine-mirth-mailer' ) : esc_html__( 'Campaign', 'mine-mirth-mailer' ) );
+				echo esc_html( array( 'weekly' => __( 'Weekly (personalised)', 'mine-mirth-mailer' ), 'intro' => __( 'Introduction (automatic)', 'mine-mirth-mailer' ), 'welcome' => __( 'Welcome (automatic)', 'mine-mirth-mailer' ) )[ $kind ] ?? __( 'Campaign', 'mine-mirth-mailer' ) );
 				break;
 			case 'mmm_stat':
 				echo esc_html( mmm_state_label( (int) $id ) );
@@ -241,31 +267,30 @@ add_action(
 		if ( ! current_user_can( 'edit_post', $id ) || 'mmm_campaign' !== get_post_type( $id ) ) {
 			wp_die( esc_html__( 'Not allowed.', 'mine-mirth-mailer' ) );
 		}
-		$do  = sanitize_key( wp_unslash( $_POST['do'] ?? '' ) );
+		$do   = sanitize_key( wp_unslash( $_POST['do'] ?? '' ) );
+		$back = sanitize_key( wp_unslash( $_POST['back'] ?? '' ) );
 		// Only the send form carries an audience; a test send must not change the saved one.
 		$aud = isset( $_POST['audience'] ) ? sanitize_key( wp_unslash( $_POST['audience'] ) ) : (string) get_post_meta( $id, '_mmm_audience', true );
-		$aud = isset( mmm_audiences()[ $aud ] ) ? $aud : 'all';
+		$aud = 'list' === $aud || isset( mmm_audiences()[ $aud ] ) ? $aud : 'all';
+		$ids = null;
 		if ( isset( $_POST['audience'] ) ) {
 			update_post_meta( $id, '_mmm_audience', $aud );
+			if ( 'list' === $aud ) {
+				$res = mmm_resolve_list( sanitize_textarea_field( wp_unslash( $_POST['list'] ?? '' ) ), ! empty( $_POST['add_missing'] ) );
+				$ids = $res['ids'];
+				update_post_meta( $id, '_mmm_to_ids', $ids );
+			}
 		}
 		$msg = '';
 		if ( 'test' === $do ) {
-			$to  = sanitize_email( wp_unslash( $_POST['test_to'] ?? '' ) );
-			$sub = mmm_preview_sub( absint( wp_unslash( $_POST['as_sub'] ?? 0 ) ) );
-			if ( is_email( $to ) && $sub ) {
-				$mail           = mmm_compose( $id, $sub );
-				[ $ok, $error ] = mmm_mail( $to, '[TEST] ' . $mail['subject'], $mail['html'], $mail['text'] );
-				$msg            = $ok ? 'test_ok' : 'test_fail';
-				update_option( 'mmm_last_test_error', $error, false );
-			} else {
-				$msg = 'test_fail';
-				update_option( 'mmm_last_test_error', __( 'Enter a valid email address, and add at least one subscriber.', 'mine-mirth-mailer' ), false );
-			}
+			[ $ok, $error ] = mmm_send_test( $id, sanitize_email( wp_unslash( $_POST['test_to'] ?? '' ) ), absint( wp_unslash( $_POST['as_sub'] ?? 0 ) ) );
+			$msg            = $ok ? 'test_ok' : 'test_fail';
+			update_option( 'mmm_last_test_error', $error, false );
 		} elseif ( 'now' === $do ) {
 			if ( 'publish' !== get_post_status( $id ) ) {
 				wp_update_post( array( 'ID' => $id, 'post_status' => 'publish' ) );
 			}
-			$n   = mmm_queue_campaign( $id, mmm_audience_ids( $aud ) );
+			$n   = mmm_queue_campaign( $id, null !== $ids ? $ids : mmm_audience_ids( $aud ) );
 			$msg = $n ? 'queued' : 'nobody';
 		} elseif ( 'schedule' === $do ) {
 			$when = strtotime( sanitize_text_field( wp_unslash( $_POST['when'] ?? '' ) ) . ' ' . mmm_tz()->getName() );
@@ -281,6 +306,10 @@ add_action(
 			delete_post_meta( $id, '_mmm_state' );
 			delete_post_meta( $id, '_mmm_scheduled' );
 			$msg = 'unscheduled';
+		}
+		if ( in_array( $back, array( 'mmm-welcome', 'mmm-intro' ), true ) ) {
+			wp_safe_redirect( mmm_admin_url( $back, array( 'test' => $msg ) ) );
+			exit;
 		}
 		wp_safe_redirect( admin_url( 'admin.php?page=mmm-send&id=' . $id . '&msg=' . $msg ) );
 		exit;
@@ -317,6 +346,21 @@ function mmm_send_page(): void {
 		<?php if ( isset( $messages[ $msg ] ) ) : ?>
 			<div class="notice notice-<?php echo esc_attr( $messages[ $msg ][0] ); ?> is-dismissible"><p><?php echo esc_html( $messages[ $msg ][1] ); ?></p></div>
 		<?php endif; ?>
+		<?php
+		$list = 'queued' === $msg ? get_transient( 'mmm_list_result_' . get_current_user_id() ) : null;
+		if ( is_array( $list ) ) {
+			delete_transient( 'mmm_list_result_' . get_current_user_id() );
+			if ( $list['added'] ) {
+				echo '<div class="notice notice-info"><p>' . esc_html__( 'Added to your list:', 'mine-mirth-mailer' ) . ' ' . esc_html( implode( ', ', $list['added'] ) ) . '</p></div>';
+			}
+			if ( $list['missing'] ) {
+				echo '<div class="notice notice-warning"><p>' . esc_html__( 'Not on your list, so not sent:', 'mine-mirth-mailer' ) . ' ' . esc_html( implode( ', ', $list['missing'] ) ) . '</p></div>';
+			}
+			if ( $list['unsubscribed'] ) {
+				echo '<div class="notice notice-warning"><p>' . esc_html__( 'Unsubscribed, so not sent:', 'mine-mirth-mailer' ) . ' ' . esc_html( implode( ', ', $list['unsubscribed'] ) ) . '</p></div>';
+			}
+		}
+		?>
 		<?php if ( ! trim( (string) mmm_opt( 'address' ) ) ) : ?>
 			<div class="notice notice-warning"><p><?php esc_html_e( 'Add your business postal address in Mailer › Settings. Marketing emails must include one by law in the US (CAN-SPAM) and it helps them reach the inbox.', 'mine-mirth-mailer' ); ?> <a href="<?php echo esc_url( admin_url( 'admin.php?page=mmm-settings' ) ); ?>"><?php esc_html_e( 'Open settings', 'mine-mirth-mailer' ); ?></a></p></div>
 		<?php endif; ?>
@@ -369,7 +413,10 @@ function mmm_send_page(): void {
 								<?php foreach ( mmm_audiences() as $key => $label ) : ?>
 									<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $audience, $key ); ?>><?php echo esc_html( $label . ' (' . number_format_i18n( count( mmm_audience_ids( $key ) ) ) . ')' ); ?></option>
 								<?php endforeach; ?>
+								<option value="list" <?php selected( $audience, 'list' ); ?>><?php esc_html_e( 'Specific people (type their emails below)', 'mine-mirth-mailer' ); ?></option>
 							</select></p>
+							<p><textarea name="list" rows="2" class="large-text code" placeholder="ali@example.com, sara@example.com"></textarea>
+							<label><input type="checkbox" name="add_missing" value="1"> <?php esc_html_e( 'Add anyone who is not on my list yet (they agreed to hear from me)', 'mine-mirth-mailer' ); ?></label></p>
 							<p><label><input type="radio" name="do" value="now" checked> <?php esc_html_e( 'Send now', 'mine-mirth-mailer' ); ?></label><br>
 							<label><input type="radio" name="do" value="schedule"> <?php esc_html_e( 'Schedule for', 'mine-mirth-mailer' ); ?></label>
 							<input type="datetime-local" name="when" value="<?php echo esc_attr( mmm_date( 'Y-m-d\TH:i', time() + DAY_IN_SECONDS ) ); ?>"> <span class="description"><?php echo esc_html( wp_timezone_string() ); ?></span></p>
@@ -403,7 +450,7 @@ function mmm_recipient_table( int $campaign ): void {
 	echo '<details class="mmm-recipients"><summary>' . esc_html__( 'Recipients', 'mine-mirth-mailer' ) . '</summary><table class="widefat striped"><thead><tr><th>' . esc_html__( 'Email', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Status', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Opened', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Clicked', 'mine-mirth-mailer' ) . '</th></tr></thead><tbody>';
 	foreach ( $rows as $r ) {
 		$status = array( 'sent' => __( 'Sent', 'mine-mirth-mailer' ), 'failed' => __( 'Failed', 'mine-mirth-mailer' ), 'skipped' => __( 'Skipped', 'mine-mirth-mailer' ) )[ $r->status ] ?? __( 'Waiting', 'mine-mirth-mailer' );
-		echo '<tr><td><a href="' . esc_url( admin_url( 'admin.php?page=mmm-subscribers&sub=' . (int) $r->sub_id ) ) . '">' . esc_html( $r->email ) . '</a></td><td>' . esc_html( $status ) . ( $r->error ? ' <span style="color:#d63638">— ' . esc_html( $r->error ) . '</span>' : '' ) . '</td><td>' . ( in_array( (int) $r->sub_id, $opens, true ) ? '✓' : '' ) . '</td><td>' . ( in_array( (int) $r->sub_id, $click, true ) ? '✓' : '' ) . '</td></tr>';
+		echo '<tr><td><a href="' . esc_url( admin_url( 'admin.php?page=mmm-subscribers&sub=' . (int) $r->sub_id ) ) . '">' . esc_html( $r->email ) . '</a></td><td>' . esc_html( $status ) . ( $r->error ? ' <span style="color:#d63638">(' . esc_html( $r->error ) . ')</span>' : '' ) . '</td><td>' . ( in_array( (int) $r->sub_id, $opens, true ) ? '✓' : '' ) . '</td><td>' . ( in_array( (int) $r->sub_id, $click, true ) ? '✓' : '' ) . '</td></tr>';
 	}
 	echo '</tbody></table></details>';
 }

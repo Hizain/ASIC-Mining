@@ -38,7 +38,7 @@ function mmm_intro_defaults(): array {
 		's2_link'    => __( 'See hosting', 'mine-mirth-mailer' ),
 		's3_icon'    => '📈',
 		's3_title'   => __( 'Free profitability tools', 'mine-mirth-mailer' ),
-		's3_text'    => __( 'Profit calculator, rig optimizer and market scope with live Bitcoin network data, so you can model ROI before you buy.', 'mine-mirth-mailer' ),
+		's3_text'    => __( 'Twelve calculators on live Bitcoin network data: profit, hashprice, break-even power, ROI, halving impact and hosting vs home. Model your payback before you buy.', 'mine-mirth-mailer' ),
 		's3_url'     => '',
 		's3_link'    => __( 'Try the tools', 'mine-mirth-mailer' ),
 		's4_icon'    => '🤝',
@@ -150,7 +150,8 @@ function mmm_c_services( array $items ): string {
 function mmm_intro_compose( int $sub ): array {
 	$shop  = function_exists( 'wc_get_page_permalink' ) ? (string) wc_get_page_permalink( 'shop' ) : home_url( '/' );
 	$host  = mmm_page_url( 'hosting' );
-	$calc  = mmm_page_url( 'calculator' );
+	$calc  = mmm_builder_page( 'tools' );
+	$calc  = $calc ? $calc : mmm_page_url( 'calculator' );
 	$auto  = array( 1 => $shop, 2 => $host ? $host : home_url( '/' ), 3 => $calc ? $calc : home_url( '/' ), 4 => '%%MMM_REPLY%%&topic=question' );
 	$items = array();
 	for ( $i = 1; $i <= 4; $i++ ) {
@@ -171,9 +172,7 @@ function mmm_intro_compose( int $sub ): array {
 	$body .= mmm_c_heading( __( 'How we can help', 'mine-mirth-mailer' ), 2, __( 'What we do', 'mine-mirth-mailer' ) );
 	$body .= mmm_c_services( $items );
 	if ( (int) mmm_intro( 'products' ) > 0 ) {
-		$ids = mmm_product_ids( 'popular', (int) mmm_intro( 'products' ) );
-		$ids = $ids ? $ids : mmm_product_ids( 'latest', (int) mmm_intro( 'products' ) );
-		$body .= mmm_c_products( $ids, __( 'Popular with miners right now', 'mine-mirth-mailer' ), __( 'In stock', 'mine-mirth-mailer' ) );
+		$body .= mmm_c_products( mmm_popular_miner_ids( (int) mmm_intro( 'products' ) ), __( 'Popular with miners right now', 'mine-mirth-mailer' ), __( 'In stock', 'mine-mirth-mailer' ) );
 	}
 	if ( mmm_intro( 'network' ) ) {
 		$body .= mmm_c_network();
@@ -560,6 +559,14 @@ function mmm_intro_page(): void {
 	<div class="wrap mmm-admin">
 		<h1 class="mmm-title"><?php esc_html_e( 'Introduction email', 'mine-mirth-mailer' ); ?> <a class="page-title-action" href="<?php echo esc_url( mmm_admin_url( 'mmm-add' ) ); ?>"><?php esc_html_e( 'Add subscribers', 'mine-mirth-mailer' ); ?></a></h1>
 		<p class="mmm-lead"><?php esc_html_e( 'Sent once to each person you add by hand, instead of a welcome email. It introduces what you offer and invites them to tell you about their mining operation; replies land in Mailer › Inbox.', 'mine-mirth-mailer' ); ?></p>
+		<?php
+		$mmm_test = sanitize_key( wp_unslash( $_GET['test'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( 'test_ok' === $mmm_test ) {
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Test email sent. Check your inbox (and the spam folder).', 'mine-mirth-mailer' ) . '</p></div>';
+		} elseif ( 'test_fail' === $mmm_test ) {
+			echo '<div class="notice notice-error"><p>' . esc_html__( 'The test email could not be sent:', 'mine-mirth-mailer' ) . ' ' . esc_html( (string) get_option( 'mmm_last_test_error' ) ) . '</p></div>';
+		}
+		?>
 		<?php if ( isset( $_GET['settings-updated'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Saved. The preview shows the new version.', 'mine-mirth-mailer' ); ?></p></div>
 		<?php endif; ?>
@@ -601,7 +608,7 @@ function mmm_intro_page(): void {
 						<label class="is-title"><?php esc_html_e( 'Title', 'mine-mirth-mailer' ); ?><input type="text" name="<?php echo esc_attr( $name( "s{$i}_title" ) ); ?>" value="<?php echo esc_attr( (string) $f( "s{$i}_title" ) ); ?>"></label>
 						<label class="is-wide"><?php esc_html_e( 'Text', 'mine-mirth-mailer' ); ?><textarea rows="2" name="<?php echo esc_attr( $name( "s{$i}_text" ) ); ?>"><?php echo esc_textarea( (string) $f( "s{$i}_text" ) ); ?></textarea></label>
 						<label class="is-link"><?php esc_html_e( 'Link text', 'mine-mirth-mailer' ); ?><input type="text" name="<?php echo esc_attr( $name( "s{$i}_link" ) ); ?>" value="<?php echo esc_attr( (string) $f( "s{$i}_link" ) ); ?>"></label>
-						<label class="is-url"><?php esc_html_e( 'Link (empty = automatic)', 'mine-mirth-mailer' ); ?><input type="url" name="<?php echo esc_attr( $name( "s{$i}_url" ) ); ?>" value="<?php echo esc_attr( (string) $f( "s{$i}_url" ) ); ?>" placeholder="<?php echo esc_attr( array( 1 => __( 'Shop page', 'mine-mirth-mailer' ), 2 => __( 'Hosting page', 'mine-mirth-mailer' ), 3 => __( 'Calculator page', 'mine-mirth-mailer' ), 4 => __( 'Reply form', 'mine-mirth-mailer' ) )[ $i ] ); ?>"></label>
+						<label class="is-url"><?php esc_html_e( 'Link (empty = automatic)', 'mine-mirth-mailer' ); ?><input type="url" name="<?php echo esc_attr( $name( "s{$i}_url" ) ); ?>" value="<?php echo esc_attr( (string) $f( "s{$i}_url" ) ); ?>" placeholder="<?php echo esc_attr( array( 1 => __( 'Shop page', 'mine-mirth-mailer' ), 2 => __( 'Hosting page', 'mine-mirth-mailer' ), 3 => __( 'Free tools page', 'mine-mirth-mailer' ), 4 => __( 'Reply form', 'mine-mirth-mailer' ) )[ $i ] ); ?>"></label>
 					</div>
 				<?php endfor; ?>
 
@@ -630,7 +637,7 @@ function mmm_intro_page(): void {
 					<p><a target="_blank" href="<?php echo esc_url( $preview ); ?>"><?php esc_html_e( 'Open in a new tab', 'mine-mirth-mailer' ); ?></a> · <a href="<?php echo esc_url( mmm_admin_url( 'mmm-send', array( 'id' => $campaign ) ) ); ?>"><?php esc_html_e( 'Results and recipients', 'mine-mirth-mailer' ); ?></a></p>
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="mmm-test">
 						<?php wp_nonce_field( 'mmm_send_' . $campaign ); ?>
-						<input type="hidden" name="action" value="mmm_send"><input type="hidden" name="id" value="<?php echo esc_attr( (string) $campaign ); ?>"><input type="hidden" name="do" value="test">
+						<input type="hidden" name="action" value="mmm_send"><input type="hidden" name="id" value="<?php echo esc_attr( (string) $campaign ); ?>"><input type="hidden" name="do" value="test"><input type="hidden" name="back" value="mmm-intro">
 						<input type="email" name="test_to" class="regular-text" value="<?php echo esc_attr( (string) wp_get_current_user()->user_email ); ?>" required>
 						<button class="button"><?php esc_html_e( 'Send me a test', 'mine-mirth-mailer' ); ?></button>
 					</form>

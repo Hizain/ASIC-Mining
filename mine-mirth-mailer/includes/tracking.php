@@ -122,7 +122,18 @@ function mmm_page_context(): array {
 		return array( 'blog', is_category() ? (int) get_queried_object_id() : 0 );
 	}
 	if ( is_page() ) {
-		$id   = (int) get_queried_object_id();
+		$id  = (int) get_queried_object_id();
+		$key = (string) get_post_meta( $id, '_mm_page_key', true );
+		$tpl = (string) get_page_template_slug( $id );
+		if ( 'page-templates/tool.php' === $tpl || str_starts_with( $key, 'tool-' ) || in_array( $key, array( 'tools', 'market' ), true ) ) {
+			return array( 'calculator', $id );
+		}
+		if ( 'page-templates/guide.php' === $tpl || str_starts_with( $key, 'g-' ) || 'learn' === $key ) {
+			return array( 'guide', $id );
+		}
+		if ( 'miners' === $key || str_starts_with( $key, 'm-' ) || str_starts_with( $key, 'brand' ) ) {
+			return array( 'shop', 0 );
+		}
 		$hay  = strtolower( (string) get_page_template_slug( $id ) . ' ' . get_post_field( 'post_name', $id ) . ' ' . get_the_title( $id ) );
 		if ( str_contains( $hay, 'hosting' ) ) {
 			return array( 'hosting', $id );
@@ -173,7 +184,7 @@ add_action(
 						return new WP_REST_Response( null, 204 );
 					}
 					$area = sanitize_key( (string) $r->get_param( 'a' ) );
-					if ( ! in_array( $area, array( 'home', 'product', 'shop', 'checkout', 'post', 'blog', 'hosting', 'calculator', 'page' ), true ) ) {
+					if ( ! in_array( $area, array( 'home', 'product', 'shop', 'checkout', 'post', 'blog', 'guide', 'hosting', 'calculator', 'page' ), true ) ) {
 						return new WP_REST_Response( null, 204 );
 					}
 					$obj = absint( $r->get_param( 'o' ) );
@@ -284,7 +295,7 @@ add_action(
 function mmm_site_page( string $title, string $html ): void {
 	status_header( 200 );
 	nocache_headers();
-	add_filter( 'pre_get_document_title', static fn() => $title . ' – ' . get_bloginfo( 'name' ) );
+	add_filter( 'pre_get_document_title', static fn() => $title . ' | ' . get_bloginfo( 'name' ) );
 	add_filter( 'wp_robots', static fn( $r ) => array_merge( $r, array( 'noindex' => true, 'nofollow' => true ) ) );
 	get_header();
 	echo '<main id="mm-main" class="mm-main mmm-page" style="padding:clamp(48px,8vw,110px) 0"><div class="mm-container" style="max-width:720px;margin:0 auto;padding:0 20px">';

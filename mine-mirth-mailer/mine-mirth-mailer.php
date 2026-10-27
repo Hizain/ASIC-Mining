@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       Mine Mirth Mailer
- * Description:       Email marketing in your website's design: a weekly email personalised to what each subscriber did on the site, campaigns written with ready-made email blocks, subscribers you add by hand (one, a pasted list or a CSV) with an introduction email instead of a welcome email, open and click tracking, and a reply inbox you answer from WordPress. Uses the subscribers the Mine Mirth theme already collects.
- * Version:           1.1.0
+ * Description:       Email marketing in your website's design: a welcome email for every website sign-up, emails you write in a normal editor (or with email blocks) and send to a group or to specific people, a weekly email personalised to what each subscriber did on the site, subscribers you add by hand with an introduction email, open and click tracking, and a reply inbox you answer from WordPress. Uses the subscribers the Mine Mirth theme already collects and links to its live tools and guides.
+ * Version:           1.2.0
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            Mine Mirth, LLC
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MMM_VERSION', '1.1.0' );
+define( 'MMM_VERSION', '1.2.0' );
 define( 'MMM_FILE', __FILE__ );
 define( 'MMM_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MMM_URI', plugin_dir_url( __FILE__ ) );
@@ -29,6 +29,9 @@ require_once MMM_DIR . 'includes/campaigns.php';
 require_once MMM_DIR . 'includes/sender.php';
 require_once MMM_DIR . 'includes/inbox.php';
 require_once MMM_DIR . 'includes/manual.php';
+require_once MMM_DIR . 'includes/site.php';
+require_once MMM_DIR . 'includes/welcome.php';
+require_once MMM_DIR . 'includes/compose.php';
 require_once MMM_DIR . 'includes/admin.php';
 
 register_activation_hook(
@@ -74,6 +77,7 @@ add_action(
 	static function () {
 		if ( get_option( 'mmm_db_version' ) !== MMM_VERSION ) {
 			mmm_install();
+			mmm_upgrade();
 		}
 		mmm_schedule_events();
 	},
@@ -126,6 +130,18 @@ function mmm_tz(): DateTimeZone {
 
 function mmm_date( string $format, ?int $ts = null ): string {
 	return (string) wp_date( $format, $ts ?? time(), mmm_tz() );
+}
+
+/**
+ * One-time changes when updating from an older version.
+ */
+function mmm_upgrade(): void {
+	// The introduction email used to promote the retired Rig Optimizer and Market Scope tools.
+	$intro = get_option( 'mmm_intro' );
+	if ( is_array( $intro ) && isset( $intro['s3_text'] ) && false !== stripos( (string) $intro['s3_text'], 'rig optimizer' ) ) {
+		$intro['s3_text'] = mmm_intro_defaults()['s3_text'];
+		update_option( 'mmm_intro', $intro );
+	}
 }
 
 function mmm_opt( string $key ) {

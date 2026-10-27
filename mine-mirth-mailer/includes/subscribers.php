@@ -152,7 +152,7 @@ function mmm_sub_purchases( int $id ): array {
 /**
  * What a subscriber has been doing on the site recently.
  *
- * @return array{areas:array<string,int>,products:int[],product_cats:int[],posts:int[],post_cats:int[],last_seen:int,purchases:int[],opens:int,clicks:int,top:string}
+ * @return array{areas:array<string,int>,products:int[],product_cats:int[],posts:int[],post_cats:int[],guides:int[],used_tools:string[],last_seen:int,purchases:int[],opens:int,clicks:int,top:string}
  */
 function mmm_profile( int $id, int $days = 30 ): array {
 	global $wpdb;
@@ -174,6 +174,8 @@ function mmm_profile( int $id, int $days = 30 ): array {
 		'opens'        => 0,
 		'clicks'       => 0,
 		'tools'        => array(),
+		'used_tools'   => array(),
+		'guides'       => array(),
 	);
 	foreach ( (array) $rows as $r ) {
 		if ( 'open' === $r->type ) {
@@ -215,10 +217,19 @@ function mmm_profile( int $id, int $days = 30 ): array {
 					$p['post_cats'][] = $obj;
 				}
 				break;
+			case 'guide':
+				++$p['areas']['blog'];
+				if ( $obj && ! in_array( $obj, $p['guides'], true ) ) {
+					$p['guides'][] = $obj;
+				}
+				break;
 			case 'hosting':
 			case 'calculator':
 				++$p['areas']['tools'];
 				$p['tools'][] = $area;
+				if ( $obj && function_exists( 'mmm_page_tool' ) && '' !== ( $tool = mmm_page_tool( $obj ) ) ) { // phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition
+					$p['used_tools'][] = $tool;
+				}
 				break;
 			default:
 				if ( isset( $p['areas'][ $area ] ) ) {
@@ -239,6 +250,7 @@ function mmm_profile( int $id, int $days = 30 ): array {
 	$p['product_cats'] = array_values( array_unique( array_map( 'intval', $p['product_cats'] ) ) );
 	$p['post_cats']    = array_values( array_unique( array_map( 'intval', $p['post_cats'] ) ) );
 	$p['tools']        = array_values( array_unique( $p['tools'] ) );
+	$p['used_tools']   = array_values( array_unique( $p['used_tools'] ) );
 	$areas             = $p['areas'];
 	unset( $areas['page'], $areas['checkout'] );
 	arsort( $areas );
@@ -254,8 +266,8 @@ function mmm_audiences(): array {
 	return array(
 		'all'          => __( 'All active subscribers', 'mine-mirth-mailer' ),
 		'shop'         => __( 'Browsed the shop in the last 30 days', 'mine-mirth-mailer' ),
-		'blog'         => __( 'Read the blog in the last 30 days', 'mine-mirth-mailer' ),
-		'tools'        => __( 'Used hosting or calculator pages in the last 30 days', 'mine-mirth-mailer' ),
+		'blog'         => __( 'Read the blog or guides in the last 30 days', 'mine-mirth-mailer' ),
+		'tools'        => __( 'Used the tools or hosting pages in the last 30 days', 'mine-mirth-mailer' ),
 		'engaged'      => __( 'Opened or clicked an email in the last 60 days', 'mine-mirth-mailer' ),
 		'inactive'     => __( 'No activity in the last 60 days', 'mine-mirth-mailer' ),
 		'customers'    => __( 'Customers (have ordered)', 'mine-mirth-mailer' ),
@@ -281,7 +293,7 @@ function mmm_audience_ids( string $audience ): array {
 		case 'shop':
 		case 'blog':
 		case 'tools':
-			$areas = array( 'shop' => array( 'shop', 'product' ), 'blog' => array( 'blog', 'post' ), 'tools' => array( 'hosting', 'calculator' ) )[ $audience ];
+			$areas = array( 'shop' => array( 'shop', 'product' ), 'blog' => array( 'blog', 'post', 'guide' ), 'tools' => array( 'hosting', 'calculator' ) )[ $audience ];
 			$in    = "'" . implode( "','", array_map( 'esc_sql', $areas ) ) . "'";
 			$ids   = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT sub_id FROM $events WHERE type = 'view' AND area IN ($in) AND created > %s", $since( 30 ) ) ); // phpcs:ignore WordPress.DB
 			break;

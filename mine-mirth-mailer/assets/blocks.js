@@ -88,13 +88,21 @@
 		return [
 			text(p, 'title', __('Heading')),
 			text(p, 'eyebrow', __('Small label above the heading')),
-			select(p, 'source', __('Which articles'), [{ label: __('Newest'), value: 'latest' }, { label: __('A category (slug below)'), value: 'category' }]),
+			select(p, 'source', __('Which articles'), [{ label: __('Newest'), value: 'latest' }, { label: __('Mining guides'), value: 'guides' }, { label: __('A category (slug below)'), value: 'category' }]),
 			p.attributes.source === 'category' ? text(p, 'category', __('Category slug')) : null,
 			range(p, 'count', __('How many'), 1, 6)
 		];
 	});
 
-	register('network', __('Bitcoin network snapshot'), 'chart-line', __('Live price, hashrate, difficulty and next adjustment at send time.'), null);
+	register('network', __('Bitcoin network snapshot'), 'chart-line', __('Live price, hashprice, hashrate, difficulty, next adjustment and halving countdown at send time.'), null);
+
+	register('tools', __('Free tools'), 'calculator', __('Cards linking to the live mining tools on your site.'), function (p) {
+		return [
+			text(p, 'title', __('Heading')),
+			text(p, 'eyebrow', __('Small label above the heading')),
+			text(p, 'tools', __('Tools to show'), __('Comma separated: profit, hashprice, breakeven, compare, roi, halving, difficulty, hosting, power, upgrade, solo, altcoin'))
+		];
+	});
 
 	register('cta', __('Email call to action'), 'star-filled', __('Dark card with a headline, text and button.'), function (p) {
 		return [

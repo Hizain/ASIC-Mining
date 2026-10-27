@@ -190,7 +190,7 @@ function mmm_c_list( array $items, bool $ordered = false ): string {
 
 function mmm_c_quote( string $html, string $cite = '' ): string {
 	$d = mmm_design();
-	return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:4px 0 20px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-left:4px solid ' . esc_attr( $d['primary'] ) . ';background:' . esc_attr( $d['soft'] ) . ';padding:16px 20px;border-radius:0 12px 12px 0;font-family:' . esc_attr( $d['fb'] ) . ';font-size:17px;line-height:1.6;font-style:italic;color:' . esc_attr( $d['text'] ) . '">' . mmm_style_links( wp_kses( $html, mmm_inline_tags() ) ) . ( $cite ? '<div style="padding-top:8px;font-style:normal;font-size:13px;color:' . esc_attr( $d['muted'] ) . '">— ' . esc_html( $cite ) . '</div>' : '' ) . '</td></tr></table></td></tr></table>';
+	return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:4px 0 20px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-left:4px solid ' . esc_attr( $d['primary'] ) . ';background:' . esc_attr( $d['soft'] ) . ';padding:16px 20px;border-radius:0 12px 12px 0;font-family:' . esc_attr( $d['fb'] ) . ';font-size:17px;line-height:1.6;font-style:italic;color:' . esc_attr( $d['text'] ) . '">' . mmm_style_links( wp_kses( $html, mmm_inline_tags() ) ) . ( $cite ? '<div style="padding-top:8px;font-style:normal;font-size:13px;color:' . esc_attr( $d['muted'] ) . '">' . esc_html( $cite ) . '</div>' : '' ) . '</td></tr></table></td></tr></table>';
 }
 
 /**
@@ -302,19 +302,21 @@ function mmm_c_posts( array $ids, string $title = '', string $eyebrow = '' ): st
 		}
 		$url   = get_permalink( $post );
 		$img   = get_the_post_thumbnail_url( $post, 'medium' );
-		$text  = wp_trim_words( wp_strip_all_tags( has_excerpt( $post ) ? $post->post_excerpt : strip_shortcodes( $post->post_content ) ), 22, '…' );
-		$cat   = get_the_category( $post->ID );
+		$text  = wp_trim_words( wp_strip_all_tags( has_excerpt( $post ) ? $post->post_excerpt : excerpt_remove_blocks( strip_shortcodes( $post->post_content ) ) ), 22, '…' );
+		$cat   = 'post' === $post->post_type ? get_the_category( $post->ID ) : array();
+		$label = $cat ? $cat[0]->name : ( 'page' === $post->post_type ? (string) get_post_meta( $post->ID, '_mm_group', true ) : '' );
+		$label = '' === $label && 'page' === $post->post_type ? __( 'Mining guide', 'mine-mirth-mailer' ) : $label;
 		$rows .= '<tr>';
 		if ( $img ) {
 			$rows .= '<td class="mmm-col" valign="top" width="150" style="width:150px;padding:0 18px 20px 0"><a href="' . esc_url( $url ) . '"><img src="' . esc_url( $img ) . '" alt="" width="150" style="display:block;width:150px;max-width:100%;height:auto;border:0;border-radius:12px"></a></td>';
 		}
 		$rows .= '<td class="mmm-col" valign="top" style="padding:0 0 20px">';
-		if ( $cat ) {
-			$rows .= '<div style="font-family:' . esc_attr( $d['fm'] ) . ';font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:' . esc_attr( $d['primary'] ) . ';padding-bottom:6px">' . esc_html( $cat[0]->name ) . '</div>';
+		if ( $label ) {
+			$rows .= '<div style="font-family:' . esc_attr( $d['fm'] ) . ';font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:' . esc_attr( $d['primary'] ) . ';padding-bottom:6px">' . esc_html( $label ) . '</div>';
 		}
 		$rows .= '<a href="' . esc_url( $url ) . '" style="font-family:' . esc_attr( $d['fh'] ) . ';font-size:17px;line-height:1.3;font-weight:700;color:' . esc_attr( $d['text'] ) . ';text-decoration:none">' . esc_html( get_the_title( $post ) ) . '</a>';
 		$rows .= '<div style="padding:6px 0 8px;font-family:' . esc_attr( $d['fb'] ) . ';font-size:14px;line-height:1.6;color:' . esc_attr( $d['muted'] ) . '">' . esc_html( $text ) . '</div>';
-		$rows .= '<a href="' . esc_url( $url ) . '" style="font-family:' . esc_attr( $d['fb'] ) . ';font-size:14px;font-weight:700;color:' . esc_attr( $d['primary'] ) . ';text-decoration:none">' . esc_html__( 'Read the article →', 'mine-mirth-mailer' ) . '</a></td></tr>';
+		$rows .= '<a href="' . esc_url( $url ) . '" style="font-family:' . esc_attr( $d['fb'] ) . ';font-size:14px;font-weight:700;color:' . esc_attr( $d['primary'] ) . ';text-decoration:none">' . esc_html( 'page' === $post->post_type ? __( 'Read the guide →', 'mine-mirth-mailer' ) : __( 'Read the article →', 'mine-mirth-mailer' ) ) . '</a></td></tr>';
 	}
 	if ( ! $rows ) {
 		return '';
@@ -341,8 +343,27 @@ function mmm_c_network(): string {
 	$up    = 'is-up' === ( $v['change_class'] ?? '' );
 	$out   = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px"><tr><td bgcolor="' . esc_attr( $d['dark2'] ) . '" style="border-radius:18px;background:' . esc_attr( $d['dark2'] ) . ';background-image:radial-gradient(120% 140% at 100% 0%,rgba(53,168,246,.28),rgba(53,168,246,0) 60%);padding:18px 12px">';
 	$out  .= '<div style="padding:0 12px 6px;font-family:' . esc_attr( $d['fm'] ) . ';font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:' . esc_attr( $d['accent2'] ) . '">&#9679; ' . esc_html__( 'Bitcoin network this week', 'mine-mirth-mailer' ) . '</div>';
-	$out  .= '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' . $stat( __( 'Bitcoin price', 'mine-mirth-mailer' ), (string) ( $v['price'] ?? '—' ), (string) ( $v['change'] ?? '' ), $up ? '#34d399' : '#f87171' ) . $stat( __( 'Network hashrate', 'mine-mirth-mailer' ), (string) ( $v['hashrate'] ?? '—' ) ) . '</tr>';
-	$out  .= '<tr>' . $stat( __( 'Difficulty', 'mine-mirth-mailer' ), (string) ( $v['difficulty'] ?? '—' ) ) . $stat( __( 'Next adjustment', 'mine-mirth-mailer' ), (string) ( $v['adjustment'] ?? '—' ) ) . '</tr></table>';
+	$cells = array( $stat( __( 'Bitcoin price', 'mine-mirth-mailer' ), (string) ( $v['price'] ?? '' ), (string) ( $v['change'] ?? '' ), $up ? '#34d399' : '#f87171' ) );
+	if ( ! empty( $v['hashprice'] ) && '—' !== $v['hashprice'] ) {
+		$cells[] = $stat( __( 'Hashprice (per PH/s a day)', 'mine-mirth-mailer' ), (string) $v['hashprice'] );
+	}
+	$cells[] = $stat( __( 'Network hashrate', 'mine-mirth-mailer' ), (string) ( $v['hashrate'] ?? '' ) );
+	$cells[] = $stat( __( 'Difficulty', 'mine-mirth-mailer' ), (string) ( $v['difficulty'] ?? '' ) );
+	$cells[] = $stat( __( 'Next adjustment', 'mine-mirth-mailer' ), (string) ( $v['adjustment'] ?? '' ) );
+	$days    = function_exists( 'mmm_halving_days' ) ? mmm_halving_days() : 0;
+	if ( $days ) {
+		/* translators: %s: number of days */
+		$cells[] = $stat( __( 'Next halving', 'mine-mirth-mailer' ), sprintf( _n( '%s day', '%s days', $days, 'mine-mirth-mailer' ), number_format_i18n( $days ) ) );
+	}
+	$out .= '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">';
+	foreach ( array_chunk( $cells, 2 ) as $row ) {
+		$out .= '<tr>' . implode( '', $row ) . ( 1 === count( $row ) ? '<td class="mmm-col" width="50%">&nbsp;</td>' : '' ) . '</tr>';
+	}
+	$out .= '</table>';
+	$tool = function_exists( 'mmm_tool_link' ) ? mmm_tool_link( 'hashprice' ) : '';
+	if ( $tool ) {
+		$out .= '<div style="padding:8px 12px 0;font-family:' . esc_attr( $d['fb'] ) . ';font-size:13px"><a href="' . esc_url( $tool ) . '" style="color:' . esc_attr( $d['accent2'] ) . ';font-weight:700;text-decoration:none">' . esc_html__( 'What this means for your miner →', 'mine-mirth-mailer' ) . '</a></div>';
+	}
 	return $out . '</td></tr></table>';
 }
 

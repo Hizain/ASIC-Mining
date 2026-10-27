@@ -15,8 +15,9 @@ add_action(
 		$bubble = $unread ? ' <span class="awaiting-mod"><span class="pending-count">' . (int) $unread . '</span></span>' : '';
 		add_menu_page( __( 'Mailer', 'mine-mirth-mailer' ), __( 'Mailer', 'mine-mirth-mailer' ) . $bubble, 'manage_options', 'mmm', 'mmm_overview_page', 'dashicons-email-alt', 57 );
 		add_submenu_page( 'mmm', __( 'Overview', 'mine-mirth-mailer' ), __( 'Overview', 'mine-mirth-mailer' ), 'manage_options', 'mmm', 'mmm_overview_page' );
-		add_submenu_page( 'mmm', __( 'New email', 'mine-mirth-mailer' ), __( 'New email', 'mine-mirth-mailer' ), 'edit_posts', 'post-new.php?post_type=mmm_campaign' );
+		add_submenu_page( 'mmm', __( 'Write an email', 'mine-mirth-mailer' ), __( 'Write an email', 'mine-mirth-mailer' ), 'edit_posts', 'mmm-compose', 'mmm_compose_page' );
 		add_submenu_page( 'mmm', __( 'Weekly email', 'mine-mirth-mailer' ), __( 'Weekly email', 'mine-mirth-mailer' ), 'manage_options', 'mmm-weekly', 'mmm_weekly_page' );
+		add_submenu_page( 'mmm', __( 'Welcome email', 'mine-mirth-mailer' ), __( 'Welcome email', 'mine-mirth-mailer' ), 'manage_options', 'mmm-welcome', 'mmm_welcome_page' );
 		add_submenu_page( 'mmm', __( 'Introduction email', 'mine-mirth-mailer' ), __( 'Introduction email', 'mine-mirth-mailer' ), 'manage_options', 'mmm-intro', 'mmm_intro_page' );
 		add_submenu_page( 'mmm', __( 'Inbox', 'mine-mirth-mailer' ), __( 'Inbox', 'mine-mirth-mailer' ) . $bubble, 'manage_options', 'mmm-inbox', 'mmm_inbox_page' );
 		add_submenu_page( 'mmm', __( 'Subscribers', 'mine-mirth-mailer' ), __( 'Subscribers', 'mine-mirth-mailer' ), 'manage_options', 'mmm-subscribers', 'mmm_subscribers_page' );
@@ -73,7 +74,7 @@ function mmm_overview_page(): void {
 	$pct    = static fn( $n ) => $sent ? round( 100 * $n / $sent ) . '%' : '—';
 	?>
 	<div class="wrap mmm-admin">
-		<h1 class="mmm-title"><?php esc_html_e( 'Mailer', 'mine-mirth-mailer' ); ?> <a class="page-title-action" href="<?php echo esc_url( admin_url( 'post-new.php?post_type=mmm_campaign' ) ); ?>"><?php esc_html_e( 'New email', 'mine-mirth-mailer' ); ?></a></h1>
+		<h1 class="mmm-title"><?php esc_html_e( 'Mailer', 'mine-mirth-mailer' ); ?> <a class="page-title-action" href="<?php echo esc_url( mmm_admin_url( 'mmm-compose' ) ); ?>"><?php esc_html_e( 'Write an email', 'mine-mirth-mailer' ); ?></a></h1>
 		<div class="mmm-stats mmm-stats--wide">
 			<?php
 			foreach ( array(
@@ -95,7 +96,7 @@ function mmm_overview_page(): void {
 				<?php
 				$recent = get_posts( array( 'post_type' => 'mmm_campaign', 'post_status' => 'any', 'posts_per_page' => 8 ) );
 				if ( ! $recent ) {
-					echo '<p>' . esc_html__( 'No emails yet.', 'mine-mirth-mailer' ) . ' <a href="' . esc_url( admin_url( 'post-new.php?post_type=mmm_campaign' ) ) . '">' . esc_html__( 'Write your first one', 'mine-mirth-mailer' ) . '</a></p>';
+					echo '<p>' . esc_html__( 'No emails yet.', 'mine-mirth-mailer' ) . ' <a href="' . esc_url( mmm_admin_url( 'mmm-compose' ) ) . '">' . esc_html__( 'Write your first one', 'mine-mirth-mailer' ) . '</a></p>';
 				} else {
 					echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Email', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Status', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Sent', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Opened', 'mine-mirth-mailer' ) . '</th><th>' . esc_html__( 'Clicked', 'mine-mirth-mailer' ) . '</th></tr></thead><tbody>';
 					foreach ( $recent as $c ) {
@@ -253,7 +254,7 @@ function mmm_weekly_page(): void {
 						echo '<h3>' . esc_html__( 'Past weekly emails', 'mine-mirth-mailer' ) . '</h3><ul>';
 						foreach ( $runs as $r ) {
 							$s = mmm_campaign_stats( $r->ID );
-							echo '<li><a href="' . esc_url( mmm_admin_url( 'mmm-send', array( 'id' => $r->ID ) ) ) . '">' . esc_html( get_the_title( $r ) ) . '</a> — ' . esc_html( sprintf( /* translators: 1: sent 2: opened 3: clicked */ __( '%1$d sent, %2$d opened, %3$d clicked', 'mine-mirth-mailer' ), $s['sent'], $s['opens'], $s['clickers'] ) ) . '</li>';
+							echo '<li><a href="' . esc_url( mmm_admin_url( 'mmm-send', array( 'id' => $r->ID ) ) ) . '">' . esc_html( get_the_title( $r ) ) . '</a>: ' . esc_html( sprintf( /* translators: 1: sent 2: opened 3: clicked */ __( '%1$d sent, %2$d opened, %3$d clicked', 'mine-mirth-mailer' ), $s['sent'], $s['opens'], $s['clickers'] ) ) . '</li>';
 						}
 						echo '</ul>';
 					}
@@ -524,7 +525,7 @@ function mmm_settings_page(): void {
 					<tr><th><label for="mmm-ih"><?php esc_html_e( 'IMAP server', 'mine-mirth-mailer' ); ?></label></th><td><input id="mmm-ih" class="regular-text" name="mmm_settings[imap_host]" value="<?php echo esc_attr( (string) $o( 'imap_host' ) ); ?>" placeholder="imap.gmail.com"> <input type="number" class="small-text" name="mmm_settings[imap_port]" value="<?php echo esc_attr( (string) $o( 'imap_port' ) ); ?>" aria-label="<?php esc_attr_e( 'Port', 'mine-mirth-mailer' ); ?>">
 						<select name="mmm_settings[imap_secure]" aria-label="<?php esc_attr_e( 'Security', 'mine-mirth-mailer' ); ?>"><?php foreach ( array( 'ssl' => 'SSL', 'tls' => 'TLS', 'none' => __( 'None', 'mine-mirth-mailer' ) ) as $k => $v ) : ?><option value="<?php echo esc_attr( $k ); ?>" <?php selected( (string) $o( 'imap_secure' ), $k ); ?>><?php echo esc_html( $v ); ?></option><?php endforeach; ?></select></td></tr>
 					<tr><th><label for="mmm-iu"><?php esc_html_e( 'Username', 'mine-mirth-mailer' ); ?></label></th><td><input id="mmm-iu" class="regular-text" name="mmm_settings[imap_user]" value="<?php echo esc_attr( (string) $o( 'imap_user' ) ); ?>" autocomplete="off"></td></tr>
-					<tr><th><label for="mmm-ip"><?php esc_html_e( 'Password', 'mine-mirth-mailer' ); ?></label></th><td><input id="mmm-ip" type="password" class="regular-text" name="mmm_settings[imap_pass]" value="" autocomplete="new-password" placeholder="<?php echo $o( 'imap_pass' ) ? esc_attr__( 'Saved — type to change', 'mine-mirth-mailer' ) : ''; ?>"><p class="description"><?php esc_html_e( 'Use an app password (Gmail, Outlook, Zoho). Stored encrypted.', 'mine-mirth-mailer' ); ?></p></td></tr>
+					<tr><th><label for="mmm-ip"><?php esc_html_e( 'Password', 'mine-mirth-mailer' ); ?></label></th><td><input id="mmm-ip" type="password" class="regular-text" name="mmm_settings[imap_pass]" value="" autocomplete="new-password" placeholder="<?php echo $o( 'imap_pass' ) ? esc_attr__( 'Saved. Type to change it.', 'mine-mirth-mailer' ) : ''; ?>"><p class="description"><?php esc_html_e( 'Use an app password (Gmail, Outlook, Zoho). Stored encrypted.', 'mine-mirth-mailer' ); ?></p></td></tr>
 					<tr><th><label for="mmm-if"><?php esc_html_e( 'Folder', 'mine-mirth-mailer' ); ?></label></th><td><input id="mmm-if" class="regular-text" name="mmm_settings[imap_folder]" value="<?php echo esc_attr( (string) $o( 'imap_folder' ) ); ?>"></td></tr>
 				</table>
 				<?php if ( $status ) : ?>
