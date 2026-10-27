@@ -218,7 +218,7 @@ function mm_js_config(): array {
 			'inStock'      => __( 'In stock', 'minemirth' ),
 			'perDay'       => __( '/day', 'minemirth' ),
 			'lastKnown'    => __( 'Last known data', 'minemirth' ),
-			'noLive'       => __( 'Live data unavailable — enter values', 'minemirth' ),
+			'noLive'       => __( 'Live data unavailable, enter values', 'minemirth' ),
 			/* translators: %d: number of days */
 			'days'         => __( '%d days', 'minemirth' ),
 			'tenYears'     => __( '10+ years', 'minemirth' ),

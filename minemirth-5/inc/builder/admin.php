@@ -36,6 +36,7 @@ function mm_builder_screen(): void {
 		return;
 	}
 	$plan    = mm_builder_plan();
+	$seo_stats = mm_builder_seo_stats();
 	$retired = mm_builder_retired();
 	$last    = get_option( 'mm_builder_last' );
 	$result  = get_transient( 'mm_builder_result_' . get_current_user_id() );
@@ -62,7 +63,7 @@ function mm_builder_screen(): void {
 			.mm-builder .mm-bbox h2{margin:0 0 12px;font-size:16px}
 			.mm-builder table.widefat td,.mm-builder table.widefat th{vertical-align:middle}
 			.mm-builder .mm-state{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;color:#fff}
-			.mm-builder .mm-path{color:#646970;font-family:monospace;font-size:12px}
+			.mm-builder .mm-path{color:#646970;font-family:monospace;font-size:12px}.mm-builder .mm-seo__kw{display:block;font-weight:600}.mm-builder .mm-seo__nums{font-size:12px;font-family:monospace}
 			.mm-builder .mm-opts label{display:block;margin:6px 0}
 			.mm-builder .mm-sticky{position:sticky;bottom:0;z-index:5;display:flex;gap:12px;align-items:center;padding:14px 18px;border:1px solid #dcdcde;border-radius:12px;background:#fff;box-shadow:0 -6px 24px rgba(0,0,0,.06)}
 			.mm-builder details summary{cursor:pointer;font-weight:600}
@@ -159,7 +160,7 @@ function mm_builder_screen(): void {
 				<div class="mm-bbox">
 					<h2><?php echo esc_html( $label ); ?> <span style="color:#8c8f94;font-weight:400">(<?php echo count( $keys ); ?>)</span></h2>
 					<table class="widefat striped">
-						<thead><tr><td class="check-column" style="padding-left:10px"><input type="checkbox" onclick="this.closest('table').querySelectorAll('tbody input[type=checkbox]:not(:disabled)').forEach(c=>c.checked=this.checked)"></td><th><?php esc_html_e( 'Page', 'minemirth' ); ?></th><th><?php esc_html_e( 'Address', 'minemirth' ); ?></th><th><?php esc_html_e( 'What happens', 'minemirth' ); ?></th></tr></thead>
+						<thead><tr><td class="check-column" style="padding-left:10px"><input type="checkbox" onclick="this.closest('table').querySelectorAll('tbody input[type=checkbox]:not(:disabled)').forEach(c=>c.checked=this.checked)"></td><th><?php esc_html_e( 'Page', 'minemirth' ); ?></th><th><?php esc_html_e( 'Address', 'minemirth' ); ?></th><th><?php esc_html_e( 'Focus keyword · density · words', 'minemirth' ); ?></th><th><?php esc_html_e( 'What happens', 'minemirth' ); ?></th></tr></thead>
 						<tbody>
 						<?php
 						foreach ( $keys as $key ) :
@@ -177,6 +178,18 @@ function mm_builder_screen(): void {
 								<th scope="row" class="check-column" style="padding-left:10px"><input type="checkbox" name="pages[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( $row['checked'] ); ?> <?php disabled( 'protected' === $row['state'] ); ?>></th>
 								<td><strong><?php echo esc_html( $row['def']['t'] ); ?></strong><?php if ( $row['post'] ) : ?> · <a href="<?php echo esc_url( get_permalink( $row['post'] ) ); ?>" target="_blank"><?php esc_html_e( 'view', 'minemirth' ); ?></a> · <a href="<?php echo esc_url( get_edit_post_link( $row['post'] ) ); ?>"><?php esc_html_e( 'edit', 'minemirth' ); ?></a><?php endif; ?></td>
 								<td class="mm-path"><?php echo esc_html( $path ); ?></td>
+								<td class="mm-seo">
+									<?php
+									$seo = $seo_stats[ $key ] ?? null;
+									if ( $seo ) :
+										$ok = $seo['density'] >= 0.5 && $seo['density'] <= 2.5;
+										?>
+										<span class="mm-seo__kw"><?php echo esc_html( $seo['kw'] ); ?></span>
+										<span class="mm-seo__nums" style="color:<?php echo $ok ? '#00a32a' : '#b26200'; ?>" title="<?php echo esc_attr( sprintf( /* translators: 1: times used, 2: words */ __( 'Used %1$d times in %2$d words. Healthy range: 0.5%% to 2.5%%.', 'minemirth' ), $seo['count'], $seo['words'] ) ); ?>"><?php echo esc_html( number_format_i18n( $seo['density'], 1 ) . '% · ' . number_format_i18n( $seo['words'] ) ); ?></span>
+									<?php else : ?>
+										<span style="color:#8c8f94">·</span>
+									<?php endif; ?>
+								</td>
 								<td><span class="mm-state" style="background:<?php echo esc_attr( $state[1] ); ?>"><?php echo esc_html( $state[0] ); ?></span></td>
 							</tr>
 						<?php endforeach; ?>

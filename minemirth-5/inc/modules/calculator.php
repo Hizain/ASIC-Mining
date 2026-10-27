@@ -159,7 +159,7 @@ function mm_calculator_html( array $args = array() ): string {
 					<select data-mm-calc-preset>
 						<option value=""><?php echo esc_html( $prefill ? ( $labelled ? $labelled : __( 'From product page', 'minemirth' ) ) : __( 'Custom specs', 'minemirth' ) ); ?></option>
 						<?php foreach ( $presets as $i => $preset ) : ?>
-							<option value="<?php echo esc_attr( wp_json_encode( array( 'th' => $preset[1], 'w' => $preset[2], 'cost' => $preset[3] ) ) ); ?>" <?php selected( ! $prefill && 0 === $i ); ?>><?php echo esc_html( sprintf( '%1$s — %2$s TH/s · %3$s W', $preset[0], number_format_i18n( $preset[1], 1 ), number_format_i18n( $preset[2] ) ) ); ?></option>
+							<option value="<?php echo esc_attr( wp_json_encode( array( 'th' => $preset[1], 'w' => $preset[2], 'cost' => $preset[3] ) ) ); ?>" <?php selected( ! $prefill && 0 === $i ); ?>><?php echo esc_html( sprintf( '%1$s · %2$s TH/s · %3$s W', $preset[0], number_format_i18n( $preset[1], 1 ), number_format_i18n( $preset[2] ) ) ); ?></option>
 						<?php endforeach; ?>
 					</select>
 				</label>
@@ -224,7 +224,7 @@ function mm_calculator_html( array $args = array() ): string {
 					<svg class="mm-calc__chart" viewBox="0 0 360 120" preserveAspectRatio="none" data-mm-calc-chart role="img" aria-label="<?php esc_attr_e( 'Cumulative profit over 12 months', 'minemirth' ); ?>">
 						<defs><linearGradient id="mmCalcGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--mm-accent-2)"/><stop offset="1" stop-color="var(--mm-primary)"/></linearGradient></defs>
 					</svg>
-					<div class="mm-calc__chart-label"><span><?php esc_html_e( 'Cumulative result after hardware cost — months 1 to 12', 'minemirth' ); ?></span><span data-out="year1">—</span></div>
+					<div class="mm-calc__chart-label"><span><?php esc_html_e( 'Cumulative result after hardware cost, months 1 to 12', 'minemirth' ); ?></span><span data-out="year1">—</span></div>
 				</div>
 			<?php endif; ?>
 		</div>
@@ -276,7 +276,7 @@ function mm_hosting_calculator_html(): string {
 				<div class="mm-calc__kpi"><small><?php esc_html_e( 'Energy / month', 'minemirth' ); ?></small><strong data-out="energy">—</strong></div>
 			</div>
 		</div>
-		<p class="mm-calc__note"><?php esc_html_e( 'Assumes 24 hours × 30.4 days at nameplate power. A cost scenario, not a quote — taxes, deposits, repairs and curtailment are excluded unless entered.', 'minemirth' ); ?></p>
+		<p class="mm-calc__note"><?php esc_html_e( 'Assumes 24 hours × 30.4 days at nameplate power. A cost scenario, not a quote. Taxes, deposits, repairs and curtailment are excluded unless entered.', 'minemirth' ); ?></p>
 	</div>
 	<?php
 	return (string) ob_get_clean();

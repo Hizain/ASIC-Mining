@@ -12,7 +12,7 @@ $mm_count   = ( $mm_has_woo && WC()->cart ) ? WC()->cart->get_cart_contents_coun
 ?>
 <header class="mm-masthead" data-mm-header>
 	<div class="mm-container mm-masthead__inner">
-		<a class="mm-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?> — <?php esc_attr_e( 'home', 'minemirth' ); ?>">
+		<a class="mm-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?> <?php esc_attr_e( 'home', 'minemirth' ); ?>">
 			<?php echo mm_logo( 'header' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 		</a>
 

@@ -37,7 +37,7 @@
 			var promos = useSelect(function (select) {
 				return select('core').getEntityRecords('postType', 'mm_promo', { per_page: 100, status: 'publish' }) || [];
 			}, []);
-			var options = [{ label: __('— Select a promotion —', 'minemirth'), value: 0 }].concat(promos.map(function (p) {
+			var options = [{ label: __('Select a promotion', 'minemirth'), value: 0 }].concat(promos.map(function (p) {
 				return { label: (p.title && p.title.rendered) || ('#' + p.id), value: p.id };
 			}));
 

@@ -39,7 +39,7 @@ function mm_setup(): void {
 	register_nav_menus(
 		array(
 			'primary'       => __( 'Primary menu', 'minemirth' ),
-			'mobile'        => __( 'Mobile menu (optional — falls back to Primary)', 'minemirth' ),
+			'mobile'        => __( 'Mobile menu (optional, falls back to Primary)', 'minemirth' ),
 			'footer-1'      => __( 'Footer column 1', 'minemirth' ),
 			'footer-2'      => __( 'Footer column 2', 'minemirth' ),
 			'footer-3'      => __( 'Footer column 3', 'minemirth' ),
@@ -257,9 +257,49 @@ function mm5_import_settings( bool $force = false ): bool {
 		return false;
 	}
 	unset( $source['mm5_imported'] );
-	$merged                 = array_merge( is_array( $mine ) ? $mine : array(), $source );
+	$merged                 = mm5_clean_mods( array_merge( is_array( $mine ) ? $mine : array(), $source ) );
 	$merged['mm5_imported'] = time();
 	update_option( $own, $merged );
 	return true;
 }
 add_action( 'after_setup_theme', static fn() => mm5_import_settings(), 1 );
+
+/**
+ * Writing style: no long dashes in visible text. Number ranges become "200 to 240", and a dash
+ * between two thoughts becomes a comma.
+ */
+function mm5_clean_dashes( string $text ): string {
+	if ( ! preg_match( '/[—–]| -- /u', $text ) ) {
+		return $text;
+	}
+	$text = (string) preg_replace( '/(\d)\s*[–—]\s*(\$?\d)/u', '$1 to $2', $text );
+	$text = (string) preg_replace( '/^\s*[—–]\s*|\s*[—–]\s*$/u', '', $text );
+	$text = (string) preg_replace( '/\s*[—–]\s*|\s+--\s+/u', ', ', $text );
+	return (string) preg_replace( '/,\s*,/', ',', $text );
+}
+
+/** Clean the text settings of Mine Mirth 5 (its own copy only; the current theme is never touched). */
+function mm5_clean_mods( array $mods ): array {
+	foreach ( $mods as $key => $value ) {
+		if ( is_string( $value ) && 0 === strpos( (string) $key, 'mm_' ) ) {
+			$mods[ $key ] = mm5_clean_dashes( $value );
+		}
+	}
+	$mods['mm5_dashes'] = 1;
+	return $mods;
+}
+
+add_action(
+	'after_setup_theme',
+	static function () {
+		$own = 'theme_mods_' . get_option( 'stylesheet' );
+		if ( 'theme_mods_minemirth' === $own ) {
+			return;
+		}
+		$mods = get_option( $own );
+		if ( is_array( $mods ) && empty( $mods['mm5_dashes'] ) ) {
+			update_option( $own, mm5_clean_mods( $mods ) );
+		}
+	},
+	2
+);

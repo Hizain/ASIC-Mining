@@ -639,7 +639,7 @@
 		var notes = [];
 		if (per === 0) { notes.push('One miner draws ' + fmt(perAmp, 1) + ' A, more than 80% of a ' + fmt(breaker, 0) + ' A breaker (' + fmt(usable, 1) + ' A continuous). Use a larger circuit or a higher voltage.'); }
 		else { notes.push('Each ' + fmt(breaker, 0) + ' A circuit carries ' + per + ' miner' + (per > 1 ? 's' : '') + ' at the 80% continuous-load limit (' + fmt(usable, 1) + ' A).'); }
-		if (V <= 127 && w > 1500) { notes.push('Above about 1,500 W, 120 V is impractical: ASIC power supplies run more efficiently and more safely on 200–277 V.'); }
+		if (V <= 127 && w > 1500) { notes.push('Above about 1,500 W, 120 V is impractical: ASIC power supplies run more efficiently and more safely on 200 to 277 V.'); }
 		if (three) { notes.push('On 3-phase, spread miners evenly across the three phases so the current stays balanced.'); }
 		notes.push('All of the power becomes heat: plan to move about ' + fmt(btu / (1.08 * dt), 0) + ' CFM of air, or ' + fmt(btu / 12000, 1) + ' tons of cooling, to hold a ' + fmt(dt, 0) + ' °F rise.');
 		notes.push('Figures are for planning. Breakers, cable sizes and receptacles must be chosen and installed by a licensed electrician to your local code.');

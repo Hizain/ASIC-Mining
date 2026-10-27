@@ -93,7 +93,7 @@
 			if (!lv || (lv.price === null && lv.difficulty === null)) {
 				if (status && MM.market && MM.market.get && MM.market.get()) {
 					status.classList.add('is-stale');
-					if (statusText) { statusText.textContent = t('noLive', 'Live data unavailable — enter values'); }
+					if (statusText) { statusText.textContent = t('noLive', 'Live data unavailable, enter values'); }
 				}
 				return;
 			}

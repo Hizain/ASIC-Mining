@@ -230,7 +230,7 @@ function mm_options_slots( string $section, string $prefix, array $fields, array
 				'section'   => $section,
 				'type'      => $def[0],
 				/* translators: 1: item label, 2: item number, 3: field label */
-				'label'     => $first ? sprintf( __( '%1$s %2$d — %3$s', 'minemirth' ), $def[2] ?? ucfirst( $prefix ), $i, $def[1] ) : $def[1],
+				'label'     => $first ? sprintf( __( '%1$s %2$d: %3$s', 'minemirth' ), $def[2] ?? ucfirst( $prefix ), $i, $def[1] ) : $def[1],
 				'default'   => $row[ $field ] ?? ( 'icon' === $def[0] ? 'sparkles' : '' ),
 				'transport' => 'postMessage',
 			);
@@ -496,7 +496,7 @@ function mm_options_schema(): array {
 		'hero_eyebrow'       => array( 'section' => 'mm_home_hero', 'type' => 'text', 'label' => __( 'Eyebrow', 'minemirth' ), 'default' => __( 'ASIC hardware · Hosting · Live network data', 'minemirth' ), 'transport' => 'postMessage' ),
 		'hero_title'         => array( 'section' => 'mm_home_hero', 'type' => 'text', 'label' => __( 'Headline', 'minemirth' ), 'description' => __( 'Use {rotate} where the rotating words should appear, and *asterisks* for gradient text.', 'minemirth' ), 'default' => __( 'The professional way to mine *{rotate}*', 'minemirth' ), 'transport' => 'postMessage' ),
 		'hero_rotate'        => array( 'section' => 'mm_home_hero', 'type' => 'text', 'label' => __( 'Rotating words (comma separated)', 'minemirth' ), 'default' => 'Bitcoin, Litecoin, Dogecoin, Kaspa', 'transport' => 'postMessage' ),
-		'hero_text'          => array( 'section' => 'mm_home_hero', 'type' => 'textarea', 'label' => __( 'Supporting text', 'minemirth' ), 'default' => __( 'Shop high-efficiency ASIC miners, model returns with live network data, and deploy into professional hosting facilities — with one team that speaks mining.', 'minemirth' ), 'transport' => 'postMessage' ),
+		'hero_text'          => array( 'section' => 'mm_home_hero', 'type' => 'textarea', 'label' => __( 'Supporting text', 'minemirth' ), 'default' => __( 'Shop high-efficiency ASIC miners, model returns with live network data, and deploy into professional hosting facilities, with one team that speaks mining.', 'minemirth' ), 'transport' => 'postMessage' ),
 		'hero_btn1_text'     => array( 'section' => 'mm_home_hero', 'type' => 'text', 'label' => __( 'Primary button text', 'minemirth' ), 'default' => __( 'Shop ASIC miners', 'minemirth' ), 'transport' => 'postMessage' ),
 		'hero_btn1_url'      => array( 'section' => 'mm_home_hero', 'type' => 'url', 'label' => __( 'Primary button URL', 'minemirth' ), 'default' => '{shop}', 'transport' => 'postMessage' ),
 		'hero_btn2_text'     => array( 'section' => 'mm_home_hero', 'type' => 'text', 'label' => __( 'Secondary button text', 'minemirth' ), 'default' => __( 'Explore hosting', 'minemirth' ), 'transport' => 'postMessage' ),
@@ -518,7 +518,7 @@ function mm_options_schema(): array {
 	);
 
 	// Categories.
-	$s += mm_options_heading_fields( 'mm_home_categories', 'cats', __( 'Shop by algorithm', 'minemirth' ), __( 'Hardware for *every hash*', 'minemirth' ), __( 'From flagship SHA-256 machines to Scrypt miners and turnkey hosting — start with what you want to mine.', 'minemirth' ) );
+	$s += mm_options_heading_fields( 'mm_home_categories', 'cats', __( 'Shop by algorithm', 'minemirth' ), __( 'Hardware for *every hash*', 'minemirth' ), __( 'From flagship SHA-256 machines to Scrypt miners and turnkey hosting. Start with what you want to mine.', 'minemirth' ) );
 	$s['cats_source'] = array( 'section' => 'mm_home_categories', 'type' => 'select', 'label' => __( 'Cards source', 'minemirth' ), 'default' => 'custom', 'choices' => array( 'custom' => __( 'Custom cards below', 'minemirth' ), 'auto' => __( 'WooCommerce product categories', 'minemirth' ) ), 'transport' => 'postMessage' );
 	$s += mm_options_slots(
 		'mm_home_categories',
@@ -551,7 +551,7 @@ function mm_options_schema(): array {
 	);
 
 	// Features (bento).
-	$s += mm_options_heading_fields( 'mm_home_features', 'features', __( 'Why Mine Mirth', 'minemirth' ), __( 'Built for miners, *not tourists*', 'minemirth' ), __( 'Everything you need to choose, buy and run ASIC hardware — in one place.', 'minemirth' ) );
+	$s += mm_options_heading_fields( 'mm_home_features', 'features', __( 'Why Mine Mirth', 'minemirth' ), __( 'Built for miners, *not tourists*', 'minemirth' ), __( 'Everything you need to choose, buy and run ASIC hardware, all in one place.', 'minemirth' ) );
 	$s += mm_options_slots(
 		'mm_home_features',
 		'feature',
@@ -561,7 +561,7 @@ function mm_options_schema(): array {
 			'text'  => array( 'textarea', __( 'Text', 'minemirth' ) ),
 		),
 		array(
-			array( 'icon' => 'shield-check', 'title' => __( 'Buy with confidence', 'minemirth' ), 'text' => __( 'Clear availability, condition and warranty details on listings — no guesswork before checkout.', 'minemirth' ) ),
+			array( 'icon' => 'shield-check', 'title' => __( 'Buy with confidence', 'minemirth' ), 'text' => __( 'Clear availability, condition and warranty details on listings, so there is no guesswork before checkout.', 'minemirth' ) ),
 			array( 'icon' => 'bolt', 'title' => __( 'Efficiency first', 'minemirth' ), 'text' => __( 'Compare J/TH, hashrate and power draw side by side, then match the machine to your electricity rate.', 'minemirth' ) ),
 			array( 'icon' => 'server', 'title' => __( 'Hosting-ready', 'minemirth' ), 'text' => __( 'Ship directly to a partner facility and skip the noise, heat and wiring at home.', 'minemirth' ) ),
 			array( 'icon' => 'chart', 'title' => __( 'Live profitability', 'minemirth' ), 'text' => __( 'Model returns with real-time BTC price, difficulty and network hashrate.', 'minemirth' ) ),
@@ -579,12 +579,12 @@ function mm_options_schema(): array {
 		'hosting_btn1_url'  => array( 'section' => 'mm_home_hosting', 'type' => 'url', 'label' => __( 'Primary button URL', 'minemirth' ), 'default' => '/miner-hosting/', 'transport' => 'postMessage' ),
 		'hosting_btn2_text' => array( 'section' => 'mm_home_hosting', 'type' => 'text', 'label' => __( 'Secondary button text', 'minemirth' ), 'default' => __( 'Request a quote', 'minemirth' ), 'transport' => 'postMessage' ),
 		'hosting_btn2_url'  => array( 'section' => 'mm_home_hosting', 'type' => 'url', 'label' => __( 'Secondary button URL', 'minemirth' ), 'default' => '/contact-us/', 'transport' => 'postMessage' ),
-		'hosting_image'     => array( 'section' => 'mm_home_hosting', 'type' => 'media', 'label' => __( 'Image (optional — replaces the animated rack)', 'minemirth' ), 'default' => 0, 'transport' => 'postMessage' ),
+		'hosting_image'     => array( 'section' => 'mm_home_hosting', 'type' => 'media', 'label' => __( 'Image (optional, replaces the animated rack)', 'minemirth' ), 'default' => 0, 'transport' => 'postMessage' ),
 		'hosting_show_plans'=> array( 'section' => 'mm_home_hosting', 'type' => 'toggle', 'label' => __( 'Show up to 3 published hosting plans', 'minemirth' ), 'default' => true, 'transport' => 'postMessage' ),
 	);
 
 	// Calculator.
-	$s += mm_options_heading_fields( 'mm_home_calculator', 'calc', __( 'Profitability calculator', 'minemirth' ), __( 'Run the numbers *before you buy*', 'minemirth' ), __( 'Live BTC price and network difficulty, your electricity rate, your hardware. Results update as you type — no sign-up.', 'minemirth' ) );
+	$s += mm_options_heading_fields( 'mm_home_calculator', 'calc', __( 'Profitability calculator', 'minemirth' ), __( 'Run the numbers *before you buy*', 'minemirth' ), __( 'Live BTC price and network difficulty, your electricity rate, your hardware. Results update as you type, no sign-up needed.', 'minemirth' ) );
 	$s += array(
 		'calc_btn_text' => array( 'section' => 'mm_home_calculator', 'type' => 'text', 'label' => __( 'Full calculator link text', 'minemirth' ), 'default' => __( 'Open the full calculator', 'minemirth' ), 'transport' => 'postMessage' ),
 		'calc_btn_url'  => array( 'section' => 'mm_home_calculator', 'type' => 'url', 'label' => __( 'Full calculator URL', 'minemirth' ), 'default' => '/free-calculators/bitcoin-mining-calculator/', 'transport' => 'postMessage' ),
@@ -600,7 +600,7 @@ function mm_options_schema(): array {
 			'text'  => array( 'textarea', __( 'Text', 'minemirth' ) ),
 		),
 		array(
-			array( 'title' => __( 'Choose your hardware', 'minemirth' ), 'text' => __( 'Compare miners by algorithm, efficiency and price — or ask us for a recommendation.', 'minemirth' ) ),
+			array( 'title' => __( 'Choose your hardware', 'minemirth' ), 'text' => __( 'Compare miners by algorithm, efficiency and price, or ask us for a recommendation.', 'minemirth' ) ),
 			array( 'title' => __( 'Pick where it runs', 'minemirth' ), 'text' => __( 'Ship to your site, or select a hosting plan with published rates and terms.', 'minemirth' ) ),
 			array( 'title' => __( 'Configure & ship', 'minemirth' ), 'text' => __( 'Your order is prepared and dispatched with tracking in your account.', 'minemirth' ) ),
 			array( 'title' => __( 'Start mining', 'minemirth' ), 'text' => __( 'Point it at your pool, watch the hashrate climb, and track it all in one place.', 'minemirth' ) ),
@@ -667,18 +667,18 @@ function mm_options_schema(): array {
 			'a' => array( 'textarea', __( 'Answer', 'minemirth' ) ),
 		),
 		array(
-			array( 'q' => __( 'Is mining profitable right now?', 'minemirth' ), 'a' => __( 'It depends on your electricity cost, hardware efficiency, BTC price and network difficulty. Use the live calculator to model your exact setup — results are estimates, not guarantees.', 'minemirth' ) ),
+			array( 'q' => __( 'Is mining profitable right now?', 'minemirth' ), 'a' => __( 'It depends on your electricity cost, hardware efficiency, BTC price and network difficulty. Use the live calculator to model your exact setup. Results are estimates, not guarantees.', 'minemirth' ) ),
 			array( 'q' => __( 'Can my miner ship straight to a hosting facility?', 'minemirth' ), 'a' => __( 'Yes. Choose a hosting plan or contact us before checkout and we coordinate delivery and setup with the partner facility once capacity is confirmed.', 'minemirth' ) ),
 			array( 'q' => __( 'Do miners come with a warranty?', 'minemirth' ), 'a' => __( 'Coverage depends on the manufacturer and the unit’s condition. Each product page lists the warranty that applies to that listing.', 'minemirth' ) ),
 			array( 'q' => __( 'Which payment methods can I use?', 'minemirth' ), 'a' => __( 'Every available payment method is shown at checkout. For large or multi-unit orders, contact us about invoicing.', 'minemirth' ) ),
 			array( 'q' => __( 'How long does delivery take?', 'minemirth' ), 'a' => __( 'It depends on stock location and destination. In-stock items show their dispatch estimate on the product page, and you can track every order from your account.', 'minemirth' ) ),
-			array( 'q' => __( 'What’s the difference between SHA-256 and Scrypt miners?', 'minemirth' ), 'a' => __( 'SHA-256 machines mine Bitcoin. Scrypt machines mine Litecoin and Dogecoin, usually merge-mined together. They are not interchangeable — choose the algorithm first, then the machine.', 'minemirth' ) ),
+			array( 'q' => __( 'What’s the difference between SHA-256 and Scrypt miners?', 'minemirth' ), 'a' => __( 'SHA-256 machines mine Bitcoin. Scrypt machines mine Litecoin and Dogecoin, usually merge-mined together. They are not interchangeable: choose the algorithm first, then the machine.', 'minemirth' ) ),
 		),
 		8
 	);
 
 	// Newsletter (home).
-	$s += mm_options_heading_fields( 'mm_home_newsletter', 'news', __( 'The miner’s brief', 'minemirth' ), __( 'Network stats and hardware moves, *weekly*', 'minemirth' ), __( 'Difficulty changes, price moves on popular machines and new guides. No spam — unsubscribe anytime.', 'minemirth' ) );
+	$s += mm_options_heading_fields( 'mm_home_newsletter', 'news', __( 'The miner’s brief', 'minemirth' ), __( 'Network stats and hardware moves, *weekly*', 'minemirth' ), __( 'Difficulty changes, price moves on popular machines and new guides. No spam, unsubscribe anytime.', 'minemirth' ) );
 
 	// CTA.
 	$s += mm_options_heading_fields( 'mm_home_cta', 'cta', __( 'Let’s build your setup', 'minemirth' ), __( 'Ready to put *hashrate* to work?', 'minemirth' ), __( 'Talk to our team about hardware, hosting or a full deployment plan.', 'minemirth' ) );
@@ -738,7 +738,7 @@ function mm_options_schema(): array {
 	$s += array(
 		'shop_hero'           => array( 'section' => 'mm_shop_archive', 'type' => 'toggle', 'label' => __( 'Show shop header', 'minemirth' ), 'default' => true ),
 		'shop_hero_title'     => array( 'section' => 'mm_shop_archive', 'type' => 'text', 'label' => __( 'Shop title', 'minemirth' ), 'default' => __( 'ASIC Miners', 'minemirth' ) ),
-		'shop_hero_text'      => array( 'section' => 'mm_shop_archive', 'type' => 'textarea', 'label' => __( 'Shop intro', 'minemirth' ), 'default' => __( 'Compare hashrate, efficiency and availability — then run the numbers with live network data before you buy.', 'minemirth' ) ),
+		'shop_hero_text'      => array( 'section' => 'mm_shop_archive', 'type' => 'textarea', 'label' => __( 'Shop intro', 'minemirth' ), 'default' => __( 'Compare hashrate, efficiency and availability, then run the numbers with live network data before you buy.', 'minemirth' ) ),
 		'shop_columns'        => array( 'section' => 'mm_shop_archive', 'type' => 'select', 'label' => __( 'Products per row (desktop)', 'minemirth' ), 'default' => '3', 'choices' => array( '2' => '2', '3' => '3', '4' => '4', '5' => '5' ) ),
 		'shop_columns_mobile' => array( 'section' => 'mm_shop_archive', 'type' => 'select', 'label' => __( 'Products per row (mobile)', 'minemirth' ), 'default' => '1', 'choices' => array( '1' => '1', '2' => '2' ) ),
 		'shop_per_page'       => array( 'section' => 'mm_shop_archive', 'type' => 'range', 'label' => __( 'Products per page', 'minemirth' ), 'default' => 12, 'min' => 4, 'max' => 48, 'step' => 1 ),
@@ -808,7 +808,7 @@ function mm_options_schema(): array {
 	);
 
 	$s += array(
-		'thanks_title'   => array( 'section' => 'mm_thankyou', 'type' => 'text', 'label' => __( 'Heading', 'minemirth' ), 'default' => __( 'Order confirmed — thank you!', 'minemirth' ) ),
+		'thanks_title'   => array( 'section' => 'mm_thankyou', 'type' => 'text', 'label' => __( 'Heading', 'minemirth' ), 'default' => __( 'Order confirmed. Thank you!', 'minemirth' ) ),
 		'thanks_text'    => array( 'section' => 'mm_thankyou', 'type' => 'textarea', 'label' => __( 'Message', 'minemirth' ), 'default' => __( 'We’ve emailed your receipt. Here’s what happens next.', 'minemirth' ) ),
 		'thanks_confetti'=> array( 'section' => 'mm_thankyou', 'type' => 'toggle', 'label' => __( 'Celebration animation', 'minemirth' ), 'default' => true ),
 	);
@@ -846,14 +846,14 @@ function mm_options_schema(): array {
 	$s += array(
 		'footer_cta'           => array( 'section' => 'mm_footer_cta', 'type' => 'toggle', 'label' => __( 'Show footer call to action (inner pages)', 'minemirth' ), 'default' => true ),
 		'footer_cta_title'     => array( 'section' => 'mm_footer_cta', 'type' => 'text', 'label' => __( 'Title', 'minemirth' ), 'default' => __( 'Compare the hardware. Model the power. *Then decide.*', 'minemirth' ) ),
-		'footer_cta_text'      => array( 'section' => 'mm_footer_cta', 'type' => 'textarea', 'label' => __( 'Text', 'minemirth' ), 'default' => __( 'Live availability, public network data and published hosting terms — so every decision is an informed one.', 'minemirth' ) ),
+		'footer_cta_text'      => array( 'section' => 'mm_footer_cta', 'type' => 'textarea', 'label' => __( 'Text', 'minemirth' ), 'default' => __( 'Live availability, public network data and published hosting terms, so every decision is an informed one.', 'minemirth' ) ),
 		'footer_cta_btn1_text' => array( 'section' => 'mm_footer_cta', 'type' => 'text', 'label' => __( 'Primary button text', 'minemirth' ), 'default' => __( 'Shop ASIC miners', 'minemirth' ) ),
 		'footer_cta_btn1_url'  => array( 'section' => 'mm_footer_cta', 'type' => 'url', 'label' => __( 'Primary button URL', 'minemirth' ), 'default' => '{shop}' ),
 		'footer_cta_btn2_text' => array( 'section' => 'mm_footer_cta', 'type' => 'text', 'label' => __( 'Secondary button text', 'minemirth' ), 'default' => __( 'Contact us', 'minemirth' ) ),
 		'footer_cta_btn2_url'  => array( 'section' => 'mm_footer_cta', 'type' => 'url', 'label' => __( 'Secondary button URL', 'minemirth' ), 'default' => '/contact-us/' ),
 
 		'footer_style'         => array( 'section' => 'mm_footer_main', 'type' => 'select', 'label' => __( 'Footer color', 'minemirth' ), 'default' => 'dark', 'choices' => array( 'dark' => __( 'Always dark', 'minemirth' ), 'auto' => __( 'Follow light/dark mode', 'minemirth' ) ) ),
-		'footer_about'         => array( 'section' => 'mm_footer_main', 'type' => 'textarea', 'label' => __( 'About text', 'minemirth' ), 'default' => __( 'Mine Mirth supplies ASIC mining hardware, partner-facility hosting and practical tools for miners — from a first rig to full deployments.', 'minemirth' ) ),
+		'footer_about'         => array( 'section' => 'mm_footer_main', 'type' => 'textarea', 'label' => __( 'About text', 'minemirth' ), 'default' => __( 'Mine Mirth supplies ASIC mining hardware, partner-facility hosting and practical tools for miners, from a first rig to full deployments.', 'minemirth' ) ),
 		'footer_col1_title'    => array( 'section' => 'mm_footer_main', 'type' => 'text', 'label' => __( 'Column 1 title (menu: Footer column 1)', 'minemirth' ), 'default' => __( 'Shop', 'minemirth' ) ),
 		'footer_col2_title'    => array( 'section' => 'mm_footer_main', 'type' => 'text', 'label' => __( 'Column 2 title (menu: Footer column 2)', 'minemirth' ), 'default' => __( 'Research', 'minemirth' ) ),
 		'footer_col3_title'    => array( 'section' => 'mm_footer_main', 'type' => 'text', 'label' => __( 'Column 3 title (menu: Footer column 3)', 'minemirth' ), 'default' => __( 'Customer', 'minemirth' ) ),

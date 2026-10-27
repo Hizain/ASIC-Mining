@@ -45,7 +45,7 @@ return array(
 			'products',
 			array(
 				'eyebrow'    => __( 'In stock now', 'minemirth' ),
-				'title'      => __( 'Popular *miners*', 'minemirth' ),
+				'title'      => __( 'Popular *ASIC miners*', 'minemirth' ),
 				'text'       => __( 'Every card shows real specs. Tap the calculator icon to see what the miner earns at today’s numbers.', 'minemirth' ),
 				'query'      => array( 'sort' => 'popular' ),
 				'limit'      => 8,
@@ -182,10 +182,10 @@ return array(
 		)
 		. mm_bfaq(
 			array(
-				array( __( 'Is Bitcoin mining still profitable?', 'minemirth' ), __( 'It depends mostly on your electricity price and your miner’s efficiency. With today’s hashprice of {hashprice} per PH/s per day, an efficient modern miner is usually profitable on power below roughly $0.08–0.10 per kWh. Use the <a href="{tool:profit}">profit calculator</a> with your own rate for an exact answer.', 'minemirth' ) ),
+				array( __( 'Is Bitcoin mining still profitable?', 'minemirth' ), __( 'It depends mostly on your electricity price and your miner’s efficiency. With today’s hashprice of {hashprice} per PH/s per day, an efficient modern miner is usually profitable on power below roughly $0.08 to $0.10 per kWh. Use the <a href="{tool:profit}">profit calculator</a> with your own rate for an exact answer.', 'minemirth' ) ),
 				array( __( 'Do you ship internationally?', 'minemirth' ), __( 'Yes. We quote insured, tracked shipping to your country or straight to a hosting facility, and tell you in advance about import duties and paperwork. See <a href="{page:shipping}">shipping & delivery</a>.', 'minemirth' ) ),
 				array( __( 'Do miners come with a warranty?', 'minemirth' ), __( 'New miners carry the manufacturer’s warranty; the length depends on the model and is shown on the product page. We help you with any claim. See <a href="{page:warranty}">warranty & support</a>.', 'minemirth' ) ),
-				array( __( 'Can I run an ASIC miner at home?', 'minemirth' ), __( 'Full-size ASICs need a 200–240 V circuit, strong ventilation and somewhere the 70–80 dB noise is acceptable. For living spaces, choose a <a href="{page:m-home}">quiet home miner</a> or <a href="{page:hosting}">host</a> a full-size one.', 'minemirth' ) ),
+				array( __( 'Can I run an ASIC miner at home?', 'minemirth' ), __( 'Full-size ASICs need a 200 to 240 V circuit, strong ventilation and somewhere the 70 to 80 dB noise is acceptable. For living spaces, choose a <a href="{page:m-home}">quiet home miner</a> or <a href="{page:hosting}">host</a> a full-size one.', 'minemirth' ) ),
 				array( __( 'How do I pay?', 'minemirth' ), __( 'By card, bank transfer or cryptocurrency, depending on the order. The options available to you are shown at checkout. See <a href="{page:payments}">payment methods</a>.', 'minemirth' ) ),
 			),
 			'',
@@ -200,8 +200,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'About us', 'minemirth' ),
-				'title'   => __( 'We help people mine with *clear eyes*', 'minemirth' ),
-				'text'    => __( 'Mine Mirth supplies ASIC miners, hosting and the know-how around them. We started with a simple idea: every mining decision should come with the real numbers, explained in plain language.', 'minemirth' ),
+				'title'   => __( 'An ASIC miner supplier that mines with *clear eyes*', 'minemirth' ),
+				'text'    => __( 'Mine Mirth is an ASIC miner supplier for home miners, businesses and farms: hardware, hosting and the know-how around them. We started with a simple idea: every mining decision should come with the real numbers, explained in plain language.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Shop miners', 'minemirth' ), '{shop}' ), array( __( 'Contact us', 'minemirth' ), '{page:contact}', 'glass' ) ) ),
 				'visual'  => 'orbit',
 				'icon'    => 'pickaxe',
@@ -258,8 +258,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Contact', 'minemirth' ),
-				'title'   => __( 'Talk to a *mining specialist*', 'minemirth' ),
-				'text'    => __( 'Quotes, stock and lead times, hosting slots, bulk orders or help with a miner you already own. Tell us what you need and we’ll reply with specifics.', 'minemirth' ),
+				'title'   => __( 'Get an ASIC miner quote from a *mining specialist*', 'minemirth' ),
+				'text'    => __( 'Ask for an ASIC miner quote, check stock and lead times, reserve a hosting slot, plan a bulk order or get help with a miner you already own. Tell us what you need and we’ll reply with specifics.', 'minemirth' ),
 				'visual'  => 'none',
 				'pad'     => 'sm',
 			)
@@ -296,8 +296,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Why Mine Mirth', 'minemirth' ),
-				'title'   => __( 'Buy miners from people who *mine the numbers*', 'minemirth' ),
-				'text'    => __( 'Plenty of shops sell ASICs. We help you buy the right one, deliver it safely, get it hashing and keep it profitable, and we show our working at every step.', 'minemirth' ),
+				'title'   => __( 'Buy ASIC miners from people who *mine the numbers*', 'minemirth' ),
+				'text'    => __( 'Plenty of shops sell ASICs. When you buy ASIC miners from us, we help you pick the right one, deliver it safely, get it hashing and keep it profitable, and we show our working at every step.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Shop miners', 'minemirth' ), '{shop}' ), array( __( 'Compare miners live', 'minemirth' ), '{tool:compare}', 'glass' ) ) ),
 				'visual'  => 'checklist',
 				'checklist_title' => __( 'With every order', 'minemirth' ),
@@ -351,8 +351,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Help centre', 'minemirth' ),
-				'title'   => __( 'Frequently asked *questions*', 'minemirth' ),
-				'text'    => __( 'Orders, payment, shipping, warranty, hosting, power and profitability. Can’t find your answer? Ask us and we’ll add it here.', 'minemirth' ),
+				'title'   => __( 'ASIC miners: frequently asked *questions*', 'minemirth' ),
+				'text'    => __( 'Answers about buying and running ASIC miners: orders, payment, shipping, warranty, hosting, power and profitability. Can’t find your answer? Ask us and we’ll add it here.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Ask a question', 'minemirth' ), '{page:contact}' ) ) ),
 				'visual'  => 'none',
 				'pad'     => 'sm',
@@ -407,8 +407,8 @@ return array(
 		)
 		. mm_bfaq(
 			array(
-				array( __( 'What electricity does an ASIC need?', 'minemirth' ), __( 'Full-size miners typically need 200–240 V and 15–20 A per unit on a dedicated circuit. Small home miners run on a normal outlet. Use the <a href="{tool:power}">power & circuit planner</a> and have an electrician install the circuit.', 'minemirth' ) ),
-				array( __( 'How loud is a miner?', 'minemirth' ), __( 'Air-cooled ASICs typically run at 70–80 dB, like a vacuum cleaner. Hydro, immersion and dedicated home miners are much quieter. See <a href="{page:g-noise}">reducing ASIC noise</a>.', 'minemirth' ) ),
+				array( __( 'What electricity does an ASIC need?', 'minemirth' ), __( 'Full-size miners typically need 200 to 240 V and 15 to 20 A per unit on a dedicated circuit. Small home miners run on a normal outlet. Use the <a href="{tool:power}">power & circuit planner</a> and have an electrician install the circuit.', 'minemirth' ) ),
+				array( __( 'How loud is a miner?', 'minemirth' ), __( 'Air-cooled ASICs typically run at 70 to 80 dB, like a vacuum cleaner. Hydro, immersion and dedicated home miners are much quieter. See <a href="{page:g-noise}">reducing ASIC noise</a>.', 'minemirth' ) ),
 				array( __( 'How much will I earn?', 'minemirth' ), __( 'Revenue = your hashrate × hashprice (now {hashprice} per PH/s per day), minus pool fees; profit subtracts your power cost. The <a href="{tool:profit}">profit calculator</a> does the maths with live data.', 'minemirth' ) ),
 				array( __( 'What happens at the next halving?', 'minemirth' ), __( 'The block subsidy halves from 3.125 to 1.5625 BTC around {halving_date}, cutting revenue per TH unless price or fees rise. The <a href="{tool:halving}">halving calculator</a> shows the effect on your miner.', 'minemirth' ) ),
 			),
@@ -423,8 +423,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Reviews', 'minemirth' ),
-				'title'   => __( 'What our *customers* say', 'minemirth' ),
-				'text'    => __( 'These are product reviews left by buyers on our product pages. We publish them as written; we don’t pay for reviews or edit them.', 'minemirth' ),
+				'title'   => __( 'Mine Mirth reviews from *verified buyers*', 'minemirth' ),
+				'text'    => __( 'Mine Mirth reviews come from buyers who left them on our product pages. We publish them as written; we don’t pay for reviews or edit them.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Shop miners', 'minemirth' ), '{shop}' ) ) ),
 				'visual'  => 'none',
 				'pad'     => 'sm',
@@ -455,8 +455,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Payment', 'minemirth' ),
-				'title'   => __( 'Pay the way that *suits you*', 'minemirth' ),
-				'text'    => __( 'Card, bank transfer or cryptocurrency. The methods available for your order and country are shown at checkout.', 'minemirth' ),
+				'title'   => __( 'Payment methods that *suit you*', 'minemirth' ),
+				'text'    => __( 'Card, bank transfer or cryptocurrency. The payment methods available for your order and country are shown at checkout.', 'minemirth' ),
 				'visual'  => 'orbit',
 				'icon'    => 'wallet',
 				'chips'   => mm_bchips( array( array( 'credit-card', __( 'Card', 'minemirth' ), __( 'via secure provider', 'minemirth' ) ), array( 'globe', __( 'Bank', 'minemirth' ), __( 'transfer', 'minemirth' ) ), array( 'bitcoin', __( 'Crypto', 'minemirth' ), __( 'BTC and stablecoins', 'minemirth' ) ) ) ),
@@ -507,8 +507,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Shipping & delivery', 'minemirth' ),
-				'title'   => __( 'Insured, tracked, *packed for freight*', 'minemirth' ),
-				'text'    => __( 'ASIC miners are heavy, valuable and fragile. Here is how we get them to you, or to a hosting facility, safely.', 'minemirth' ),
+				'title'   => __( 'ASIC miner shipping: insured, tracked, *packed for freight*', 'minemirth' ),
+				'text'    => __( 'ASIC miners are heavy, valuable and fragile. Here is how ASIC miner shipping works with us, to your door or to a hosting facility, safely.', 'minemirth' ),
 				'visual'  => 'orbit',
 				'icon'    => 'truck',
 				'chips'   => mm_bchips( array( array( 'package', __( 'Packed', 'minemirth' ), __( 'for freight', 'minemirth' ) ), array( 'shield-check', __( 'Insured', 'minemirth' ), __( 'door to door', 'minemirth' ) ), array( 'map-pin', __( 'Tracked', 'minemirth' ), __( 'from dispatch', 'minemirth' ) ) ) ),
@@ -561,8 +561,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Warranty & support', 'minemirth' ),
-				'title'   => __( 'Covered by the maker, *backed by us*', 'minemirth' ),
-				'text'    => __( 'New miners carry the manufacturer’s warranty. We help you diagnose problems, file claims and keep your fleet running.', 'minemirth' ),
+				'title'   => __( 'ASIC miner warranty: covered by the maker, *backed by us*', 'minemirth' ),
+				'text'    => __( 'Every new miner carries the manufacturer’s ASIC miner warranty. We help you diagnose problems, file claims and keep your fleet running.', 'minemirth' ),
 				'visual'  => 'orbit',
 				'icon'    => 'shield-check',
 				'chips'   => mm_bchips( array( array( 'award', __( 'Maker', 'minemirth' ), __( 'warranty', 'minemirth' ) ), array( 'headset', __( 'Remote', 'minemirth' ), __( 'diagnosis', 'minemirth' ) ), array( 'wrench', __( 'Repair', 'minemirth' ), __( 'service', 'minemirth' ) ) ) ),
@@ -628,7 +628,7 @@ return array(
 			array(
 				'eyebrow' => __( 'Returns & refunds', 'minemirth' ),
 				'title'   => __( 'Clear rules for *returns and refunds*', 'minemirth' ),
-				'text'    => __( 'Mining hardware is not like clothing: it is expensive, heavy and its value moves with the market. Here is exactly how returns, dead-on-arrival claims and refunds work.', 'minemirth' ),
+				'text'    => __( 'Mining hardware is not like clothing: it is expensive, heavy and its value moves with the market. Here is exactly how returns and refunds work, including dead-on-arrival claims.', 'minemirth' ),
 				'visual'  => 'none',
 				'pad'     => 'sm',
 			)

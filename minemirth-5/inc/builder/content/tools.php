@@ -31,8 +31,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Free tools · live data', 'minemirth' ),
-				'title'   => __( 'Twelve mining tools that use *today’s network*', 'minemirth' ),
-				'text'    => __( 'Every calculator starts from the live Bitcoin price, difficulty and fees, our real miner catalog and your power price. Change any value to test a scenario, and share the link with your exact numbers.', 'minemirth' ),
+				'title'   => __( 'Twelve Bitcoin mining calculators on *today’s network*', 'minemirth' ),
+				'text'    => __( 'These Bitcoin mining calculators start from the live Bitcoin price, difficulty and fees, our real miner catalog and your power price. Change any value to test a scenario, and share the link with your exact numbers.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Profit calculator', 'minemirth' ), '{tool:profit}', 'primary', 'calculator' ), array( __( 'Hashprice tracker', 'minemirth' ), '{tool:hashprice}', 'glass', 'activity' ) ) ),
 				'badges'  => array( __( 'Live price, difficulty and fees', 'minemirth' ), __( 'Every miner we stock built in', 'minemirth' ), __( 'Shareable results', 'minemirth' ) ),
 				'visual'  => 'market',
@@ -86,7 +86,7 @@ return array(
 			),
 			array(
 				array( __( 'What electricity price should I enter?', 'minemirth' ), __( 'Your all-in rate per kWh, including delivery charges and taxes. For hosting, use the plan’s all-in rate.', 'minemirth' ) ),
-				array( __( 'Why is uptime 98% by default?', 'minemirth' ), __( 'Real miners lose some time to reboots, maintenance and network issues. 95–99% is typical for well-run setups.', 'minemirth' ) ),
+				array( __( 'Why is uptime 98% by default?', 'minemirth' ), __( 'Real miners lose some time to reboots, maintenance and network issues. 95 to 99% is typical for well-run setups.', 'minemirth' ) ),
 				array( __( 'Does it include transaction fees?', 'minemirth' ), __( 'Yes. Average fees per block are added to the 3.125 BTC subsidy, from live data.', 'minemirth' ) ),
 				array( __( 'How do I calculate profit in my currency?', 'minemirth' ), __( 'The calculator works in the site’s currency. Convert your power price to that currency before entering it.', 'minemirth' ) ),
 			),
@@ -180,7 +180,7 @@ return array(
 				),
 				mm_bp( __( 'These are illustrative assumptions, not forecasts. Change them to your own view.', 'minemirth' ) ),
 				mm_bh( __( 'What good payback looks like', 'minemirth' ) ),
-				mm_bp( __( 'Many miners aim to recover the hardware cost before the next halving or within 12–18 months, because revenue per TH tends to fall over time. Any value left at the end (resale or continued mining) is upside.', 'minemirth' ) ),
+				mm_bp( __( 'Many miners aim to recover the hardware cost before the next halving or within 12 to 18 months, because revenue per TH tends to fall over time. Any value left at the end (resale or continued mining) is upside.', 'minemirth' ) ),
 			),
 			array(
 				array( __( 'Does ROI include resale value?', 'minemirth' ), __( 'No. Resale value at the end is extra. Older generations lose value as newer, more efficient miners arrive.', 'minemirth' ) ),
@@ -234,11 +234,11 @@ return array(
 		return $mm_tool_page(
 			array(
 				mm_bh( __( 'Hosting or home: what the calculator compares', 'minemirth' ) ),
-				mm_bp( __( 'On the home side, enter your electricity price, extra power for cooling and fans, one-off setup costs (wiring, outlets, ducting) and realistic uptime. On the hosted side, the all-in rate, setup fee and shipping per miner. The calculator projects both over 12–36 months with difficulty growth and the halving.', 'minemirth' ) ),
+				mm_bp( __( 'On the home side, enter your electricity price, extra power for cooling and fans, one-off setup costs (wiring, outlets, ducting) and realistic uptime. On the hosted side, the all-in rate, setup fee and shipping per miner. The calculator projects both over 12 to 36 months with difficulty growth and the halving.', 'minemirth' ) ),
 				mm_bh( __( 'What the numbers don’t show', 'minemirth' ) ),
 				mm_bl(
 					array(
-						__( 'Noise: each air-cooled ASIC runs at 70–80 dB.', 'minemirth' ),
+						__( 'Noise: each air-cooled ASIC runs at 70 to 80 dB.', 'minemirth' ),
 						__( 'Heat: every watt becomes heat that must leave the room, or be reused in winter.', 'minemirth' ),
 						__( 'Your time for monitoring, cleaning and fixing.', 'minemirth' ),
 						__( 'Access: at home you can touch the miner any time.', 'minemirth' ),
@@ -262,7 +262,7 @@ return array(
 				mm_bcall( 'warning', __( 'Safety first', 'minemirth' ), __( 'These figures are for planning conversations only. Circuits, cable sizes, breakers and receptacles must be designed and installed by a licensed electrician to your local electrical code.', 'minemirth' ) ),
 			),
 			array(
-				array( __( 'Can I run a miner on 120 V?', 'minemirth' ), __( 'Most full-size ASIC power supplies need 200–240 V. Small home and solo miners run on 120 V outlets.', 'minemirth' ) ),
+				array( __( 'Can I run a miner on 120 V?', 'minemirth' ), __( 'Most full-size ASIC power supplies need 200 to 240 V. Small home and solo miners run on 120 V outlets.', 'minemirth' ) ),
 				array( __( 'What cord do I need?', 'minemirth' ), __( 'One rated for the current and matching the PSU inlet (often C13 or C19). See the <a href="{page:g-power}">power & electrical guide</a>.', 'minemirth' ) ),
 			),
 			array( 'g-power', 'g-cooling' )

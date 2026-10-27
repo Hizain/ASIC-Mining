@@ -96,7 +96,7 @@ do_action( 'woocommerce_before_customer_login_form' );
 				<div class="u-column2 col-2 mm-auth__pane" id="mm-pane-register" role="tabpanel" aria-labelledby="mm-tab-register" <?php echo 'register' !== $mm_tab ? 'data-mm-hidden' : ''; ?>>
 
 					<h2><?php esc_html_e( 'Register', 'woocommerce' ); ?></h2>
-					<p class="mm-auth__lead"><?php esc_html_e( 'Create an account in seconds — save addresses, follow deliveries and manage hosting.', 'minemirth' ); ?></p>
+					<p class="mm-auth__lead"><?php esc_html_e( 'Create an account in seconds to save addresses, follow deliveries and manage hosting.', 'minemirth' ); ?></p>
 
 					<form method="post" class="woocommerce-form woocommerce-form-register register" <?php do_action( 'woocommerce_register_form_tag' ); ?> >
 

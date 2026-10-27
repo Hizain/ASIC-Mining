@@ -52,10 +52,10 @@ function mm_setup_checks(): array {
 		array( __( 'Dark-mode logo uploaded (optional)', 'minemirth' ), (bool) mm_opt( 'logo_dark' ), mm_customize_link( 'control', 'mm_logo_dark' ), __( 'Upload', 'minemirth' ) ),
 		array( __( 'Static front page set', 'minemirth' ), 'page' === get_option( 'show_on_front' ), mm_customize_link( 'section', 'static_front_page' ), __( 'Set', 'minemirth' ) ),
 		array( __( 'Primary menu assigned', 'minemirth' ), ! empty( $locations['primary'] ), admin_url( 'nav-menus.php?action=locations' ), __( 'Assign', 'minemirth' ) ),
-		array( __( 'Footer menus assigned (optional — smart defaults are shown)', 'minemirth' ), ! empty( $locations['footer-1'] ), admin_url( 'nav-menus.php?action=locations' ), __( 'Assign', 'minemirth' ) ),
+		array( __( 'Footer menus assigned (optional, smart defaults are shown)', 'minemirth' ), ! empty( $locations['footer-1'] ), admin_url( 'nav-menus.php?action=locations' ), __( 'Assign', 'minemirth' ) ),
 		array( __( 'Miner Hosting page exists', 'minemirth' ), (bool) $hosting, wp_nonce_url( admin_url( 'admin-post.php?action=mm_starter_pages' ), 'mm_starter_pages' ), __( 'Create', 'minemirth' ) ),
 		array( __( 'Mining Calculator page exists', 'minemirth' ), (bool) $calc, wp_nonce_url( admin_url( 'admin-post.php?action=mm_starter_pages' ), 'mm_starter_pages' ), __( 'Create', 'minemirth' ) ),
-		array( __( 'At least one promotion created (optional — automatic fallbacks run otherwise)', 'minemirth' ), $promos && $promos->publish > 0, admin_url( 'post-new.php?post_type=mm_promo' ), __( 'Create', 'minemirth' ) ),
+		array( __( 'At least one promotion created (optional, automatic fallbacks run otherwise)', 'minemirth' ), $promos && $promos->publish > 0, admin_url( 'post-new.php?post_type=mm_promo' ), __( 'Create', 'minemirth' ) ),
 		array( __( 'Contact email added', 'minemirth' ), (bool) mm_opt( 'contact_email' ), mm_customize_link( 'section', 'mm_contact' ), __( 'Add', 'minemirth' ) ),
 	);
 }

@@ -14,8 +14,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Learn', 'minemirth' ),
-				'title'   => __( 'Become a *better miner*, one guide at a time', 'minemirth' ),
-				'text'    => __( 'Twenty-four practical guides written for people who actually run miners: the economics, the electrics, cooling and noise, pools and firmware, farms, buying used, security and tax. Every guide uses live network numbers.', 'minemirth' ),
+				'title'   => __( 'Mining guides for *better miners*', 'minemirth' ),
+				'text'    => __( 'Twenty-four practical mining guides written for people who actually run miners: the economics, the electrics, cooling and noise, pools and firmware, farms, buying used, security and tax. Every guide uses live network numbers.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Start with the basics', 'minemirth' ), '{page:g-beginners}' ), array( __( 'Mining glossary', 'minemirth' ), '{page:g-glossary}', 'glass', 'list' ) ) ),
 				'visual'  => 'orbit',
 				'icon'    => 'book',
@@ -39,7 +39,7 @@ return array(
 		. mm_bl(
 			array(
 				__( '<strong>Hashrate</strong> (TH/s): how many guesses per second. More hashrate, bigger share of rewards.', 'minemirth' ),
-				__( '<strong>Power</strong> (W): how much electricity it draws, typically 3,000–3,600 W for a full-size miner.', 'minemirth' ),
+				__( '<strong>Power</strong> (W): how much electricity it draws, typically 3,000 to 3,600 W for a full-size miner.', 'minemirth' ),
 				__( '<strong>Efficiency</strong> (J/TH): power ÷ hashrate. The lower, the cheaper each coin is to produce.', 'minemirth' ),
 			)
 		)
@@ -50,8 +50,8 @@ return array(
 			array(
 				__( '<strong>The miner</strong>: a one-off purchase. Prices move with the market and the model’s efficiency.', 'minemirth' ),
 				__( '<strong>Electricity</strong>: the big ongoing cost. A 3,500 W miner uses 84 kWh a day, so at $0.10/kWh that is $8.40 a day.', 'minemirth' ),
-				__( '<strong>Setup</strong>: a 200–240 V circuit, ventilation or cooling, and an internet connection. Or a hosting fee if you host.', 'minemirth' ),
-				__( '<strong>Pool fees</strong>: usually 0–4% of earnings.', 'minemirth' ),
+				__( '<strong>Setup</strong>: a 200 to 240 V circuit, ventilation or cooling, and an internet connection. Or a hosting fee if you host.', 'minemirth' ),
+				__( '<strong>Pool fees</strong>: usually 0 to 4% of earnings.', 'minemirth' ),
 			)
 		)
 		. mm_bs( 'tool', array( 'title' => __( 'Try it: what would a miner earn *today*?', 'minemirth' ), 'id' => 'profit' ) )
@@ -94,7 +94,7 @@ return array(
 				'columns' => array( __( 'Your power price', 'minemirth' ), __( 'Prioritise', 'minemirth' ), __( 'Why', 'minemirth' ) ),
 				'rows'    => array(
 					__( 'Below ~$0.04/kWh | Price per TH | Power is a small share of costs; capacity per dollar wins', 'minemirth' ),
-					__( '$0.04–0.07/kWh | A balance | Look for good $/TH among efficient models', 'minemirth' ),
+					__( '$0.04 to $0.07/kWh | A balance | Look for good $/TH among efficient models', 'minemirth' ),
 					__( 'Above ~$0.07/kWh | Efficiency (J/TH) | Power dominates; only efficient miners keep a margin', 'minemirth' ),
 				),
 			)
@@ -102,13 +102,13 @@ return array(
 		. mm_bh( __( 'Step 4: match the cooling to your site', 'minemirth' ) )
 		. mm_bl(
 			array(
-				__( '<strong>Air-cooled</strong>: simplest. Needs strong airflow and tolerates dust poorly. Loud (70–80 dB).', 'minemirth' ),
+				__( '<strong>Air-cooled</strong>: simplest. Needs strong airflow and tolerates dust poorly. Loud (70 to 80 dB).', 'minemirth' ),
 				__( '<strong>Hydro</strong>: water cold plates. Quiet, dense and very efficient, but needs a coolant loop and heat rejection.', 'minemirth' ),
 				__( '<strong>Immersion</strong>: miners submerged in dielectric fluid. Silent, protects hardware and allows overclocking; needs tanks and engineering.', 'minemirth' ),
 			)
 		)
 		. mm_bh( __( 'Step 5: check power and noise requirements', 'minemirth' ) )
-		. mm_bp( __( 'Full-size miners need 200–240 V (some up to 277 V) and roughly 13–16 A each on a dedicated circuit, plus a plan for 70–80 dB of noise. If you can’t provide that, look at <a href="{page:m-home}">home miners</a> or <a href="{page:hosting}">hosting</a>.', 'minemirth' ) )
+		. mm_bp( __( 'Full-size miners need 200 to 240 V (some up to 277 V) and roughly 13 to 16 A each on a dedicated circuit, plus a plan for 70 to 80 dB of noise. If you can’t provide that, look at <a href="{page:m-home}">home miners</a> or <a href="{page:hosting}">hosting</a>.', 'minemirth' ) )
 		. mm_bh( __( 'Step 6: think about the whole life of the miner', 'minemirth' ) )
 		. mm_bl(
 			array(
@@ -118,7 +118,7 @@ return array(
 				__( '<strong>Availability</strong>: in stock now versus a pre-order batch months away.', 'minemirth' ),
 			)
 		)
-		. mm_bcall( 'success', __( 'Quick rule of thumb', 'minemirth' ), __( 'Shortlist miners whose break-even power price is at least 30–50% above your rate, then pick the one with the best payback that you can actually power, cool and live with.', 'minemirth' ) )
+		. mm_bcall( 'success', __( 'Quick rule of thumb', 'minemirth' ), __( 'Shortlist miners whose break-even power price is at least 30 to 50% above your rate, then pick the one with the best payback that you can actually power, cool and live with.', 'minemirth' ) )
 		. mm_bs( 'tool', array( 'title' => __( 'Shortlist from *our stock*', 'minemirth' ), 'id' => 'compare' ) )
 		. mm_bfaq(
 			array(
@@ -154,7 +154,7 @@ return array(
 		. mm_bh( __( 'What changes over time', 'minemirth' ) )
 		. mm_bl(
 			array(
-				__( '<strong>Difficulty</strong> tends to rise as new miners join. Each rise cuts your share. Many models assume 1–4% a month; check recent history in the <a href="{tool:difficulty}">difficulty estimator</a>.', 'minemirth' ),
+				__( '<strong>Difficulty</strong> tends to rise as new miners join. Each rise cuts your share. Many models assume 1 to 4% a month; check recent history in the <a href="{tool:difficulty}">difficulty estimator</a>.', 'minemirth' ),
 				__( '<strong>Bitcoin price</strong> moves revenue directly, in both directions.', 'minemirth' ),
 				__( '<strong>The halving</strong> cuts the subsidy in half around {halving_date}.', 'minemirth' ),
 				__( '<strong>Fees</strong> vary with network demand; busy periods can lift revenue noticeably.', 'minemirth' ),
@@ -207,16 +207,16 @@ return array(
 			)
 		)
 		. mm_bh( __( 'Using hashprice to make decisions', 'minemirth' ) )
-		. mm_bp( __( 'Compare hashprice with your break-even: your power cost per PH/s per day. For a miner at J joules per TH and power at P dollars per kWh, break-even hashprice = J × 24 × P (in $/PH/day). At 17.5 J/TH and $0.07/kWh, that is about $29.40.', 'minemirth' ) )
+		. mm_bp( __( 'Compare it with your break-even: your power cost per PH/s per day. For a miner at J joules per TH and power at P dollars per kWh, break-even hashprice = J × 24 × P (in $/PH/day). At 17.5 J/TH and $0.07/kWh, that is about $29.40.', 'minemirth' ) )
 		. mm_bl(
 			array(
-				__( 'Hashprice well above break-even: healthy margin, consider expanding.', 'minemirth' ),
+				__( 'Well above break-even: healthy margin, consider expanding.', 'minemirth' ),
 				__( 'Close to break-even: tune for efficiency, check costs, avoid new purchases at full price.', 'minemirth' ),
 				__( 'Below break-even: you lose money on power; curtail, tune down, upgrade or host.', 'minemirth' ),
 			)
 		)
 		. mm_bs( 'tool', array( 'title' => __( 'Live *hashprice* and history', 'minemirth' ), 'id' => 'hashprice' ) )
-		. mm_bcall( 'info', __( 'Hashprice in sats', 'minemirth' ), __( 'Some miners track hashprice in BTC (or sats) per PH/s per day, which removes the price effect and shows only difficulty and fees. The tracker shows both.', 'minemirth' ) )
+		. mm_bcall( 'info', __( 'Hashprice in sats', 'minemirth' ), __( 'Some miners track it in BTC (or sats) per PH/s per day, which removes the price effect and shows only difficulty and fees. The tracker shows both.', 'minemirth' ) )
 		. mm_bfaq(
 			array(
 				array( __( 'Why do pools quote slightly different hashprices?', 'minemirth' ), __( 'They use different fee averaging windows and payout schemes. FPPS pools include an estimate of fees; PPS pools may not.', 'minemirth' ) ),

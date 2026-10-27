@@ -14,8 +14,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Services', 'minemirth' ),
-				'title'   => __( 'Everything your miners need *after checkout*', 'minemirth' ),
-				'text'    => __( 'Hosting, setup, tuning, repairs, trade-ins, fleet supply and farm design, from one team that knows the hardware.', 'minemirth' ),
+				'title'   => __( 'Mining services for everything *after checkout*', 'minemirth' ),
+				'text'    => __( 'Mining services from one team that knows the hardware: hosting, setup, tuning, repairs, trade-ins, fleet supply and farm design.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Talk to us', 'minemirth' ), '{page:contact}' ), array( __( 'Hosting plans', 'minemirth' ), '{page:hosting}', 'glass' ) ) ),
 				'visual'  => 'orbit',
 				'icon'    => 'settings',
@@ -61,8 +61,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Miner hosting', 'minemirth' ),
-				'title'   => __( 'Your miners, our facilities, *your coins*', 'minemirth' ),
-				'text'    => __( 'Run ASIC miners in professional partner facilities with industrial power, cooling and 24/7 monitoring. One all-in rate per kWh, published on every plan. Payouts go straight to your own pool account and wallet.', 'minemirth' ),
+				'title'   => __( 'ASIC miner hosting: your miners, *your coins*', 'minemirth' ),
+				'text'    => __( 'ASIC miner hosting in professional partner facilities with industrial power, cooling and 24/7 monitoring. One all-in rate per kWh, published on every plan. Payouts go straight to your own pool account and wallet.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'View plans', 'minemirth' ), '#hosting-plans', 'primary', 'arrow-down' ), array( __( 'Hosting vs home calculator', 'minemirth' ), '{tool:hosting}', 'glass', 'calculator' ) ) ),
 				'badges'  => array( __( 'All-in rate, no multipliers', 'minemirth' ), __( 'Remote monitoring', 'minemirth' ), __( 'On-site technicians', 'minemirth' ) ),
 				'visual'  => 'orbit',
@@ -112,7 +112,7 @@ return array(
 				'highlight' => 1,
 				'rows'      => array(
 					__( 'Power price | Industrial all-in rate | Your residential tariff', 'minemirth' ),
-					__( 'Noise (70–80 dB per miner) | Not your problem | In your home', 'minemirth' ),
+					__( 'Noise (70 to 80 dB per miner) | Not your problem | In your home', 'minemirth' ),
 					__( 'Heat | Managed by the facility | You must exhaust or reuse it', 'minemirth' ),
 					__( 'Electrical work | Done | New 240 V circuits needed', 'minemirth' ),
 					__( 'Monitoring and repairs | On-site staff | You', 'minemirth' ),
@@ -142,8 +142,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Repairs & servicing', 'minemirth' ),
-				'title'   => __( 'Bring dead hashboards *back to work*', 'minemirth' ),
-				'text'    => __( 'Diagnosis and repair for Antminer, Whatsminer and Avalon miners: hashboards, power supplies, fans and control boards. You get a quote before any paid work starts.', 'minemirth' ),
+				'title'   => __( 'ASIC miner repair that brings hashboards *back to work*', 'minemirth' ),
+				'text'    => __( 'ASIC miner repair and diagnosis for Antminer, Whatsminer and Avalon miners: hashboards, power supplies, fans and control boards. You get a quote before any paid work starts.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Request a repair', 'minemirth' ), '{page:contact}' ), array( __( 'Troubleshoot first', 'minemirth' ), '{page:g-troubleshoot}', 'glass' ) ) ),
 				'visual'  => 'orbit',
 				'icon'    => 'wrench',
@@ -196,8 +196,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Setup & firmware tuning', 'minemirth' ),
-				'title'   => __( 'From box to *best efficiency*', 'minemirth' ),
-				'text'    => __( 'We get new miners hashing on your pool, keep firmware current and tune each unit for the best result at your electricity price.', 'minemirth' ),
+				'title'   => __( 'ASIC miner setup, from box to *best efficiency*', 'minemirth' ),
+				'text'    => __( 'Our ASIC miner setup service gets new units hashing on your pool, keeps firmware current and tunes each miner for the best result at your electricity price.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Book setup', 'minemirth' ), '{page:contact}' ), array( __( 'Firmware guide', 'minemirth' ), '{page:g-firmware}', 'glass' ) ) ),
 				'visual'  => 'stats',
 				'stats'   => array( array( 'value' => __( 'Pool', 'minemirth' ), 'label' => __( 'configured on your account', 'minemirth' ) ), array( 'value' => __( 'J/TH', 'minemirth' ), 'label' => __( 'tuned for your power price', 'minemirth' ) ), array( 'value' => __( 'Network', 'minemirth' ), 'label' => __( 'secured and documented', 'minemirth' ) ), array( 'value' => __( 'Report', 'minemirth' ), 'label' => __( 'hashrate before and after', 'minemirth' ) ) ),
@@ -247,8 +247,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Trade-in & buyback', 'minemirth' ),
-				'title'   => __( 'Turn old miners into *new efficiency*', 'minemirth' ),
-				'text'    => __( 'When newer miners earn far more on the same power, your older units still have value. Trade them in toward a new model and lower your cost per terahash.', 'minemirth' ),
+				'title'   => __( 'ASIC miner trade-in: turn old miners into *new efficiency*', 'minemirth' ),
+				'text'    => __( 'When newer miners earn far more on the same power, your older units still have value. An ASIC miner trade-in puts them toward a new model and lowers your cost per terahash.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Get a trade-in offer', 'minemirth' ), '{page:contact}' ), array( __( 'Upgrade calculator', 'minemirth' ), '{tool:upgrade}', 'glass', 'calculator' ) ) ),
 				'visual'  => 'orbit',
 				'icon'    => 'refresh',
@@ -293,8 +293,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Wholesale & bulk', 'minemirth' ),
-				'title'   => __( 'Fleet supply with *fewer surprises*', 'minemirth' ),
-				'text'    => __( 'Volume pricing for tens to hundreds of units, batch allocation, inspection, documentation and freight to your site or hosting facility.', 'minemirth' ),
+				'title'   => __( 'Wholesale ASIC miners with *fewer surprises*', 'minemirth' ),
+				'text'    => __( 'Wholesale ASIC miners for tens to hundreds of units: volume pricing, batch allocation, inspection, documentation and freight to your site or hosting facility.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Request a volume quote', 'minemirth' ), '{page:contact}' ), array( __( 'Compare models', 'minemirth' ), '{tool:compare}', 'glass' ) ) ),
 				'visual'  => 'checklist',
 				'checklist_title' => __( 'Every bulk quote includes', 'minemirth' ),
@@ -328,8 +328,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Farm design & consulting', 'minemirth' ),
-				'title'   => __( 'Design a site that *earns from day one*', 'minemirth' ),
-				'text'    => __( 'Power capacity, electrical layout, airflow or liquid cooling, noise, networking, monitoring and the financial model, planned before money is spent.', 'minemirth' ),
+				'title'   => __( 'Mining farm consulting for a site that *earns from day one*', 'minemirth' ),
+				'text'    => __( 'Our mining farm consulting covers power capacity, electrical layout, airflow or liquid cooling, noise, networking, monitoring and the financial model, planned before money is spent.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Book a consultation', 'minemirth' ), '{page:contact}' ), array( __( 'Farm planning guide', 'minemirth' ), '{page:g-farm}', 'glass' ) ) ),
 				'visual'  => 'orbit',
 				'icon'    => 'layers',
@@ -377,8 +377,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'For businesses', 'minemirth' ),
-				'title'   => __( 'Add Bitcoin mining to *your business*', 'minemirth' ),
-				'text'    => __( 'For energy producers with surplus or stranded power, companies with heat to use, and investors who want exposure through infrastructure rather than just holding coins.', 'minemirth' ),
+				'title'   => __( 'Bitcoin mining for businesses with *power to use*', 'minemirth' ),
+				'text'    => __( 'Bitcoin mining for businesses: energy producers with surplus or stranded power, companies with heat to use, and investors who want exposure through infrastructure rather than just holding coins.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Talk to us', 'minemirth' ), '{page:contact}' ), array( __( 'ROI planner', 'minemirth' ), '{tool:roi}', 'glass', 'calculator' ) ) ),
 				'visual'  => 'market',
 			)

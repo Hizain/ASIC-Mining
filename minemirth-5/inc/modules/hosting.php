@@ -56,7 +56,7 @@ function mm_hosting_fields(): array {
 		'cta_url'      => array( 'label' => __( 'Inquiry URL', 'minemirth' ), 'type' => 'url', 'help' => __( 'Used when no purchasable product is linked.', 'minemirth' ) ),
 		'featured'     => array( 'label' => __( 'Highlight this plan', 'minemirth' ), 'type' => 'checkbox' ),
 		'features'     => array( 'label' => __( 'Included (one per line)', 'minemirth' ), 'type' => 'textarea', 'wide' => true ),
-		'fine_print'   => array( 'label' => __( 'Plan notes / exclusions', 'minemirth' ), 'type' => 'textarea', 'wide' => true, 'help' => __( 'Taxes, deposits, repair labor, curtailment rules — publish what applies.', 'minemirth' ) ),
+		'fine_print'   => array( 'label' => __( 'Plan notes / exclusions', 'minemirth' ), 'type' => 'textarea', 'wide' => true, 'help' => __( 'Taxes, deposits, repair labor, curtailment rules: publish what applies.', 'minemirth' ) ),
 	);
 }
 
@@ -284,7 +284,7 @@ function mm_hosting_plans_shortcode( $atts = array() ): string {
 	$plans = mm_get_hosting_plans( (int) $atts['limit'] );
 	if ( ! $plans ) {
 		$msg = current_user_can( 'edit_posts' )
-			? __( 'No hosting plans are published yet. Add confirmed facility options under Hosting Plans in the admin — the theme never invents rates or capacity.', 'minemirth' )
+			? __( 'No hosting plans are published yet. Add confirmed facility options under Hosting Plans in the admin. The theme never invents rates or capacity.', 'minemirth' )
 			: __( 'Hosting capacity is being confirmed. Contact us for current availability.', 'minemirth' );
 		return '<div class="mm-plans-empty">' . esc_html( $msg ) . '</div>';
 	}
@@ -302,7 +302,7 @@ add_shortcode( 'mine_mirth_hosting_plans', 'mm_hosting_plans_shortcode' );
  */
 function mm_hosting_legacy_notice(): void {
 	if ( defined( 'MM_CORE_FILE' ) && current_user_can( 'activate_plugins' ) ) {
-		echo '<div class="notice notice-warning"><p>' . esc_html__( 'Mine Mirth: the old “Mine Mirth Core” plugin is still active. Everything it did is now built into the theme — you can deactivate it. Your hosting plans are kept.', 'minemirth' ) . '</p></div>';
+		echo '<div class="notice notice-warning"><p>' . esc_html__( 'Mine Mirth: the old “Mine Mirth Core” plugin is still active. Everything it did is now built into the theme, so you can deactivate it. Your hosting plans are kept.', 'minemirth' ) . '</p></div>';
 	}
 }
 add_action( 'admin_notices', 'mm_hosting_legacy_notice' );

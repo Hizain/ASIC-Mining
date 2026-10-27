@@ -13,11 +13,11 @@ return array(
 		return mm_bp( __( 'A full-size ASIC miner draws as much power as an electric oven, all day, every day. Getting the electrics right is the difference between a safe, profitable setup and a melted plug. This guide covers voltage, current, circuits, cords and the rules electricians use.', 'minemirth' ) )
 		. mm_bcall( 'warning', __( 'Safety first', 'minemirth' ), __( 'Electrical work must be designed and installed by a licensed electrician to your local code. Use this guide to plan and to ask the right questions, not to do the wiring yourself.', 'minemirth' ) )
 		. mm_bh( __( 'Watts, volts and amps', 'minemirth' ) )
-		. mm_bp( __( 'Power (watts) = voltage × current (amps) × power factor. ASIC power supplies have a power factor close to 1, so a 3,500 W miner draws about 14.6 A at 240 V, but about 29 A at 120 V. That is why full-size miners run on 200–240 V: half the current means thinner cables, smaller breakers and less heat in the wiring.', 'minemirth' ) )
+		. mm_bp( __( 'Power (watts) = voltage × current (amps) × power factor. ASIC power supplies have a power factor close to 1, so a 3,500 W miner draws about 14.6 A at 240 V, but about 29 A at 120 V. That is why full-size miners run on 200 to 240 V: half the current means thinner cables, smaller breakers and less heat in the wiring.', 'minemirth' ) )
 		. mm_bl(
 			array(
-				__( 'Most current ASIC PSUs accept roughly 200–240 V; some industrial models accept up to 277 V or 380–415 V three-phase.', 'minemirth' ),
-				__( 'Small home and solo miners run on normal 100–240 V outlets.', 'minemirth' ),
+				__( 'Most current ASIC PSUs accept roughly 200 to 240 V; some industrial models accept up to 277 V or 380 to 415 V three-phase.', 'minemirth' ),
+				__( 'Small home and solo miners run on normal 100 to 240 V outlets.', 'minemirth' ),
 				__( 'Check the label on the PSU for its exact input range before you plug in.', 'minemirth' ),
 			)
 		)
@@ -27,7 +27,7 @@ return array(
 		. mm_bh( __( 'Cords, plugs and PDUs', 'minemirth' ) )
 		. mm_bl(
 			array(
-				__( '<strong>Match the inlet.</strong> ASIC PSUs commonly use C13 (up to about 10–15 A) or C19 (up to about 16–20 A) inlets. Use a C19 cord for high-current units.', 'minemirth' ),
+				__( '<strong>Match the inlet.</strong> ASIC PSUs commonly use C13 (up to about 10 to 15 A) or C19 (up to about 16 to 20 A) inlets. Use a C19 cord for high-current units.', 'minemirth' ),
 				__( '<strong>Rate the cord for the current.</strong> Use heavy-gauge cords rated above the miner’s draw, as short as practical.', 'minemirth' ),
 				__( '<strong>No household power strips or extension reels.</strong> They are not rated for continuous high loads and are a common cause of fires.', 'minemirth' ),
 				__( '<strong>Use proper PDUs</strong> (power distribution units) rated for the total load in multi-miner setups.', 'minemirth' ),
@@ -37,7 +37,7 @@ return array(
 		. mm_bh( __( 'Single-phase or three-phase?', 'minemirth' ) )
 		. mm_bp( __( 'Homes usually have single-phase supply. Larger sites use three-phase, which delivers more power over the same cables. Miners on three-phase are connected phase-to-phase or phase-to-neutral depending on the voltage, and the load should be balanced evenly across the three phases.', 'minemirth' ) )
 		. mm_bh( __( 'How much capacity do you have?', 'minemirth' ) )
-		. mm_bp( __( 'A typical house service might be 100–200 A at 240 V, shared with everything else in the home. One or two full-size miners can fit; ten will not. Ask an electrician to calculate your spare capacity before you buy, and check your supply contract for limits.', 'minemirth' ) )
+		. mm_bp( __( 'A typical house service might be 100 to 200 A at 240 V, shared with everything else in the home. One or two full-size miners can fit; ten will not. Ask an electrician to calculate your spare capacity before you buy, and check your supply contract for limits.', 'minemirth' ) )
 		. mm_bcall( 'success', __( 'Checklist before switching on', 'minemirth' ), __( 'Dedicated circuit sized with the 80% rule · correct voltage for the PSU · cord rated for the current · no power strips · earth/ground connected · connections checked for heat after an hour.', 'minemirth' ) )
 		. mm_bfaq(
 			array(
@@ -62,8 +62,8 @@ return array(
 		. mm_bh( __( 'Intake temperature and humidity', 'minemirth' ) )
 		. mm_bl(
 			array(
-				__( 'Most air-cooled miners are specified for intake air around 0–40 °C. Lower is better for chips and fans.', 'minemirth' ),
-				__( 'Keep humidity non-condensing (typically 10–90% relative humidity). Condensation causes corrosion and short circuits.', 'minemirth' ),
+				__( 'Most air-cooled miners are specified for intake air around 0 to 40 °C. Lower is better for chips and fans.', 'minemirth' ),
+				__( 'Keep humidity non-condensing (typically 10 to 90% relative humidity). Condensation causes corrosion and short circuits.', 'minemirth' ),
 				__( 'Avoid salty or dusty air; filter intakes where you can.', 'minemirth' ),
 			)
 		)
@@ -102,7 +102,7 @@ return array(
 	},
 
 	'g-noise'     => static function () {
-		return mm_bp( __( 'Air-cooled ASIC miners typically run at 70–80 dB, about as loud as a vacuum cleaner, and they do it around the clock. The fans have to move a lot of air through a dense block of heatsinks. Here is what actually reduces the noise, and what doesn’t.', 'minemirth' ) )
+		return mm_bp( __( 'Air-cooled ASIC miners typically run at 70 to 80 dB, about as loud as a vacuum cleaner, and they do it around the clock. The fans have to move a lot of air through a dense block of heatsinks. Here is what actually reduces the noise, and what doesn’t.', 'minemirth' ) )
 		. mm_bh( __( 'Why miners are so loud', 'minemirth' ) )
 		. mm_bp( __( 'Most of the noise comes from high-speed fans pushing air through tightly packed heatsinks. The hotter the intake air and the harder the chips work, the faster the fans spin. Noise also travels: through walls, ducts and the floor if the miner sits directly on it.', 'minemirth' ) )
 		. mm_bh( __( 'What works', 'minemirth' ) )
@@ -129,7 +129,7 @@ return array(
 		. mm_bcall( 'info', __( 'Neighbours and the law', 'minemirth' ), __( 'Many areas have noise limits, especially at night. Measure at your property line with a phone sound meter app before and after changes.', 'minemirth' ) )
 		. mm_bfaq(
 			array(
-				array( __( 'How quiet can I make a full-size air-cooled miner?', 'minemirth' ), __( 'With distance, ducting, underclocking and an enclosure, you can often bring it down by 15–25 dB in the next room. It won’t be silent.', 'minemirth' ) ),
+				array( __( 'How quiet can I make a full-size air-cooled miner?', 'minemirth' ), __( 'With distance, ducting, underclocking and an enclosure, you can often bring it down by 15 to 25 dB in the next room. It won’t be silent.', 'minemirth' ) ),
 				array( __( 'Are hydro miners silent?', 'minemirth' ), __( 'The miners themselves are quiet. The pumps and dry cooler make noise, which can be placed away from living areas.', 'minemirth' ) ),
 			)
 		);
@@ -214,19 +214,19 @@ return array(
 			array(
 				'columns' => array( __( 'Option', 'minemirth' ), __( 'Power and wiring', 'minemirth' ), __( 'Noise', 'minemirth' ), __( 'Best for', 'minemirth' ) ),
 				'rows'    => array(
-					__( 'Solo miner (Bitaxe class) | 15–100 W, USB-C or small adapter | Near silent | Learning, solo lottery', 'minemirth' ),
+					__( 'Solo miner (Bitaxe class) | 15 to 100 W, USB-C or small adapter | Near silent | Learning, solo lottery', 'minemirth' ),
 					__( 'Home miner / heater | Normal outlet | Quiet | Living spaces in cold months', 'minemirth' ),
-					__( 'Full-size air ASIC | 240 V dedicated circuit, ~3.5 kW | 70–80 dB | Garage, basement, outbuilding', 'minemirth' ),
+					__( 'Full-size air ASIC | 240 V dedicated circuit, ~3.5 kW | 70 to 80 dB | Garage, basement, outbuilding', 'minemirth' ),
 					__( 'Hosted full-size ASIC | None at home | None at home | Maximum earnings without the hassle', 'minemirth' ),
 				),
 			)
 		)
 		. mm_bh( __( 'Power and wiring', 'minemirth' ) )
-		. mm_bp( __( 'A full-size miner needs a dedicated 200–240 V circuit sized for continuous load. Check your service capacity with an electrician, especially if you have electric heating, an EV charger or air conditioning. Never use extension reels or power strips. See the <a href="{page:g-power}">power & electrical guide</a>.', 'minemirth' ) )
+		. mm_bp( __( 'A full-size miner needs a dedicated 200 to 240 V circuit sized for continuous load. Check your service capacity with an electrician, especially if you have electric heating, an EV charger or air conditioning. Never use extension reels or power strips. See the <a href="{page:g-power}">power & electrical guide</a>.', 'minemirth' ) )
 		. mm_bh( __( 'Heat: problem or opportunity', 'minemirth' ) )
 		. mm_bp( __( 'In winter, a miner’s heat can replace a heater, so part of its power cost is something you’d pay anyway. In summer, the same heat must be exhausted outside or your home will overheat. Plan ducting for both seasons.', 'minemirth' ) )
 		. mm_bh( __( 'Noise', 'minemirth' ) )
-		. mm_bp( __( 'At 70–80 dB, a full-size miner is too loud for bedrooms and living rooms. Garages, basements and outbuildings work better, combined with ducting and underclocking. See <a href="{page:g-noise}">reducing ASIC noise</a>.', 'minemirth' ) )
+		. mm_bp( __( 'At 70 to 80 dB, a full-size miner is too loud for bedrooms and living rooms. Garages, basements and outbuildings work better, combined with ducting and underclocking. See <a href="{page:g-noise}">reducing ASIC noise</a>.', 'minemirth' ) )
 		. mm_bh( __( 'Internet and monitoring', 'minemirth' ) )
 		. mm_bp( __( 'Mining uses very little data. A wired Ethernet connection is most reliable; Wi-Fi bridges work. Set up pool alerts so you know if the miner stops hashing, and change the default password.', 'minemirth' ) )
 		. mm_bs( 'tool', array( 'title' => __( 'Home or hosting: *which pays more*?', 'minemirth' ), 'id' => 'hosting' ) )

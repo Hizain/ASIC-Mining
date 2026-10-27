@@ -96,8 +96,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'ASIC miners', 'minemirth' ),
-				'title'   => __( 'Find the right miner for *your power and goals*', 'minemirth' ),
-				'text'    => __( 'Browse by coin, by setup or by what matters most to you. Every miner shows live profit at today’s numbers, and you can re-run it at your own electricity price.', 'minemirth' ),
+				'title'   => __( 'ASIC miners for sale, matched to *your power and goals*', 'minemirth' ),
+				'text'    => __( 'Browse ASIC miners for sale by coin, by setup or by what matters most to you. Every miner shows live profit at today’s numbers, and you can re-run it at your own electricity price.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Shop all miners', 'minemirth' ), '{shop}' ), array( __( 'Compare every model', 'minemirth' ), '{tool:compare}', 'glass', 'bar-chart' ) ) ),
 				'visual'  => 'product',
 				'query'   => array( 'sort' => 'popular' ),
@@ -130,8 +130,8 @@ return array(
 		return $mm_collection(
 			array(
 				'eyebrow'        => __( 'Bitcoin miners', 'minemirth' ),
-				'title'          => __( 'SHA-256 miners for the *Bitcoin network*', 'minemirth' ),
-				'text'           => __( 'Air-cooled, hydro and immersion ASICs from Bitmain, MicroBT and Canaan. Today one PH/s earns {hashprice} a day before power, and difficulty is {difficulty}.', 'minemirth' ),
+				'title'          => __( 'SHA-256 Bitcoin miners, *ranked live*', 'minemirth' ),
+				'text'           => __( 'Air-cooled, hydro and immersion Bitcoin miners from Bitmain, MicroBT and Canaan. Today one PH/s earns {hashprice} a day before power, and difficulty is {difficulty}.', 'minemirth' ),
 				'query'          => array( 'algo' => 'sha256', 'sort' => 'efficiency' ),
 				'icon'           => 'bitcoin',
 				'badges'         => array( __( 'Sorted by efficiency', 'minemirth' ), __( 'Live profit on every model', 'minemirth' ) ),
@@ -140,7 +140,7 @@ return array(
 					'eyebrow' => __( 'Choosing a Bitcoin miner', 'minemirth' ),
 					'title'   => __( 'Efficiency wins *over the long run*', 'minemirth' ),
 					'text'    => __( '<p>Every Bitcoin ASIC does the same job: SHA-256 hashing. What differs is how much electricity it needs per terahash (J/TH) and how much hashrate you get for your money.</p><p>Network difficulty tends to rise over time and the halving cuts the block subsidy, so revenue per TH tends to fall. Efficient miners stay profitable longest. If your power is cheap, older or higher-J/TH units can still pay back fast at a lower price.</p>', 'minemirth' ),
-					'bullets' => array( __( 'Under ~$0.05/kWh: most current models are profitable; price per TH matters most', 'minemirth' ), __( '$0.05–0.08/kWh: favour modern units around 15–18 J/TH or better', 'minemirth' ), __( 'Above ~$0.08/kWh: only the most efficient, or hosting, makes sense', 'minemirth' ) ),
+					'bullets' => array( __( 'Under ~$0.05/kWh: most current models are profitable; price per TH matters most', 'minemirth' ), __( '$0.05 to $0.08/kWh: favour modern units around 15 to 18 J/TH or better', 'minemirth' ), __( 'Above ~$0.08/kWh: only the most efficient, or hosting, makes sense', 'minemirth' ) ),
 					'buttons' => mm_bbtn( array( array( __( 'Most efficient miners', 'minemirth' ), '{page:m-efficient}', 'ghost' ) ) ),
 				),
 				'tool'           => 'compare',
@@ -148,7 +148,7 @@ return array(
 				'faq'            => array(
 					array( __( 'Which Bitcoin miner is the most profitable?', 'minemirth' ), __( 'At typical power prices, the most efficient model you can afford. The comparison tool above ranks our stock by profit per day at your electricity rate.', 'minemirth' ) ),
 					array( __( 'Air, hydro or immersion?', 'minemirth' ), __( 'Air-cooled miners are simplest and suit most sites. Hydro models are quieter, denser and more efficient but need a coolant loop. Immersion suits large, engineered sites. See <a href="{page:g-cooling}">cooling & ventilation</a>.', 'minemirth' ) ),
-					array( __( 'What power supply do I need?', 'minemirth' ), __( 'Most current Bitcoin ASICs have a built-in PSU that needs 200–240 V (some accept up to 277 V). Plan a dedicated circuit per miner. See the <a href="{tool:power}">power & circuit planner</a>.', 'minemirth' ) ),
+					array( __( 'What power supply do I need?', 'minemirth' ), __( 'Most current Bitcoin ASICs have a built-in PSU that needs 200 to 240 V (some accept up to 277 V). Plan a dedicated circuit per miner. See the <a href="{tool:power}">power & circuit planner</a>.', 'minemirth' ) ),
 				),
 				'related'        => array( $mm_link( 'g-choose', 'book', __( 'How to choose an ASIC', 'minemirth' ), __( 'The buyer’s framework.', 'minemirth' ) ), $mm_link( 'g-profit', 'trending-up', __( 'Profitability explained', 'minemirth' ), __( 'Revenue, costs and payback.', 'minemirth' ) ), $mm_link( 'm-hydro', 'droplet', __( 'Hydro-cooled miners', 'minemirth' ), __( 'Quiet and dense.', 'minemirth' ) ) ),
 				'cta'            => array( __( 'Pick your *Bitcoin miner*', 'minemirth' ), __( 'Tell us your power price and quantity for a firm quote.', 'minemirth' ) ),
@@ -161,7 +161,7 @@ return array(
 			array(
 				'eyebrow'        => __( 'Litecoin & Dogecoin', 'minemirth' ),
 				'title'          => __( 'Scrypt miners that earn *two coins at once*', 'minemirth' ),
-				'text'           => __( 'Litecoin and Dogecoin share the Scrypt algorithm and are merge-mined: the same hashrate earns LTC and DOGE together, and most pools pay both automatically.', 'minemirth' ),
+				'text'           => __( 'Scrypt miners earn Litecoin and Dogecoin together: the two coins share the Scrypt algorithm and are merge-mined, so the same hashrate earns LTC and DOGE and most pools pay both automatically.', 'minemirth' ),
 				'query'          => array( 'algo' => 'scrypt', 'sort' => 'efficiency' ),
 				'icon'           => 'hash',
 				'button2'        => array( __( 'Altcoin calculator', 'minemirth' ), '{tool:altcoin}', 'glass', 'calculator' ),
@@ -177,7 +177,7 @@ return array(
 				'faq'            => array(
 					array( __( 'Do I need two miners to earn LTC and DOGE?', 'minemirth' ), __( 'No. One Scrypt miner on a merged-mining pool earns both.', 'minemirth' ) ),
 					array( __( 'Is Scrypt mining more profitable than Bitcoin?', 'minemirth' ), __( 'It varies with LTC and DOGE prices and network hashrate. Compare the same power budget in the <a href="{tool:altcoin}">altcoin calculator</a> and the <a href="{tool:profit}">Bitcoin calculator</a>.', 'minemirth' ) ),
-					array( __( 'What power do Scrypt miners need?', 'minemirth' ), __( 'Full-size Scrypt ASICs draw about 3.3–3.5 kW and need 200–240 V circuits, like Bitcoin ASICs.', 'minemirth' ) ),
+					array( __( 'What power do Scrypt miners need?', 'minemirth' ), __( 'Full-size Scrypt ASICs draw about 3.3 to 3.5 kW and need 200 to 240 V circuits, like Bitcoin ASICs.', 'minemirth' ) ),
 				),
 				'related'        => array( $mm_link( 'brand-elphapex', 'award', __( 'Elphapex', 'minemirth' ), __( 'Scrypt DG series.', 'minemirth' ) ), $mm_link( 'brand-bitmain', 'award', __( 'Bitmain Antminer', 'minemirth' ), __( 'L-series Scrypt miners.', 'minemirth' ) ), $mm_link( 'g-pool', 'users', __( 'Choosing a pool', 'minemirth' ), __( 'Fees and payouts.', 'minemirth' ) ) ),
 				'cta'            => array( __( 'Mine *Litecoin and Dogecoin*', 'minemirth' ), __( 'Ask about stock, batches and hosting for Scrypt miners.', 'minemirth' ) ),
@@ -189,8 +189,8 @@ return array(
 		return $mm_collection(
 			array(
 				'eyebrow'        => __( 'Kaspa miners', 'minemirth' ),
-				'title'          => __( 'kHeavyHash miners for *Kaspa*', 'minemirth' ),
-				'text'           => __( 'Kaspa is a fast proof-of-work network built on a blockDAG. Its kHeavyHash algorithm is mined by dedicated ASICs from compact home units to full-size machines.', 'minemirth' ),
+				'title'          => __( 'Kaspa miners for *kHeavyHash*', 'minemirth' ),
+				'text'           => __( 'Kaspa is a fast proof-of-work network built on a blockDAG. Kaspa miners are dedicated kHeavyHash ASICs, from compact home units to full-size machines.', 'minemirth' ),
 				'query'          => array( 'algo' => 'kheavyhash', 'sort' => 'efficiency' ),
 				'icon'           => 'zap-off',
 				'button2'        => array( __( 'Kaspa calculator', 'minemirth' ), '{tool:altcoin}', 'glass', 'calculator' ),
@@ -219,8 +219,8 @@ return array(
 		return $mm_collection(
 			array(
 				'eyebrow'        => __( 'Alephium miners', 'minemirth' ),
-				'title'          => __( 'Blake3 miners for *Alephium*', 'minemirth' ),
-				'text'           => __( 'Alephium is a sharded proof-of-work blockchain using the Blake3 algorithm. ASIC options range from small, quiet home units to full-size industrial miners.', 'minemirth' ),
+				'title'          => __( 'Alephium miners for *Blake3*', 'minemirth' ),
+				'text'           => __( 'Alephium is a sharded proof-of-work blockchain using the Blake3 algorithm. Alephium miners range from small, quiet home units to full-size industrial machines.', 'minemirth' ),
 				'query'          => array( 'algo' => 'blake3', 'sort' => 'efficiency' ),
 				'icon'           => 'cube',
 				'products_title' => __( 'Alephium *miners*', 'minemirth' ),
@@ -244,8 +244,8 @@ return array(
 		return $mm_collection(
 			array(
 				'eyebrow'        => __( 'Home & quiet miners', 'minemirth' ),
-				'title'          => __( 'Mine at home *without the roar*', 'minemirth' ),
-				'text'           => __( 'Compact, low-noise miners that plug into a normal outlet. Many double as space heaters, so the electricity heats your room while it earns sats.', 'minemirth' ),
+				'title'          => __( 'Quiet home miners: mine *without the roar*', 'minemirth' ),
+				'text'           => __( 'Quiet home miners are compact, low-noise ASICs that plug into a normal outlet. Many double as space heaters, so the electricity heats your room while it earns sats.', 'minemirth' ),
 				'query'          => array( 'home' => true, 'sort' => 'popular' ),
 				'icon'           => 'home',
 				'badges'         => array( __( 'Normal outlet', 'minemirth' ), __( 'Low noise', 'minemirth' ), __( 'Heat you can use', 'minemirth' ) ),
@@ -259,7 +259,7 @@ return array(
 					'buttons' => mm_bbtn( array( array( __( 'Mining at home guide', 'minemirth' ), '{page:g-home}', 'ghost' ) ) ),
 				),
 				'faq'            => array(
-					array( __( 'Can I run a full-size ASIC at home?', 'minemirth' ), __( 'Technically yes, with a 240 V circuit and strong ventilation, but at 70–80 dB it is too loud for living spaces. See <a href="{page:g-noise}">reducing ASIC noise</a>.', 'minemirth' ) ),
+					array( __( 'Can I run a full-size ASIC at home?', 'minemirth' ), __( 'Technically yes, with a 240 V circuit and strong ventilation, but at 70 to 80 dB it is too loud for living spaces. See <a href="{page:g-noise}">reducing ASIC noise</a>.', 'minemirth' ) ),
 					array( __( 'Will a home miner raise my power bill?', 'minemirth' ), __( 'Yes, by its watts × hours × your rate. A 500 W unit running all month uses about 365 kWh. If it replaces a heater, part of that cost was coming anyway.', 'minemirth' ) ),
 					array( __( 'Do home miners need special internet?', 'minemirth' ), __( 'No. Mining uses very little bandwidth; a normal Wi-Fi or Ethernet connection is enough.', 'minemirth' ) ),
 				),
@@ -274,7 +274,7 @@ return array(
 		return $mm_collection(
 			array(
 				'eyebrow'        => __( 'Solo & open-source', 'minemirth' ),
-				'title'          => __( 'A few watts, a shot at a *whole block*', 'minemirth' ),
+				'title'          => __( 'Solo miners: a few watts, a shot at a *whole block*', 'minemirth' ),
 				'text'           => __( 'Bitaxe and other open-source miners use a single efficient ASIC chip and a few watts. Pointed at a solo pool, they buy you a real chance at the full block reward: {fees} in fees plus the 3.125 BTC subsidy.', 'minemirth' ),
 				'query'          => array( 'solo' => true, 'sort' => 'popular' ),
 				'icon'           => 'star',
@@ -284,7 +284,7 @@ return array(
 					'eyebrow' => __( 'The honest odds', 'minemirth' ),
 					'title'   => __( 'A lottery ticket that *secures the network*', 'minemirth' ),
 					'text'    => __( '<p>A 1 TH/s miner contributes a tiny share of the network’s hashrate, so the chance of finding a block on any day is very small, yet blocks have been found by solo home miners. The expected value is the same as pool mining; it just arrives all at once, or never.</p><p>Solo miners are also the best way to learn: open hardware, open firmware, a web interface and a fan you can barely hear.</p>', 'minemirth' ),
-					'bullets' => array( __( 'Draws roughly 15–100 W depending on model', 'minemirth' ), __( 'Runs on USB-C or a small DC supply', 'minemirth' ), __( 'Point it at a solo pool with your own address', 'minemirth' ) ),
+					'bullets' => array( __( 'Draws roughly 15 to 100 W depending on model', 'minemirth' ), __( 'Runs on USB-C or a small DC supply', 'minemirth' ), __( 'Point it at a solo pool with your own address', 'minemirth' ) ),
 					'buttons' => mm_bbtn( array( array( __( 'Solo mining guide', 'minemirth' ), '{page:g-solo}', 'ghost' ) ) ),
 				),
 				'tool'           => 'solo',
@@ -304,7 +304,7 @@ return array(
 		return $mm_collection(
 			array(
 				'eyebrow'        => __( 'Hydro-cooled miners', 'minemirth' ),
-				'title'          => __( 'Water-cooled ASICs: *quieter, denser, more efficient*', 'minemirth' ),
+				'title'          => __( 'Hydro miners: *quieter, denser, more efficient*', 'minemirth' ),
 				'text'           => __( 'Hydro miners replace fans with a liquid cold plate. They run near-silent, pack more hashrate into less space and deliver warm water you can reuse.', 'minemirth' ),
 				'query'          => array( 'cooling' => 'hydro', 'sort' => 'efficiency' ),
 				'icon'           => 'droplet',
@@ -331,7 +331,7 @@ return array(
 		return $mm_collection(
 			array(
 				'eyebrow'        => __( 'Immersion-ready', 'minemirth' ),
-				'title'          => __( 'Miners built for *dielectric fluid*', 'minemirth' ),
+				'title'          => __( 'Immersion miners built for *dielectric fluid*', 'minemirth' ),
 				'text'           => __( 'In immersion cooling, miners sit in a tank of non-conductive fluid that carries heat away silently. It allows higher, steadier performance and protects hardware from dust and humidity.', 'minemirth' ),
 				'query'          => array( 'cooling' => 'immersion', 'sort' => 'efficiency' ),
 				'icon'           => 'thermometer',
@@ -358,8 +358,8 @@ return array(
 		return $mm_collection(
 			array(
 				'eyebrow'        => __( 'Most efficient', 'minemirth' ),
-				'title'          => __( 'The lowest *joules per terahash*, ranked live', 'minemirth' ),
-				'text'           => __( 'Efficiency decides how cheaply you produce each bitcoin. These are the Bitcoin miners in our stock, ordered from the lowest J/TH up.', 'minemirth' ),
+				'title'          => __( 'The most efficient Bitcoin miners, *ranked live*', 'minemirth' ),
+				'text'           => __( 'Efficiency decides how cheaply you produce each bitcoin. These are the most efficient Bitcoin miners in our stock, ordered from the lowest J/TH up.', 'minemirth' ),
 				'query'          => array( 'algo' => 'sha256', 'sort' => 'efficiency' ),
 				'icon'           => 'gauge',
 				'button2'        => array( __( 'Break-even power price', 'minemirth' ), '{tool:breakeven}', 'glass', 'bolt' ),
@@ -373,7 +373,7 @@ return array(
 				'tool'           => 'breakeven',
 				'tool_title'     => __( 'Your *break-even* power price', 'minemirth' ),
 				'faq'            => array(
-					array( __( 'What is a good J/TH today?', 'minemirth' ), __( 'Current-generation air-cooled Bitcoin miners are roughly 13–18 J/TH; hydro models go lower. Older generations above 25 J/TH need cheap power.', 'minemirth' ) ),
+					array( __( 'What is a good J/TH today?', 'minemirth' ), __( 'Current-generation air-cooled Bitcoin miners are roughly 13 to 18 J/TH; hydro models go lower. Older generations above 25 J/TH need cheap power.', 'minemirth' ) ),
 					array( __( 'Is the most efficient miner always the best buy?', 'minemirth' ), __( 'Not always. If power is very cheap, a less efficient miner with a lower price per TH can pay back sooner. Compare both in the <a href="{tool:compare}">miner comparison</a>.', 'minemirth' ) ),
 				),
 				'related'        => array( $mm_link( 'm-value', 'tag', __( 'Best value', 'minemirth' ), __( 'Most TH per dollar.', 'minemirth' ) ), $mm_link( 'g-choose', 'book', __( 'How to choose', 'minemirth' ), __( 'Buyer’s framework.', 'minemirth' ) ), $mm_link( 'g-halving', 'clock', __( 'The halving', 'minemirth' ), __( 'Prepare your fleet.', 'minemirth' ) ) ),
@@ -386,8 +386,8 @@ return array(
 		return $mm_collection(
 			array(
 				'eyebrow'        => __( 'Best value', 'minemirth' ),
-				'title'          => __( 'The most *hashrate per dollar*', 'minemirth' ),
-				'text'           => __( 'Ranked by price per terahash so your budget buys the most capacity. Best for cheap power, where hashrate counts more than efficiency.', 'minemirth' ),
+				'title'          => __( 'Best value ASIC miners: the most *hashrate per dollar*', 'minemirth' ),
+				'text'           => __( 'The best value ASIC miners, ranked by price per terahash so your budget buys the most capacity. Best for cheap power, where hashrate counts more than efficiency.', 'minemirth' ),
 				'query'          => array( 'algo' => 'sha256', 'sort' => 'value' ),
 				'icon'           => 'tag',
 				'button2'        => array( __( 'ROI planner', 'minemirth' ), '{tool:roi}', 'glass', 'trending-up' ),
@@ -414,8 +414,8 @@ return array(
 		return $mm_collection(
 			array(
 				'eyebrow'        => __( 'New & pre-order', 'minemirth' ),
-				'title'          => __( 'The latest miners and *upcoming batches*', 'minemirth' ),
-				'text'           => __( 'Newest models first, including pre-orders. New generations usually bring a big step in efficiency, so they are worth a look before you buy.', 'minemirth' ),
+				'title'          => __( 'New ASIC miners and *upcoming batches*', 'minemirth' ),
+				'text'           => __( 'New ASIC miners first, including pre-orders. New generations usually bring a big step in efficiency, so they are worth a look before you buy.', 'minemirth' ),
 				'query'          => array( 'sort' => 'newest' ),
 				'icon'           => 'sparkles',
 				'show_sold'      => false,
@@ -440,8 +440,8 @@ return array(
 		return $mm_collection(
 			array(
 				'eyebrow'        => __( 'PSUs & accessories', 'minemirth' ),
-				'title'          => __( 'Power supplies, cords, fans and *spares*', 'minemirth' ),
-				'text'           => __( 'Keep miners running with the right power supply, the right power cords and spare fans, control boards and cables on the shelf.', 'minemirth' ),
+				'title'          => __( 'ASIC miner parts: power supplies, cords, fans and *spares*', 'minemirth' ),
+				'text'           => __( 'Keep miners running with the right ASIC miner parts: power supplies, power cords and spare fans, control boards and cables on the shelf.', 'minemirth' ),
 				'query'          => array( 'parts' => true, 'parts_only' => true, 'sort' => 'popular' ),
 				'icon'           => 'bolt',
 				'visual'         => 'orbit',
@@ -452,7 +452,7 @@ return array(
 				'explain'        => array(
 					'eyebrow' => __( 'Get the power right', 'minemirth' ),
 					'title'   => __( 'Cords and plugs *matter*', 'minemirth' ),
-					'text'    => __( '<p>ASIC power supplies typically use C13 or C19 inlets. The cord must be rated for the current: a miner drawing 14–16 A at 240 V needs a heavy-gauge cord rated for at least that, ideally more. Undersized cords and cheap splitters cause heat and fires.</p><p>Spare fans and a spare PSU are the cheapest insurance for a fleet: they are the parts that fail most.</p>', 'minemirth' ),
+					'text'    => __( '<p>ASIC power supplies typically use C13 or C19 inlets. The cord must be rated for the current: a miner drawing 14 to 16 A at 240 V needs a heavy-gauge cord rated for at least that, ideally more. Undersized cords and cheap splitters cause heat and fires.</p><p>Spare fans and a spare PSU are the cheapest insurance for a fleet: they are the parts that fail most.</p>', 'minemirth' ),
 					'bullets' => array( __( 'Match the cord to the inlet and current', 'minemirth' ), __( 'Never daisy-chain power strips', 'minemirth' ), __( 'Keep one spare fan per few miners', 'minemirth' ) ),
 					'buttons' => mm_bbtn( array( array( __( 'Power & electrical guide', 'minemirth' ), '{page:g-power}', 'ghost' ) ) ),
 				),
@@ -467,8 +467,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Brands', 'minemirth' ),
-				'title'   => __( 'Every major ASIC *manufacturer*, compared', 'minemirth' ),
-				'text'    => __( 'Each brand has strengths: Bitmain’s range, MicroBT’s durability, Canaan’s home units, and the altcoin specialists. Here is how they differ.', 'minemirth' ),
+				'title'   => __( 'ASIC miner brands, *compared*', 'minemirth' ),
+				'text'    => __( 'ASIC miner brands each have strengths: Bitmain’s range, MicroBT’s durability, Canaan’s home units, and the altcoin specialists. Here is how they differ.', 'minemirth' ),
 				'visual'  => 'orbit',
 				'icon'    => 'award',
 			)
@@ -501,7 +501,7 @@ return array(
 				'name'           => 'Bitmain',
 				'match'          => 'Bitmain|Antminer',
 				'title'          => __( 'Bitmain *Antminer*', 'minemirth' ),
-				'text'           => __( 'Bitmain’s Antminer line is the most widely deployed family of ASIC miners in the world, covering Bitcoin, Litecoin/Dogecoin, Kaspa and Alephium.', 'minemirth' ),
+				'text'           => __( 'The Bitmain Antminer line is the most widely deployed family of ASIC miners in the world, covering Bitcoin, Litecoin/Dogecoin, Kaspa and Alephium.', 'minemirth' ),
 				'products_title' => __( 'Antminer *models*', 'minemirth' ),
 				'about_title'    => __( 'The industry’s *broadest* line-up', 'minemirth' ),
 				'about'          => __( '<p>Founded in 2013, Bitmain designs its own mining chips and builds miners for several algorithms. The S-series is its Bitcoin line, with air-cooled, hydro (Hyd) and immersion variants; the L-series mines Scrypt; KS models mine Kaspa; and AL models mine Alephium.</p><p>Because Antminers are so common, parts, firmware options, repair knowledge and resale buyers are easy to find.</p>', 'minemirth' ),
@@ -530,7 +530,7 @@ return array(
 				'name'           => 'MicroBT',
 				'match'          => 'MicroBT|Whatsminer',
 				'title'          => __( 'MicroBT *Whatsminer*', 'minemirth' ),
-				'text'           => __( 'MicroBT’s Whatsminer Bitcoin miners are known for rugged construction and steady performance in large fleets, in air-cooled, hydro and immersion versions.', 'minemirth' ),
+				'text'           => __( 'MicroBT Whatsminer Bitcoin miners are known for rugged construction and steady performance in large fleets, in air-cooled, hydro and immersion versions.', 'minemirth' ),
 				'products_title' => __( 'Whatsminer *models*', 'minemirth' ),
 				'about_title'    => __( 'Built for *fleets*', 'minemirth' ),
 				'about'          => __( '<p>Founded in 2016 in Shenzhen, MicroBT focuses on SHA-256 Bitcoin miners. Whatsminers are a staple of large mining farms, where reliability across thousands of units matters as much as headline efficiency.</p><p>The M-series spans air-cooled models and hydro (“Hydro”) and immersion versions for high-density sites.</p>', 'minemirth' ),
@@ -558,7 +558,7 @@ return array(
 				'name'           => 'Canaan',
 				'match'          => 'Canaan|Avalon',
 				'title'          => __( 'Canaan *Avalon*', 'minemirth' ),
-				'text'           => __( 'Canaan built one of the first Bitcoin ASICs and today makes both industrial Avalon miners and quiet home units designed to heat a room while they mine.', 'minemirth' ),
+				'text'           => __( 'Canaan built one of the first Bitcoin ASICs and today makes both industrial Canaan Avalon miners and quiet home units designed to heat a room while they mine.', 'minemirth' ),
 				'products_title' => __( 'Avalon *models*', 'minemirth' ),
 				'about_title'    => __( 'From the first ASIC to *home heaters*', 'minemirth' ),
 				'about'          => __( '<p>Canaan, based in China and listed in the United States, shipped one of the first commercial Bitcoin ASIC miners in 2013. Its Avalon range covers full-size Bitcoin miners for farms and a home line of compact, quiet miners that run on a normal outlet.</p><p>The home units are a simple, safe way to mine Bitcoin at home and put the waste heat to use.</p>', 'minemirth' ),
@@ -583,8 +583,8 @@ return array(
 			array(
 				'name'           => 'Goldshell',
 				'match'          => 'Goldshell',
-				'title'          => __( '*Goldshell* compact miners', 'minemirth' ),
-				'text'           => __( 'Goldshell is known for compact, quiet, low-power ASIC boxes for altcoins, a favourite with home and hobby miners.', 'minemirth' ),
+				'title'          => __( '*Goldshell* miners: compact and quiet', 'minemirth' ),
+				'text'           => __( 'Goldshell miners are compact, quiet, low-power ASIC boxes for altcoins, a favourite with home and hobby miners.', 'minemirth' ),
 				'products_title' => __( 'Goldshell *models*', 'minemirth' ),
 				'about_title'    => __( 'Small boxes, *many coins*', 'minemirth' ),
 				'about'          => __( '<p>Goldshell builds desk-sized miners for algorithms such as Blake3 (Alephium), kHeavyHash (Kaspa) and Scrypt (Litecoin/Dogecoin), alongside larger models. Their small units draw a few hundred watts or less and run on a standard outlet.</p><p>They are an easy way to try mining an altcoin without an electrician or a noisy room.</p>', 'minemirth' ),
@@ -611,7 +611,7 @@ return array(
 				'name'           => 'IceRiver',
 				'match'          => 'IceRiver|Ice River',
 				'title'          => __( '*IceRiver* Kaspa miners', 'minemirth' ),
-				'text'           => __( 'IceRiver specialises in kHeavyHash miners for Kaspa, from the small KS0 for home use to full-size machines.', 'minemirth' ),
+				'text'           => __( 'IceRiver Kaspa miners are kHeavyHash machines, from the small KS0 for home use to full-size units.', 'minemirth' ),
 				'products_title' => __( 'IceRiver *models*', 'minemirth' ),
 				'about_title'    => __( 'Kaspa, *and only Kaspa*', 'minemirth' ),
 				'about'          => __( '<p>IceRiver’s KS series was among the first dedicated Kaspa ASICs. The range runs from compact, quiet units drawing around a hundred watts to full-size machines drawing several kilowatts.</p><p>Because Kaspa’s emission falls every month, efficiency and purchase price both matter when comparing models.</p>', 'minemirth' ),
@@ -636,8 +636,8 @@ return array(
 			array(
 				'name'           => 'Elphapex',
 				'match'          => 'Elphapex',
-				'title'          => __( '*Elphapex* Scrypt miners', 'minemirth' ),
-				'text'           => __( 'Elphapex builds Scrypt ASICs in the DG series for merged Litecoin and Dogecoin mining.', 'minemirth' ),
+				'title'          => __( '*Elphapex* miners for Scrypt', 'minemirth' ),
+				'text'           => __( 'Elphapex miners are Scrypt ASICs in the DG series, built for merged Litecoin and Dogecoin mining.', 'minemirth' ),
 				'products_title' => __( 'Elphapex *models*', 'minemirth' ),
 				'about_title'    => __( 'A newer name in *Scrypt*', 'minemirth' ),
 				'about'          => __( '<p>Elphapex entered the Scrypt market with the DG series, giving Litecoin and Dogecoin miners another option alongside Bitmain’s L-series. Models range from full-size industrial units to smaller home-oriented versions.</p><p>As with any Scrypt miner, earnings combine LTC and DOGE from the same hashrate.</p>', 'minemirth' ),

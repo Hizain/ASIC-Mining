@@ -619,7 +619,7 @@ function mm_s_render_tools( array $d ): string {
 }
 
 /**
- * Real WooCommerce product reviews only (approved, 4–5 stars). Nothing is shown when there are none,
+ * Real WooCommerce product reviews only (approved, 4 to 5 stars). Nothing is shown when there are none,
  * except an invitation to review for editors and buyers.
  */
 function mm_s_render_reviews( array $d ): string {

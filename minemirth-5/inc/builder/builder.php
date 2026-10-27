@@ -118,13 +118,103 @@ function mm_builder_content( string $key ): string {
 			}
 		}
 	}
+	$html = '';
 	if ( isset( $map[ $key ] ) && is_callable( $map[ $key ] ) ) {
-		return trim( (string) call_user_func( $map[ $key ] ) ) . "\n";
+		$html = (string) call_user_func( $map[ $key ] );
+	} elseif ( 0 === strpos( $key, 'tool-' ) && isset( $map['tool-default'] ) ) {
+		$html = (string) call_user_func( $map['tool-default'], substr( $key, 5 ) );
 	}
-	if ( 0 === strpos( $key, 'tool-' ) && isset( $map['tool-default'] ) ) {
-		return trim( (string) call_user_func( $map['tool-default'], substr( $key, 5 ) ) ) . "\n";
+	if ( '' !== $html && isset( $map[ 'seo:' . $key ] ) && is_callable( $map[ 'seo:' . $key ] ) ) {
+		$html = mm_builder_insert_before_end( $html, (string) call_user_func( $map[ 'seo:' . $key ] ) );
 	}
-	return '';
+	return '' !== $html ? trim( $html ) . "\n" : '';
+}
+
+/**
+ * Put an extra section before the page's questions or its closing call to action, so the page
+ * still ends the way it was designed.
+ */
+function mm_builder_insert_before_end( string $html, string $extra ): string {
+	if ( '' === trim( $extra ) ) {
+		return $html;
+	}
+	$at = strpos( $html, '<!-- wp:mm/section {"variant":"faq"' );
+	if ( false === $at ) {
+		$at = strrpos( $html, '<!-- wp:mm/section {"variant":"cta"' );
+	}
+	if ( false === $at ) {
+		$at = strrpos( $html, '<!-- wp:mm/section {"variant":"newsletter"' );
+	}
+	return false === $at ? $html . $extra : substr( $html, 0, $at ) . $extra . substr( $html, $at );
+}
+
+/** Times a keyword appears in a text (singular and plural count, any case). */
+function mm_keyword_count( string $kw, string $text ): int {
+	$words = preg_split( '/\s+/u', mb_strtolower( trim( $kw ) ) );
+	if ( ! $words || '' === $words[0] ) {
+		return 0;
+	}
+	$last  = (string) preg_replace( '/(?<=\p{L}{3})(es|s)$/u', '', (string) array_pop( $words ) );
+	$parts = array_map( static fn( $w ) => preg_quote( $w, '/' ), $words );
+	$parts[] = preg_quote( $last, '/' ) . '(?:s|es)?';
+	return (int) preg_match_all( '/(?<![\p{L}\p{N}])' . implode( '[\s-]+', $parts ) . '(?![\p{L}\p{N}])/u', mb_strtolower( $text ) );
+}
+
+/**
+ * Focus keyword, word count and keyword density of every builder page, measured on the text the
+ * page shows (its title, intro and content). Cached per theme version: the text only changes
+ * with the theme.
+ *
+ * @return array<string,array{kw:string,words:int,count:int,density:float}>
+ */
+function mm_builder_seo_stats(): array {
+	$cache = get_transient( 'mm_builder_seo_' . MM_VERSION );
+	if ( is_array( $cache ) ) {
+		return $cache;
+	}
+	$out = array();
+	foreach ( mm_builder_pages() as $key => $def ) {
+		$kw = (string) ( $def['kw'] ?? '' );
+		if ( '' === $kw ) {
+			continue;
+		}
+		$html  = do_blocks( mm_builder_content( $key ) );
+		$html  = function_exists( 'mm_s_live' ) ? mm_s_live( $html ) : $html; // Live values as visitors see them.
+		$html  = str_replace( '<', ' <', $html ); // Keep words apart across tags.
+		$text  = wp_strip_all_tags( ( 'premium' === ( $def['tpl'] ?? '' ) ? '' : $def['t'] . ' ' . ( $def['x'] ?? '' ) . ' ' ) . $html );
+		$text  = html_entity_decode( $text, ENT_QUOTES, 'UTF-8' );
+		$words = (int) preg_match_all( "/[\p{L}\p{N}$][\p{L}\p{N}$'’.,\/%-]*/u", $text );
+		$count = mm_keyword_count( $kw, $text );
+		$out[ $key ] = array(
+			'kw'      => $kw,
+			'words'   => $words,
+			'count'   => $count,
+			'density' => $words ? round( 100 * $count / $words, 2 ) : 0.0,
+		);
+	}
+	set_transient( 'mm_builder_seo_' . MM_VERSION, $out, WEEK_IN_SECONDS );
+	return $out;
+}
+
+/**
+ * SEO section: a heading with the page's keyword and a few paragraphs of plain, useful text.
+ * Guides and tool pages get ordinary heading and paragraph blocks, other pages a prose section.
+ *
+ * @param string[] $paras Paragraphs (links and bold allowed).
+ */
+function mm_bseo( string $heading, array $paras, string $eyebrow = '', bool $article = false ): string {
+	if ( $article ) {
+		$out = mm_bh( $heading );
+		foreach ( $paras as $para ) {
+			$out .= 0 === strpos( $para, '###' ) ? mm_bh( trim( substr( $para, 3 ) ), 3 ) : mm_bp( $para );
+		}
+		return $out;
+	}
+	$html = '';
+	foreach ( $paras as $para ) {
+		$html .= 0 === strpos( $para, '###' ) ? '<h3>' . esc_html( trim( substr( $para, 3 ) ) ) . '</h3>' : '<p>' . $para . '</p>';
+	}
+	return mm_bs( 'prose', array( 'eyebrow' => $eyebrow, 'title' => $heading, 'html' => $html ) );
 }
 
 /* ---------------------------------------------------------------------------

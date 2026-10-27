@@ -17,7 +17,7 @@ return array(
 		. mm_bl(
 			array(
 				__( '<strong>Payout scheme</strong>: FPPS, PPS+, PPLNS or TIDES decide who carries the luck and how fees are shared. See <a href="{page:g-payouts}">pool payouts explained</a>.', 'minemirth' ),
-				__( '<strong>Fee</strong>: typically 0–4%. Compare it together with the payout scheme; a slightly higher fee with FPPS can still pay more than a lower one without fee sharing.', 'minemirth' ),
+				__( '<strong>Fee</strong>: typically 0 to 4%. Compare it together with the payout scheme; a slightly higher fee with FPPS can still pay more than a lower one without fee sharing.', 'minemirth' ),
 				__( '<strong>Minimum payout and frequency</strong>: daily payouts above a threshold are common; Lightning payouts allow tiny amounts.', 'minemirth' ),
 				__( '<strong>Server locations</strong>: a nearby server lowers latency and stale shares.', 'minemirth' ),
 				__( '<strong>Transparency</strong>: can you see blocks found, luck and fee calculations? Can you verify payouts?', 'minemirth' ),
@@ -32,7 +32,7 @@ return array(
 				__( 'Create a worker name for each miner, such as account.miner01.', 'minemirth' ),
 				__( 'In the miner’s web interface, enter the pool’s stratum URL, worker name and password (often any value).', 'minemirth' ),
 				__( 'Add a second and third pool or server as backups so your miner keeps working if one goes down.', 'minemirth' ),
-				__( 'Check the pool dashboard after 15–30 minutes: hashrate should match your miner.', 'minemirth' ),
+				__( 'Check the pool dashboard after 15 to 30 minutes: hashrate should match your miner.', 'minemirth' ),
 			),
 			true
 		)
@@ -124,7 +124,7 @@ return array(
 		. mm_bh( __( 'Daily (or automated)', 'minemirth' ) )
 		. mm_bl(
 			array(
-				__( 'Check hashrate per miner against its expected value; investigate drops over 5–10%.', 'minemirth' ),
+				__( 'Check hashrate per miner against its expected value; investigate drops over 5 to 10%.', 'minemirth' ),
 				__( 'Watch temperatures and fan speeds for outliers.', 'minemirth' ),
 				__( 'Check the pool for stale or rejected shares.', 'minemirth' ),
 				__( 'Set alerts so offline miners are noticed within minutes, not days.', 'minemirth' ),
@@ -139,7 +139,7 @@ return array(
 				__( 'Check fans for noise, wobble or slow spin-up.', 'minemirth' ),
 			)
 		)
-		. mm_bh( __( 'Every 6–12 months', 'minemirth' ) )
+		. mm_bh( __( 'Every 6 to 12 months', 'minemirth' ) )
 		. mm_bl(
 			array(
 				__( 'Deep clean in dusty environments; inspect hashboards for corrosion.', 'minemirth' ),

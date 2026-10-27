@@ -18,7 +18,7 @@ return array(
 			array(
 				'eyebrow' => __( 'Live dashboard', 'minemirth' ),
 				'title'   => __( 'The Bitcoin mining market *today*', 'minemirth' ),
-				'text'    => __( 'Bitcoin is {btc_price} ({btc_change} in 24 hours). One PH/s earns {hashprice} a day, network difficulty is {difficulty} and the next adjustment is {adjustment}.', 'minemirth' ),
+				'text'    => __( 'The Bitcoin mining market right now: Bitcoin is {btc_price} ({btc_change} in 24 hours). One PH/s earns {hashprice} a day, network difficulty is {difficulty} and the next adjustment is {adjustment}.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Hashprice tracker', 'minemirth' ), '{tool:hashprice}', 'primary', 'activity' ), array( __( 'Profit calculator', 'minemirth' ), '{tool:profit}', 'glass', 'calculator' ) ) ),
 				'visual'  => 'market',
 			)
@@ -36,8 +36,8 @@ return array(
 			'hero',
 			array(
 				'eyebrow' => __( 'Partners', 'minemirth' ),
-				'title'   => __( 'Grow with *Mine Mirth*', 'minemirth' ),
-				'text'    => __( 'We work with hosting facilities, resellers, electricians and installers, and creators who teach mining. If you serve miners, let’s talk.', 'minemirth' ),
+				'title'   => __( 'Partner with *Mine Mirth*', 'minemirth' ),
+				'text'    => __( 'Partner with Mine Mirth if you serve miners: we work with hosting facilities, resellers, electricians and installers, and creators who teach mining. Let’s talk.', 'minemirth' ),
 				'buttons' => mm_bbtn( array( array( __( 'Become a partner', 'minemirth' ), '{page:contact}' ) ) ),
 				'visual'  => 'orbit',
 				'icon'    => 'globe',
