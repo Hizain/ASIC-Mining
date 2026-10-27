@@ -13,7 +13,7 @@ build() {
 	(cd "$root" && zip -qr "$out" "$dir" -x '*.DS_Store' -x '*/node_modules/*')
 	echo "$out"
 }
-build minemirth style.css
+build minemirth-5 style.css
 build mine-mirth-commerce mine-mirth-commerce.php
 build mine-mirth-contact mine-mirth-contact.php
 build mine-mirth-rig-optimizer mine-mirth-rig-optimizer.php
