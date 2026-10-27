@@ -11,6 +11,8 @@ The WordPress and WooCommerce theme for [minemirth.com](https://minemirth.com). 
 
 The Mine Mirth Launch plugin (`mine-mirth-launch/`) runs the test drive and keeps every existing address working with 301 redirects after launch.
 
+Mine Mirth Purchase Orders (`mine-mirth-purchase-orders/`) creates and tracks purchase orders with statuses, products from the shop, shipping, fees and taxes, and makes branded PDFs with its own small PDF writer and the embedded brand fonts.
+
 The full feature list, install steps and shortcodes are in [`minemirth-5/readme.txt`](minemirth-5/readme.txt).
 
 ## Layout
@@ -28,6 +30,7 @@ minemirth-5/               the theme (upload this folder, zipped)
   template-parts/home/     homepage sections (also used by the animated hero and ticker)
   assets/css, assets/js    no build step; plain CSS custom properties and vanilla JS
 mine-mirth-launch/         test drive, address memory, redirects and 404 log
+mine-mirth-purchase-orders/ purchase orders, statuses and branded PDFs (includes/pdf.php, fonts/)
 bin/build-zip.sh           builds dist/minemirth-5-<version>.zip and the plugin zips
 ```
 
