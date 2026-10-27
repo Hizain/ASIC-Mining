@@ -10,7 +10,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MM_VERSION', '4.0.2' );
+define( 'MM_VERSION', '5.0.0' );
 define( 'MM_DIR', get_template_directory() );
 define( 'MM_URI', get_template_directory_uri() );
 
@@ -27,12 +27,14 @@ $mm_includes = array(
 	'inc/customizer/sanitize.php',
 	'inc/customizer/customizer.php',
 	'inc/modules/market-data.php',
+	'inc/modules/market-tools.php',
 	'inc/modules/hosting.php',
 	'inc/modules/calculator.php',
 	'inc/modules/newsletter.php',
 	'inc/modules/promos.php',
 	'inc/modules/schema.php',
 	'inc/modules/discovery.php',
+	'inc/tools/tools.php',
 	'inc/admin/admin.php',
 );
 

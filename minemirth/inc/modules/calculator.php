@@ -124,6 +124,9 @@ function mm_calc_field( string $key, string $label, $value, string $unit, array 
 function mm_calculator_html( array $args = array() ): string {
 	$args    = wp_parse_args( $args, array( 'variant' => 'full', 'title' => '' ) );
 	$compact = 'compact' === $args['variant'];
+	if ( ! $compact && function_exists( 'mm_tool_html' ) ) {
+		return mm_tool_html( 'profit' );
+	}
 	wp_enqueue_script( 'mm-calculator' );
 
 	$cur      = mm_market_currency();

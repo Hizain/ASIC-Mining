@@ -133,7 +133,7 @@ function mm_options_sections(): array {
 		// Misc.
 		'mm_pages'            => array( 'panel' => 'mm_misc', 'title' => __( 'Page headers & 404', 'minemirth' ) ),
 		'mm_hosting_page'     => array( 'panel' => 'mm_misc', 'title' => __( 'Miner hosting page', 'minemirth' ) ),
-		'mm_calculator'       => array( 'panel' => 'mm_misc', 'title' => __( 'Profitability calculator', 'minemirth' ) ),
+		'mm_calculator'       => array( 'panel' => 'mm_misc', 'title' => __( 'Mining tools', 'minemirth' ) ),
 		'mm_market'           => array( 'panel' => 'mm_misc', 'title' => __( 'Live market data', 'minemirth' ) ),
 		'mm_newsletter'       => array( 'panel' => 'mm_misc', 'title' => __( 'Newsletter forms', 'minemirth' ) ),
 		'mm_performance'      => array( 'panel' => 'mm_misc', 'title' => __( 'Performance & SEO', 'minemirth' ) ),
@@ -893,6 +893,11 @@ function mm_options_schema(): array {
 		'calc_cta_text'     => array( 'section' => 'mm_calculator', 'type' => 'text', 'label' => __( 'Result call-to-action text', 'minemirth' ), 'default' => __( 'Shop miners like this', 'minemirth' ) ),
 		'calc_cta_url'      => array( 'section' => 'mm_calculator', 'type' => 'url', 'label' => __( 'Result call-to-action URL', 'minemirth' ), 'default' => '{shop}' ),
 		'calc_disclaimer'   => array( 'section' => 'mm_calculator', 'type' => 'textarea', 'label' => __( 'Calculator disclaimer', 'minemirth' ), 'default' => __( 'Estimates assume constant price, difficulty and 100% uptime at nameplate specs. Real results vary with network conditions, hardware performance, curtailment and fees.', 'minemirth' ) ),
+		'tools_hub_slug'    => array( 'section' => 'mm_calculator', 'type' => 'text', 'label' => __( 'Tools hub page slug', 'minemirth' ), 'description' => __( 'The page that lists every tool. Tool pages live under it.', 'minemirth' ), 'default' => 'free-calculators' ),
+		'tools_ltc_hash'    => array( 'section' => 'mm_calculator', 'type' => 'number', 'label' => __( 'Litecoin network hashrate override (PH/s)', 'minemirth' ), 'description' => __( '0 = use live data.', 'minemirth' ), 'default' => 0, 'min' => 0, 'step' => 0.01 ),
+		'tools_doge_hash'   => array( 'section' => 'mm_calculator', 'type' => 'number', 'label' => __( 'Dogecoin network hashrate override (PH/s)', 'minemirth' ), 'description' => __( '0 = estimate from Litecoin (merged mining).', 'minemirth' ), 'default' => 0, 'min' => 0, 'step' => 0.01 ),
+		'tools_doge_ratio'  => array( 'section' => 'mm_calculator', 'type' => 'number', 'label' => __( 'Dogecoin / Litecoin hashrate ratio', 'minemirth' ), 'default' => 1, 'min' => 0.1, 'max' => 3, 'step' => 0.01 ),
+		'tools_kas_hash'    => array( 'section' => 'mm_calculator', 'type' => 'number', 'label' => __( 'Kaspa network hashrate override (PH/s)', 'minemirth' ), 'description' => __( '0 = use live data.', 'minemirth' ), 'default' => 0, 'min' => 0, 'step' => 0.01 ),
 
 		'market_enable'     => array( 'section' => 'mm_market', 'type' => 'toggle', 'label' => __( 'Enable live market data', 'minemirth' ), 'description' => __( 'BTC price from CoinGecko; network data from mempool.space. Cached on your server.', 'minemirth' ), 'default' => true ),
 		'market_currency'   => array( 'section' => 'mm_market', 'type' => 'select', 'label' => __( 'Price currency', 'minemirth' ), 'default' => 'usd', 'choices' => array( 'usd' => 'USD $', 'eur' => 'EUR €', 'gbp' => 'GBP £', 'cad' => 'CAD $', 'aud' => 'AUD $' ) ),

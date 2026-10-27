@@ -238,6 +238,10 @@ function mm_market_refresh(): array {
 	set_transient( MM_MARKET_CACHE . $cur, $fresh, DAY_IN_SECONDS );
 	if ( 'live' === $fresh['status'] && ! $fresh['is_stale'] ) {
 		set_transient( MM_MARKET_LAST_GOOD . $cur, $fresh, DAY_IN_SECONDS );
+		/**
+		 * Fires after a fresh, complete market snapshot is stored (history recording hooks in here).
+		 */
+		do_action( 'mm_market_refreshed', $fresh );
 	}
 	delete_transient( 'mm_market_lock_' . $cur );
 	return $fresh;
