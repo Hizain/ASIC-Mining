@@ -493,3 +493,12 @@ a.mm-s-cmethod:hover { border-color: var(--mm-primary); transform: translateX(3p
 @media (prefers-reduced-motion: reduce) {
 	.mm-orbit__ring, .mm-orbit__core, .mm-orbit__chip, .mm-s-hero__glow { animation: none !important; }
 }
+
+/* FAQ inside narrow prose (tool pages, guides) */
+.mm-prose .mm-s-faq { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.mm-prose .mm-s-faq .mm-section-head { margin-bottom: 0; }
+
+/* Card links inside article text keep their card styling. */
+.mm-prose .mm-s :is(a.mm-lcard, a.mm-feat, a.mm-brand, a.mm-leader, a.mm-tool-card, a.mm-s-cmethod, .mm-pcard__title a, a.mm-pcard__media, a.mm-s-mcard__link):not(.mm-btn):not(.wp-block-button__link):not(.button) { color: var(--mm-text); text-decoration: none; }
+.mm-prose .mm-s a.mm-s-mcard__link:not(.mm-btn):not(.wp-block-button__link):not(.button) { color: var(--mm-link); }
+.mm-prose .mm-tool-card:not(.mm-btn):not(.wp-block-button__link):not(.button) { color: var(--mm-text); text-decoration: none; }

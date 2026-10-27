@@ -26,7 +26,12 @@ $mm_page_front = 'page' === get_option( 'show_on_front' );
 		<?php
 		while ( have_posts() ) :
 			the_post();
-			if ( '' !== trim( get_the_content() ) ) :
+			if ( has_block( 'mm/section' ) ) :
+				// Built from Mine Mirth sections: full-width, no article styling.
+				?>
+				<div class="mm-premium__content mm-home-premium"><?php the_content(); ?></div>
+				<?php
+			elseif ( '' !== trim( get_the_content() ) ) :
 				?>
 				<div class="mm-section mm-home-content">
 					<div class="mm-container entry-content mm-prose mm-prose--wide">

@@ -63,13 +63,22 @@ function mm_s_line( $text ): string {
 	return mm_s_live( esc_html( (string) $text ) );
 }
 
+/** Resolve link tokens inside href attributes (before sanitising, which would strip them). */
+function mm_s_links( string $html ): string {
+	if ( false === strpos( $html, 'href="{' ) ) {
+		return $html;
+	}
+	return (string) preg_replace_callback( '/href="(\{[^"]+)"/', static fn( $m ) => 'href="' . esc_url( mm_s_url( $m[1] ) ) . '"', $html );
+}
+
 /** Body text: limited HTML (links, bold, lists), paragraphs and tokens. */
 function mm_s_rich( $text ): string {
 	$text = trim( (string) $text );
 	if ( '' === $text ) {
 		return '';
 	}
-	return mm_s_live( wp_kses_post( false === strpos( $text, '<p' ) ? wpautop( $text ) : $text ) );
+	$text = mm_s_links( $text );
+	return mm_s_live( wp_kses_post( false === strpos( $text, '<p' ) && false === strpos( $text, '<ul' ) ? wpautop( $text ) : $text ) );
 }
 
 /**
@@ -284,6 +293,7 @@ function mm_s_query( $q ): array {
 		'cat'     => sanitize_title( (string) ( $q['cat'] ?? '' ) ),
 		'sort'    => sanitize_key( (string) ( $q['sort'] ?? 'popular' ) ),
 		'miners'  => empty( $q['parts'] ),
+		'parts'   => ! empty( $q['parts_only'] ),
 	);
 }
 
@@ -374,7 +384,7 @@ function mm_s_render_features( array $d ): string {
 function mm_s_render_split( array $d ): string {
 	$li = '';
 	foreach ( mm_s_lines( $d['bullets'] ?? array() ) as $b ) {
-		$li .= '<li>' . mm_icon( 'check' ) . '<span>' . mm_s_live( wp_kses_post( $b ) ) . '</span></li>';
+		$li .= '<li>' . mm_icon( 'check' ) . '<span>' . mm_s_live( wp_kses_post( mm_s_links( $b ) ) ) . '</span></li>';
 	}
 	return '<div class="mm-container mm-s-split' . ( ! empty( $d['reverse'] ) ? ' is-reverse' : '' ) . '">'
 		. '<div class="mm-s-split__copy" data-mm-reveal>'
@@ -449,7 +459,7 @@ function mm_s_render_table( array $d ): string {
 		if ( in_array( $t, array( 'no', '✗', 'x', 'false', 'n' ), true ) ) {
 			return '<span class="mm-s-no" aria-label="' . esc_attr__( 'No', 'minemirth' ) . '">' . mm_icon( 'minus' ) . '</span>';
 		}
-		return mm_s_live( wp_kses_post( trim( $c ) ) );
+		return mm_s_live( wp_kses_post( mm_s_links( trim( $c ) ) ) );
 	};
 	$head = '';
 	foreach ( $cols as $i => $c ) {
@@ -460,7 +470,7 @@ function mm_s_render_table( array $d ): string {
 		$cells = array_map( 'trim', explode( '|', $row ) );
 		$body .= '<tr>';
 		foreach ( $cells as $i => $c ) {
-			$body .= ( 0 === $i ? '<th>' . mm_s_live( wp_kses_post( $c ) ) . '</th>' : '<td' . ( $i === $hl ? ' class="is-hl"' : '' ) . ( isset( $cols[ $i ] ) ? ' data-label="' . esc_attr( $cols[ $i ] ) . '"' : '' ) . '>' . $cell( $c ) . '</td>' );
+			$body .= ( 0 === $i ? '<th>' . mm_s_live( wp_kses_post( mm_s_links( $c ) ) ) . '</th>' : '<td' . ( $i === $hl ? ' class="is-hl"' : '' ) . ( isset( $cols[ $i ] ) ? ' data-label="' . esc_attr( $cols[ $i ] ) . '"' : '' ) . '>' . $cell( $c ) . '</td>' );
 		}
 		$body .= '</tr>';
 	}
@@ -723,6 +733,24 @@ function mm_section_render( array $attrs ): string {
 	$id   = ! empty( $d['anchor'] ) ? ' id="' . esc_attr( sanitize_title( $d['anchor'] ) ) . '"' : '';
 	return '<section' . $id . ' class="mm-s mm-s--' . esc_attr( $variant ) . ' mm-s--tone-' . $tone . ' mm-s--pad-' . $pad . ( 'dark' === $tone ? ' mm-scheme-dark' : '' ) . '">' . $inner . '</section>';
 }
+
+// Link tokens such as href="{tool:profit}" in ordinary blocks (paragraphs, lists) of any page.
+add_filter( 'the_content', 'mm_s_links', 8 );
+
+// Live values such as {hashprice} in ordinary blocks. Runs after blocks are rendered, so block
+// attributes are never touched.
+add_filter(
+	'the_content',
+	static function ( $content ) {
+		$content = (string) $content;
+		if ( false === strpos( $content, '{' ) || ! preg_match( '/\{(btc_price|btc_change|hashprice|hashrate|difficulty|adjustment|height|fees|halving_blocks|halving_days|halving_date|miners_count|brands_count)\}/', $content ) ) {
+			return $content;
+		}
+		wp_enqueue_script( 'mm-market' );
+		return mm_s_live( $content );
+	},
+	12
+);
 
 function mm_sections_enqueue(): void {
 	wp_enqueue_style( 'mm-sections' );

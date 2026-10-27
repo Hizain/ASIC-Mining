@@ -36,6 +36,7 @@ $mm_includes = array(
 	'inc/modules/discovery.php',
 	'inc/tools/tools.php',
 	'inc/sections/sections.php',
+	'inc/builder/builder.php',
 	'inc/admin/admin.php',
 );
 

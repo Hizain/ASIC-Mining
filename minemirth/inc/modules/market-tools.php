@@ -487,11 +487,14 @@ unset( $mm_hook );
  * @param array $f algo, cooling, brand, home, solo, cat, sort (efficiency|value|newest|popular|price), limit, stock (any|available).
  */
 function mm_catalog_filter( array $f ): array {
-	$f    = wp_parse_args( $f, array( 'algo' => '', 'cooling' => '', 'brand' => '', 'home' => false, 'solo' => false, 'cat' => '', 'sort' => '', 'limit' => 0, 'stock' => 'any', 'miners' => true ) );
+	$f    = wp_parse_args( $f, array( 'algo' => '', 'cooling' => '', 'brand' => '', 'home' => false, 'solo' => false, 'cat' => '', 'sort' => '', 'limit' => 0, 'stock' => 'any', 'miners' => true, 'parts' => false ) );
 	$rows = array_filter(
 		mm_catalog(),
 		static function ( $r ) use ( $f ) {
 			if ( $f['miners'] && $r['is_part'] ) {
+				return false;
+			}
+			if ( $f['parts'] && ! $r['is_part'] ) {
 				return false;
 			}
 			if ( $f['algo'] && $r['algo'] !== $f['algo'] ) {
@@ -500,7 +503,8 @@ function mm_catalog_filter( array $f ): array {
 			if ( $f['cooling'] && $r['cooling'] !== $f['cooling'] ) {
 				return false;
 			}
-			if ( $f['brand'] && ! preg_match( '/' . preg_quote( (string) $f['brand'], '/' ) . '/i', $r['brand'] . ' ' . $r['name'] ) ) {
+			// Brand: one name or several separated by "|" (for example "Bitmain|Antminer").
+			if ( $f['brand'] && ! preg_match( '/' . implode( '|', array_map( static fn( $b ) => preg_quote( trim( $b ), '/' ), explode( '|', (string) $f['brand'] ) ) ) . '/i', $r['brand'] . ' ' . $r['name'] ) ) {
 				return false;
 			}
 			if ( $f['home'] && ! $r['home'] ) {
