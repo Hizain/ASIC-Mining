@@ -110,6 +110,12 @@ function mm_enqueue_assets(): void {
 	wp_register_script( 'mm-calculator', MM_URI . '/assets/js/calculator.js', array( 'mm-theme', 'mm-market' ), $ver, $defer );
 	wp_register_script( 'mm-hero', MM_URI . '/assets/js/hero.js', array( 'mm-theme' ), $ver, $defer );
 	wp_register_script( 'mm-blog', MM_URI . '/assets/js/blog.js', array( 'mm-theme' ), $ver, $defer );
+	wp_register_script( 'mm-profitability', MM_URI . '/assets/js/profitability.js', array( 'mm-theme' ), $ver, $defer );
+	wp_register_style( 'mm-profitability', MM_URI . '/assets/css/profitability.css', array( 'mm-main' ), $ver );
+	// Load the dashboard styles in the head where it is known to appear, so it never flashes unstyled.
+	if ( mm_opt( 'prof_enable' ) && ( ( is_front_page() && mm_opt( 'prof_home' ) ) || is_page_template( 'page-templates/profitability.php' ) ) ) {
+		wp_enqueue_style( 'mm-profitability' );
+	}
 
 	if ( mm_opt( 'market_enable' ) ) {
 		wp_enqueue_script( 'mm-market' );

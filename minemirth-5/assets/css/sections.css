@@ -400,13 +400,13 @@ a.mm-s-cmethod:hover { border-color: var(--mm-primary); transform: translateX(3p
 .mm-prose .mm-s--cta .mm-cta-card { padding: clamp(32px, 5vw, 56px) clamp(18px, 4vw, 40px); }
 .mm-prose .mm-s-table table { margin: 0; }
 .mm-prose .mm-tool { margin-top: 8px; }
-.mm-guide__pill { margin-bottom: 18px; }
-.mm-guide__pill .mm-icon { width: 14px; height: 14px; }
-.mm-guide__meta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--mm-muted); font-size: .88rem; }
-.mm-guide__meta span { display: inline-flex; align-items: center; gap: 6px; }
-.mm-guide__meta .mm-icon { width: 16px; height: 16px; }
-.mm-guide .mm-article-layout { padding-bottom: clamp(32px, 5vw, 64px); }
-.mm-guide__body > h2:first-child { margin-top: 0; }
+.mm-gpage__pill { margin-bottom: 18px; }
+.mm-gpage__pill .mm-icon { width: 14px; height: 14px; }
+.mm-gpage__meta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--mm-muted); font-size: .88rem; }
+.mm-gpage__meta span { display: inline-flex; align-items: center; gap: 6px; }
+.mm-gpage__meta .mm-icon { width: 16px; height: 16px; }
+.mm-gpage .mm-article-layout { padding-bottom: clamp(32px, 5vw, 64px); }
+.mm-gpage__body > h2:first-child { margin-top: 0; }
 
 /* ---------------------------------------------------------------- Responsive */
 @media (max-width: 1099px) {

@@ -10,7 +10,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MM_VERSION', '5.1.0' );
+define( 'MM_VERSION', '5.2.0' );
 define( 'MM_DIR', get_template_directory() );
 define( 'MM_URI', get_template_directory_uri() );
 
@@ -36,6 +36,8 @@ $mm_includes = array(
 	'inc/modules/schema.php',
 	'inc/modules/discovery.php',
 	'inc/tools/tools.php',
+	'inc/modules/miner-models.php',
+	'inc/modules/profitability.php',
 	'inc/sections/sections.php',
 	'inc/builder/builder.php',
 	'inc/admin/admin.php',

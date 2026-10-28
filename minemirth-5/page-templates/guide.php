@@ -35,19 +35,19 @@ while ( have_posts() ) :
 	<?php if ( mm_opt( 'single_progress' ) ) : ?>
 		<div class="mm-progress" data-mm-progress-bar aria-hidden="true"><span></span></div>
 	<?php endif; ?>
-	<main id="mm-main" class="mm-main mm-guide" tabindex="-1">
+	<main id="mm-main" class="mm-main mm-gpage" tabindex="-1">
 		<article class="mm-article">
-			<header class="mm-article-head mm-guide__head">
+			<header class="mm-article-head mm-gpage__head">
 				<div class="mm-article-head__fx" aria-hidden="true"></div>
 				<?php echo function_exists( 'mm_deco' ) ? mm_deco( 'circuit' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput ?>
 				<div class="mm-container">
 					<?php mm_breadcrumbs(); ?>
-					<span class="mm-pill mm-guide__pill"><?php echo mm_icon( 'book' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo esc_html( $mm_group ? $mm_group : __( 'Mining guide', 'minemirth' ) ); ?></span>
+					<span class="mm-pill mm-gpage__pill"><?php echo mm_icon( 'book' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo esc_html( $mm_group ? $mm_group : __( 'Mining guide', 'minemirth' ) ); ?></span>
 					<h1 class="mm-article-head__title"><?php the_title(); ?></h1>
 					<?php if ( has_excerpt() ) : ?>
 						<p class="mm-article-head__lead"><?php echo esc_html( get_the_excerpt() ); ?></p>
 					<?php endif; ?>
-					<div class="mm-meta mm-guide__meta">
+					<div class="mm-meta mm-gpage__meta">
 						<span><?php echo mm_icon( 'clock' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo esc_html( sprintf( /* translators: %d: minutes */ _n( '%d min read', '%d min read', $mm_minutes, 'minemirth' ), $mm_minutes ) ); ?></span>
 						<span><?php echo mm_icon( 'refresh' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php echo esc_html( sprintf( /* translators: %s: date */ __( 'Updated %s', 'minemirth' ), get_the_modified_date() ) ); ?></span>
 						<span><?php echo mm_icon( 'activity' ); // phpcs:ignore WordPress.Security.EscapeOutput ?><?php esc_html_e( 'Live network figures', 'minemirth' ); ?></span>
@@ -63,7 +63,7 @@ while ( have_posts() ) :
 						<?php if ( count( $mm_toc ) >= 3 ) : ?>
 							<?php mm_toc( $mm_toc, 'inline' ); ?>
 						<?php endif; ?>
-						<div class="entry-content mm-prose mm-guide__body" data-mm-article>
+						<div class="entry-content mm-prose mm-gpage__body" data-mm-article>
 							<?php echo $mm_content; // phpcs:ignore WordPress.Security.EscapeOutput -- filtered post content. ?>
 						</div>
 					</div>

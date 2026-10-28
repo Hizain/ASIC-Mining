@@ -296,6 +296,7 @@ function mm_builder_template( string $tpl ): string {
 		'premium' => 'page-templates/premium.php',
 		'guide'   => 'page-templates/guide.php',
 		'tool'    => 'page-templates/tool.php',
+		'profitability' => 'page-templates/profitability.php',
 	)[ $tpl ] ?? 'default';
 }
 
@@ -475,7 +476,7 @@ function mm_builder_menus( array $ids, bool $assign ): array {
 					array(
 						$page( 'miners', __( 'By coin', 'minemirth' ), __( 'Bitcoin, Litecoin, Kaspa, Alephium', 'minemirth' ), 'bitcoin', array( $page( 'm-bitcoin' ), $page( 'm-scrypt' ), $page( 'm-kaspa' ), $page( 'm-alephium' ) ) ),
 						$page( 'miners', __( 'By setup', 'minemirth' ), __( 'Home, solo, hydro and immersion', 'minemirth' ), 'home', array( $page( 'm-home' ), $page( 'm-solo' ), $page( 'm-hydro' ), $page( 'm-immersion' ) ) ),
-						$page( 'miners', __( 'Buying guides', 'minemirth' ), __( 'Ranked live from our stock', 'minemirth' ), 'gauge', array( $page( 'm-efficient' ), $page( 'm-value' ), $page( 'm-new' ), $page( 'm-parts' ) ) ),
+						$page( 'miners', __( 'Buying guides', 'minemirth' ), __( 'Ranked live from our stock', 'minemirth' ), 'gauge', array( $page( 'profitability', __( 'Miner profitability', 'minemirth' ) ), $page( 'm-efficient' ), $page( 'm-value' ), $page( 'm-new' ), $page( 'm-parts' ) ) ),
 						$page( 'brands', __( 'Brands', 'minemirth' ), __( 'Every major manufacturer', 'minemirth' ), 'award', array( $page( 'brand-bitmain' ), $page( 'brand-microbt' ), $page( 'brand-canaan' ), $page( 'brand-goldshell' ), $page( 'brand-iceriver' ), $page( 'brand-elphapex' ) ) ),
 					),
 					'mm-mega'

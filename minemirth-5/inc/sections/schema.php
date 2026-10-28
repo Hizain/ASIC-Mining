@@ -130,6 +130,12 @@ function mm_sections_schema(): array {
 			'fields' => array_merge( $head, array( mm_sf( 'query', 'query', __( 'Which miners', 'minemirth' ) ), mm_sf( 'limit', 'number', __( 'How many', 'minemirth' ) ), mm_sf( 'show_sold', 'toggle', __( 'Include sold-out models', 'minemirth' ) ), mm_sf( 'empty', 'textarea', __( 'Message when none match', 'minemirth' ) ) ) ),
 			'data'   => array( 'title' => __( 'Miners in *stock*', 'minemirth' ), 'limit' => 8, 'query' => array( 'sort' => 'popular' ) ),
 		),
+		'profitability' => array(
+			'label'  => __( 'Miner profitability', 'minemirth' ),
+			'icon'   => 'chart-bar',
+			'fields' => array_merge( $head, array( mm_sf( 'limit', 'number', __( 'How many miners (0 = all, with every filter)', 'minemirth' ) ) ) ),
+			'data'   => array( 'limit' => 10 ),
+		),
 		'links'      => array(
 			'label'  => __( 'Link cards', 'minemirth' ),
 			'icon'   => 'index-card',
@@ -217,7 +223,7 @@ function mm_sections_common_fields(): array {
 	return array(
 		mm_sf( 'tone', 'select', __( 'Background', 'minemirth' ), array( 'o' => array( 'plain' => __( 'Page background', 'minemirth' ), 'alt' => __( 'Soft tint', 'minemirth' ), 'gradient' => __( 'Gradient glow', 'minemirth' ), 'dark' => __( 'Dark', 'minemirth' ) ) ) ),
 		mm_sf( 'pad', 'select', __( 'Spacing', 'minemirth' ), array( 'o' => array( 'md' => __( 'Normal', 'minemirth' ), 'sm' => __( 'Compact', 'minemirth' ), 'lg' => __( 'Roomy', 'minemirth' ), 'none' => __( 'None', 'minemirth' ) ) ) ),
-		mm_sf( 'deco', 'select', __( 'Animated shapes', 'minemirth' ), array( 'o' => array( 'auto' => __( 'Automatic', 'minemirth' ), 'coins' => __( 'Floating coins', 'minemirth' ), 'blocks' => __( 'Blocks', 'minemirth' ), 'chain' => __( 'Blockchain', 'minemirth' ), 'circuit' => __( 'Circuit traces', 'minemirth' ), 'nodes' => __( 'Network nodes', 'minemirth' ), 'none' => __( 'None', 'minemirth' ) ) ) ),
+		mm_sf( 'deco', 'select', __( 'Animated shapes', 'minemirth' ), array( 'o' => array( 'auto' => __( 'Automatic', 'minemirth' ), 'coins' => __( 'Floating coins', 'minemirth' ), 'chain' => __( 'Blockchain transactions', 'minemirth' ), 'none' => __( 'None', 'minemirth' ) ) ) ),
 		mm_sf( 'anchor', 'text', __( 'Anchor (for #links)', 'minemirth' ) ),
 	);
 }

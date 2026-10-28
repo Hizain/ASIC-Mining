@@ -361,6 +361,13 @@ function mm_hashrate_to_th( $value ): float {
 	if ( str_contains( $unit, 'MH' ) ) {
 		return $num / 1e6;
 	}
+	// Kilohash and Equihash solutions (kSol/s), for example Z15 or X9 listings.
+	if ( preg_match( '/\d\s*K(H|SOL)/', $unit ) ) {
+		return $num / 1e9;
+	}
+	if ( preg_match( '/\d\s*(H|SOL)\b/', $unit ) && ! preg_match( '/[TGMPE]H|[TGMPE]SOL/', $unit ) ) {
+		return $num / 1e12;
+	}
 	return $num;
 }
 

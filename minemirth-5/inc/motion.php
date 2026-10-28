@@ -1,6 +1,6 @@
 <?php
 /**
- * Motion layer: crypto vector shapes behind sections and the live guide that talks to visitors.
+ * Motion layer: crypto coins and blockchain transactions behind sections, and the live guide that talks to visitors.
  *
  * Shapes are plain markup that CSS draws and animates (transform and opacity only), and
  * assets/js/motion.js plays them only while they are on screen. The guide's messages are written
@@ -14,18 +14,29 @@ defined( 'ABSPATH' ) || exit;
 /** Shape layers and how many shapes each one draws. */
 function mm_deco_kinds(): array {
 	return array(
-		'coins'   => 6,
-		'blocks'  => 6,
-		'chain'   => 6,
-		'circuit' => 2,
-		'nodes'   => 5,
+		'coins' => 6,
+		'chain' => 6,
 	);
 }
 
 /**
- * A decorative shape layer. Kinds: coins, blocks, chain, circuit, nodes.
+ * Older layer names (cubes, circuit traces and network lines, all diagonal shapes) now show the
+ * coins or the blockchain transactions, so saved sections and templates keep an animation.
+ */
+function mm_deco_alias( string $kind ): string {
+	return array(
+		'blocks'  => 'coins',
+		'nodes'   => 'coins',
+		'circuit' => 'chain',
+	)[ $kind ] ?? $kind;
+}
+
+/**
+ * A decorative shape layer. Kinds: coins (floating crypto coins) and chain (blocks confirming as
+ * transactions flow in).
  */
 function mm_deco( string $kind, string $class = '' ): string {
+	$kind  = mm_deco_alias( $kind );
 	$kinds = mm_deco_kinds();
 	if ( ! isset( $kinds[ $kind ] ) || ! mm_opt( 'fx_shapes' ) ) {
 		return '';
@@ -41,18 +52,18 @@ function mm_deco_for_section( string $variant, array $d ): string {
 	}
 	if ( 'auto' === $pick || '' === $pick ) {
 		$auto = array(
-			'hero'       => 'nodes',
+			'hero'       => 'coins',
 			'stats'      => 'chain',
 			'market'     => 'chain',
-			'features'   => 'blocks',
-			'steps'      => 'circuit',
-			'tools'      => 'circuit',
+			'features'   => 'coins',
+			'steps'      => 'chain',
+			'tools'      => 'chain',
 			'split'      => 'coins',
-			'links'      => 'blocks',
+			'links'      => 'coins',
 			'newsletter' => 'coins',
 			'cta'        => 'coins',
-			'brands'     => 'nodes',
-			'faq'        => 'circuit',
+			'brands'     => 'coins',
+			'faq'        => 'chain',
 			'pricing'    => 'chain',
 		);
 		$pick = $auto[ $variant ] ?? '';

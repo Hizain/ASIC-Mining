@@ -53,6 +53,7 @@ return array(
 				'link_url'   => '{shop}',
 			)
 		)
+		. mm_bs( 'profitability', array( 'limit' => 10, 'tone' => 'alt' ) )
 		. mm_bs(
 			'links',
 			array(

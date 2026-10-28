@@ -390,7 +390,7 @@ function mm_options_schema(): array {
 		'fx_magnetic'     => array( 'section' => 'mm_motion', 'type' => 'toggle', 'label' => __( 'Magnetic primary buttons', 'minemirth' ), 'default' => true ),
 		'fx_tilt'         => array( 'section' => 'mm_motion', 'type' => 'toggle', 'label' => __( '3D tilt on hero visuals', 'minemirth' ), 'default' => true ),
 		'fx_page_loader'  => array( 'section' => 'mm_motion', 'type' => 'toggle', 'label' => __( 'Brand loading screen on first visit', 'minemirth' ), 'default' => false ),
-		'fx_shapes'       => array( 'section' => 'mm_motion', 'type' => 'toggle', 'label' => __( 'Crypto vector shapes', 'minemirth' ), 'description' => __( 'Coins, blocks, circuits and network lines that drift behind sections. Pure CSS, paused when off screen.', 'minemirth' ), 'default' => true ),
+		'fx_shapes'       => array( 'section' => 'mm_motion', 'type' => 'toggle', 'label' => __( 'Crypto vector shapes', 'minemirth' ), 'description' => __( 'Floating crypto coins and blockchain transactions behind sections. Pure CSS, paused when off screen.', 'minemirth' ), 'default' => true ),
 		'fx_guide'        => array( 'section' => 'mm_motion', 'type' => 'toggle', 'label' => __( 'Live guide bubble', 'minemirth' ), 'description' => __( 'A small assistant that tells visitors what today’s numbers mean for the page they are on (profit of this miner, hashprice, next difficulty change). Hidden on cart, checkout and account pages.', 'minemirth' ), 'default' => true ),
 		'fx_guide_delay'  => array( 'section' => 'mm_motion', 'type' => 'range', 'label' => __( 'Guide appears after', 'minemirth' ), 'default' => 6, 'min' => 2, 'max' => 30, 'step' => 1, 'unit' => 's' ),
 	);
@@ -864,6 +864,7 @@ function mm_options_schema(): array {
 
 		'contact_email'        => array( 'section' => 'mm_contact', 'type' => 'text', 'label' => __( 'Email', 'minemirth' ), 'default' => '' ),
 		'contact_phone'        => array( 'section' => 'mm_contact', 'type' => 'text', 'label' => __( 'Phone', 'minemirth' ), 'default' => '' ),
+		'contact_whatsapp'     => array( 'section' => 'mm_contact', 'type' => 'text', 'label' => __( 'WhatsApp number', 'minemirth' ), 'description' => __( 'With country code, for example +1 503 555 0100. Used by "Check availability" buttons. Empty uses the phone number.', 'minemirth' ), 'default' => '' ),
 		'contact_address'      => array( 'section' => 'mm_contact', 'type' => 'textarea', 'label' => __( 'Address', 'minemirth' ), 'default' => '' ),
 		'contact_hours'        => array( 'section' => 'mm_contact', 'type' => 'text', 'label' => __( 'Support hours', 'minemirth' ), 'default' => '' ),
 		'contact_url'          => array( 'section' => 'mm_contact', 'type' => 'url', 'label' => __( 'Contact page URL', 'minemirth' ), 'default' => '/contact-us/' ),
@@ -892,6 +893,9 @@ function mm_options_schema(): array {
 
 		'calc_presets'      => array( 'section' => 'mm_calculator', 'type' => 'textarea', 'label' => __( 'Miner presets (Name | TH/s | Watts)', 'minemirth' ), 'description' => __( 'One per line. Products with “hashrate” and “power” attributes are added automatically.', 'minemirth' ), 'default' => "Antminer S21 XP | 270 | 3645\nAntminer S21 Pro | 234 | 3510\nAntminer S21 | 200 | 3500\nWhatsminer M60S | 186 | 3441\nAvalon A1466 | 150 | 3230\nAntminer S19k Pro | 120 | 2760" ),
 		'calc_kwh'          => array( 'section' => 'mm_calculator', 'type' => 'number', 'label' => __( 'Default electricity price ($/kWh)', 'minemirth' ), 'default' => 0.07, 'min' => 0, 'step' => 0.001 ),
+		'prof_enable'       => array( 'section' => 'mm_calculator', 'type' => 'toggle', 'label' => __( 'Miner profitability dashboard', 'minemirth' ), 'description' => __( 'Live profit per day for every major ASIC, with your stock, prices and a WhatsApp availability button.', 'minemirth' ), 'default' => false ),
+		'prof_home'         => array( 'section' => 'mm_calculator', 'type' => 'toggle', 'label' => __( 'Show it on the homepage', 'minemirth' ), 'description' => __( 'Placed after "Popular ASIC miners" unless you add the "Miner profitability" section yourself.', 'minemirth' ), 'default' => true ),
+		'prof_home_limit'   => array( 'section' => 'mm_calculator', 'type' => 'range', 'label' => __( 'Miners on the homepage', 'minemirth' ), 'default' => 10, 'min' => 5, 'max' => 25, 'step' => 1 ),
 		'calc_pool_fee'     => array( 'section' => 'mm_calculator', 'type' => 'number', 'label' => __( 'Default pool fee (%)', 'minemirth' ), 'default' => 2, 'min' => 0, 'max' => 10, 'step' => 0.1 ),
 		'calc_cta_text'     => array( 'section' => 'mm_calculator', 'type' => 'text', 'label' => __( 'Result call-to-action text', 'minemirth' ), 'default' => __( 'Shop miners like this', 'minemirth' ) ),
 		'calc_cta_url'      => array( 'section' => 'mm_calculator', 'type' => 'url', 'label' => __( 'Result call-to-action URL', 'minemirth' ), 'default' => '{shop}' ),

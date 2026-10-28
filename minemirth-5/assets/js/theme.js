@@ -290,6 +290,105 @@
 		});
 	}
 
+	/**
+	 * Desktop dropdowns with hover intent: a menu opens at once, stays open for a moment after the
+	 * pointer leaves, and a neighbouring menu only takes over when the pointer rests on it. Crossing
+	 * another menu name on the way to a link in the open panel no longer switches menus.
+	 */
+	function initHoverIntent(ctx) {
+		var nav = $('.mm-nav', ctx);
+		if (!nav || nav.dataset.mmIntent || !window.matchMedia || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) { return; }
+		nav.dataset.mmIntent = '1';
+		nav.classList.add('is-js');
+		var items = $$('.mm-menu > li', nav).filter(function (li) { return li.querySelector('.mm-submenu-wrap'); });
+		var current = null;
+		var closeTimer = 0;
+		var switchTimer = 0;
+		var trail = [];
+		on(nav.closest('.mm-masthead') || nav, 'mousemove', function (e) {
+			trail.push({ x: e.clientX, y: e.clientY, t: Date.now() });
+			if (trail.length > 12) { trail.shift(); }
+		});
+		// Is the pointer still travelling down towards the open panel? Then the user is not choosing a new menu.
+		function headingDown() {
+			var now = Date.now();
+			// Compare the latest position with one from about a third of a second earlier (or the sample
+			// just before it when the pointer moves slowly), so careful movements count too.
+			var last = trail[trail.length - 1];
+			if (!last || now - last.t > 220) { return false; }
+			var recent = trail.filter(function (m) { return now - m.t < 340; });
+			var first = recent.length >= 2 ? recent[0] : trail[trail.length - 2];
+			if (!first || last.t - first.t > 800) { return false; }
+			var dy = last.y - first.y;
+			var dx = Math.abs(last.x - first.x);
+			// Any steady downward travel means the pointer is on its way into the panel, even at a shallow angle.
+			return dy > 2 && dy >= dx * 0.08;
+		}
+		// Close after a pause, but keep waiting while the pointer is still travelling down to the panel.
+		function closeLater(waited) {
+			clearTimeout(closeTimer);
+			closeTimer = setTimeout(function () {
+				if (current && current.matches(':hover')) { return; }
+				if (headingDown() && (waited || 0) < 1400) { closeLater((waited || 0) + 280); return; }
+				closeAll();
+			}, 280);
+		}
+		function trySwitch(li) {
+			clearTimeout(switchTimer);
+			switchTimer = setTimeout(function () {
+				if (!li.matches(':hover')) { return; }
+				if (headingDown()) { trySwitch(li); return; }
+				open(li);
+			}, 140);
+		}
+		function open(li) {
+			clearTimeout(closeTimer);
+			clearTimeout(switchTimer);
+			if (current && current !== li) { current.classList.remove('is-open'); }
+			current = li;
+			li.classList.add('is-open');
+		}
+		function closeAll() {
+			clearTimeout(switchTimer);
+			if (current) { current.classList.remove('is-open'); }
+			current = null;
+		}
+		items.forEach(function (li) {
+			on(li, 'mouseenter', function () {
+				clearTimeout(closeTimer);
+				if (!current || current === li) { open(li); return; }
+				trySwitch(li);
+			});
+			on(li, 'mouseleave', function () {
+				clearTimeout(switchTimer);
+				if (current === li) { closeLater(); }
+			});
+		});
+		// Items without a dropdown close any open one when the pointer rests on them.
+		$$('.mm-menu > li', nav).forEach(function (li) {
+			if (items.indexOf(li) !== -1) { return; }
+			on(li, 'mouseenter', function () {
+				if (!current) { return; }
+				clearTimeout(closeTimer);
+				(function wait() {
+					clearTimeout(switchTimer);
+					switchTimer = setTimeout(function () {
+						if (!li.matches(':hover')) { return; }
+						if (headingDown()) { wait(); return; }
+						closeAll();
+					}, 140);
+				}());
+			});
+			on(li, 'mouseleave', function () {
+				clearTimeout(switchTimer);
+				if (current && !current.matches(':hover')) { closeLater(); }
+			});
+		});
+		on(doc, 'click', function (e) { if (current && !nav.contains(e.target)) { closeAll(); } });
+		on(doc, 'keydown', function (e) { if (e.key === 'Escape') { closeAll(); } });
+		on(window, 'pagehide', closeAll);
+	}
+
 	function initSubmenus(ctx) {
 		$$('.mm-submenu-toggle', ctx).forEach(function (btn) {
 			if (btn.dataset.mmBound) { return; }
@@ -302,6 +401,7 @@
 				btn.setAttribute('aria-expanded', open ? 'true' : 'false');
 			});
 		});
+		initHoverIntent(ctx);
 		// Desktop: Escape closes an open dropdown and returns focus to its link.
 		$$('.mm-nav .mm-menu > li', ctx).forEach(function (li) {
 			on(li, 'keydown', function (e) {
