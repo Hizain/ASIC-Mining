@@ -1,0 +1,35 @@
+/* Mine Mirth Menu Fix: desktop header dropdowns. */
+
+/* 1. A closed or closing panel never catches the pointer, so it can not steal hovers or clicks. */
+.mm-nav .mm-submenu-wrap { pointer-events: none; }
+.mm-nav li:hover > .mm-submenu-wrap,
+.mm-nav li:focus-within > .mm-submenu-wrap,
+.mm-nav li.is-open > .mm-submenu-wrap { pointer-events: auto; }
+
+/* 2. The columns inside the big panels follow their panel instead of always being visible to the mouse. */
+.mm-nav .mm-mega .mm-submenu .mm-submenu-wrap { visibility: inherit; pointer-events: inherit; }
+
+/* 3. Each top item fills the header height, so there is no dead gap on the way down to its panel. */
+@media (min-width: 1100px) {
+	.mm-nav { align-self: stretch; display: flex; align-items: stretch; }
+	.mm-nav > .mm-menu { align-items: stretch; }
+	.mm-nav .mm-menu > li { display: flex; align-items: center; }
+}
+
+/* 4. With the hover-intent script (mouse and trackpad only), the script decides which menu is open. */
+.mm-nav.mmmf .mm-menu > li:not(.is-open) > .mm-submenu-wrap { opacity: 0; visibility: hidden; pointer-events: none; }
+.mm-nav.mmmf .mm-menu > li:not(.is-open):not(.mm-mega) > .mm-submenu-wrap { transform: translate(-50%, 8px); }
+.mm-nav.mmmf .mm-menu > li.mm-mega:not(.is-open) > .mm-submenu-wrap { transform: translateY(8px); }
+
+/* Open: by the script, or by keyboard focus (Tab) as before. */
+.mm-nav.mmmf .mm-menu > li.is-open > .mm-submenu-wrap,
+.mm-nav.mmmf .mm-menu > li:has(:focus-visible) > .mm-submenu-wrap { opacity: 1; visibility: visible; pointer-events: auto; }
+.mm-nav.mmmf .mm-menu > li:not(.mm-mega):has(:focus-visible) > .mm-submenu-wrap { transform: translate(-50%, 0); }
+.mm-nav.mmmf .mm-menu > li.mm-mega.is-open > .mm-submenu-wrap,
+.mm-nav.mmmf .mm-menu > li.mm-mega:has(:focus-visible) > .mm-submenu-wrap { transform: none; }
+
+/* The open item looks open, and an invisible bridge covers the panel while it slides in. */
+.mm-nav.mmmf .mm-menu > li.is-open > .mm-menu-link { color: var(--mm-text); }
+.mm-menu-pill .mm-nav.mmmf .mm-menu > li.is-open > .mm-menu-link { background: var(--mm-hover); }
+.mm-nav.mmmf .mm-menu > li.is-open > .mm-menu-link .mm-menu-caret { transform: rotate(180deg); }
+.mm-nav.mmmf .mm-menu > li.is-open::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 18px; }
