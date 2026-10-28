@@ -1,0 +1,34 @@
+/*
+ * Mine Mirth Hero Spacing: one consistent gap between the header and the hero on every page.
+ * "body" is added to each selector so these rules also win over styles the theme loads later
+ * in the page (section styles are printed near the footer).
+ */
+:root { --mmhs-top: clamp(28px, 3.2vw, 56px); }
+
+/* Homepage hero: sized to its content, starting a steady distance below the header. */
+body .mm-hero {
+	min-height: 0;
+	align-items: flex-start;
+	padding-top: var(--mmhs-top);
+	padding-bottom: clamp(56px, 6vw, 96px);
+}
+/* When the header is transparent and lies over the hero, the hero makes room for it. */
+body.mm-header-overlay .mm-hero,
+.mm-header-overlay body .mm-hero {
+	padding-top: calc(var(--mm-header-h, 76px) + var(--mmhs-top));
+}
+/* The "scroll" hint sits in the bottom padding, clear of the buttons. */
+body .mm-hero .mm-hero__scroll { bottom: 14px; }
+
+/* Hero sections at the top of builder pages (Miners, Hosting, Learn, Tools, About, Contact…). */
+body .mm-s.mm-s--hero { padding-top: var(--mmhs-top); }
+
+/* Standard page headers (Shop, tools, policies) and blog and guide article headers. */
+body .mm-page-hero { padding-top: var(--mmhs-top); }
+body .mm-article-head { padding-top: var(--mmhs-top); }
+
+/* Sections set to "no padding" (the homepage hero and the live ticker) keep none on phones too;
+   the theme's phone rule added about 56px above and below them. */
+body .mm-s.mm-s--pad-none,
+body .mm-s.mm-s--fxhero,
+body .mm-s.mm-s--ticker { padding-block: 0; }
