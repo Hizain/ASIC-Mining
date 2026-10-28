@@ -15,6 +15,7 @@ build() {
 }
 build minemirth-5 style.css
 build mine-mirth-launch mine-mirth-launch.php
+build mine-mirth-guide-fix mine-mirth-guide-fix.php
 build mine-mirth-commerce mine-mirth-commerce.php
 build mine-mirth-contact mine-mirth-contact.php
 build mine-mirth-rig-optimizer mine-mirth-rig-optimizer.php
