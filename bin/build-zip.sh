@@ -31,3 +31,4 @@ build mine-mirth-tools mine-mirth-tools.php
 build mine-mirth-hide-wordmark mine-mirth-hide-wordmark.php
 build mine-mirth-buy-now mine-mirth-buy-now.php
 build mine-mirth-subscriptions mine-mirth-subscriptions.php
+build mine-mirth-hosting-listings mine-mirth-hosting-listings.php
