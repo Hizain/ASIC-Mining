@@ -1,0 +1,34 @@
+/* Mine Mirth Subscriptions: plan cards on the hosting page (built on the theme's .mm-plan cards). */
+.mms-plans { align-items: stretch; }
+.mms-plan { position: relative; overflow: hidden; }
+.mms-plan__media { margin: -28px -28px 4px; aspect-ratio: 16 / 9; overflow: hidden; background: var(--mm-surface-2, #eef3f9); }
+.mms-plan__media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s var(--mm-ease-out, ease); }
+.mms-plan:hover .mms-plan__media img { transform: scale(1.04); }
+.mms-plan__price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+.mms-plan__price strong { font-family: var(--mm-font-heading, inherit); font-size: clamp(1.9rem, 1.6rem + 1vw, 2.4rem); line-height: 1.1; letter-spacing: -.02em; color: var(--mm-text, #0a1626); }
+.mms-plan__price span { color: var(--mm-muted, #506279); font-size: .92rem; }
+.mms-plan .mm-plan__cta { margin-top: auto; }
+.mms-subscribe { display: grid; gap: 10px; margin: 0; }
+.mms-hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; opacity: 0; }
+.mms-qty { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px 12px; padding: 10px 12px; border: 1px solid var(--mm-border, #dbe5ef); border-radius: 14px; background: var(--mm-surface-2, #f4f8fc); }
+.mms-qty__label { font-size: .86rem; font-weight: 600; color: var(--mm-text-2, #334155); }
+.mms-qty__ctl { display: inline-flex; align-items: center; gap: 4px; }
+.mms-qty__ctl button { width: 32px; height: 32px; border: 1px solid var(--mm-border, #dbe5ef); border-radius: 50%; background: var(--mm-surface, #fff); color: var(--mm-text, #0a1626); font-size: 18px; line-height: 1; cursor: pointer; }
+.mms-qty__ctl button:hover { border-color: var(--mm-primary, #35a8f6); }
+.mms-qty__ctl input { width: 52px; height: 32px; border: 0; background: transparent; text-align: center; font-weight: 700; font-size: 1rem; color: var(--mm-text, #0a1626); -moz-appearance: textfield; }
+.mms-qty__ctl input::-webkit-outer-spin-button, .mms-qty__ctl input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.mms-qty__total { grid-column: 1 / -1; font-size: .84rem; color: var(--mm-muted, #506279); }
+.mms-btn { justify-content: center; }
+.mms-secure { margin: 0; text-align: center; font-size: .78rem; color: var(--mm-muted, #64748b); }
+.mms-empty { padding: 22px; border: 1px dashed var(--mm-border, #dbe5ef); border-radius: 16px; text-align: center; color: var(--mm-muted, #64748b); }
+.mms-top { margin-bottom: 32px; }
+
+/* After checkout */
+.mms-toast { position: fixed; z-index: 99990; left: 50%; top: calc(20px + var(--mm-admin-bar, 0px)); transform: translateX(-50%); display: flex; gap: 14px; align-items: flex-start; width: min(560px, calc(100vw - 32px)); padding: 18px 20px; border-radius: 18px; background: #071221; background-image: linear-gradient(135deg, #040a13, #0c2442); color: #e7f0fa; box-shadow: 0 30px 60px -20px rgba(0, 0, 0, .55), 0 0 0 1px rgba(94, 225, 255, .18); animation: mms-in .5s cubic-bezier(.2, .8, .2, 1) both; }
+.mms-toast__icon { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: #64748b; color: #fff; font-weight: 800; }
+.mms-toast.is-ok .mms-toast__icon { background: linear-gradient(135deg, #5ee1ff, #35a8f6 45%, #2563eb); }
+.mms-toast__body strong { display: block; font-size: 1.02rem; color: #fff; margin-bottom: 4px; }
+.mms-toast__body p { margin: 0; font-size: .92rem; line-height: 1.55; color: #a9bacd; }
+.mms-toast__close { margin-left: auto; border: 0; background: transparent; color: #8ea3bb; font-size: 22px; line-height: 1; cursor: pointer; }
+@keyframes mms-in { from { opacity: 0; transform: translate(-50%, -14px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@media (prefers-reduced-motion: reduce) { .mms-toast { animation: none; } .mms-plan:hover .mms-plan__media img { transform: none; } }
