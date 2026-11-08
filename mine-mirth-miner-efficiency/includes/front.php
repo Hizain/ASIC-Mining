@@ -31,9 +31,10 @@ add_filter(
 		if ( ! mmeff_is_on( (int) $product->get_id() ) ) {
 			return $attributes;
 		}
-		// Shop cards have room for three specs. Without an efficiency value the theme shows the
-		// algorithm there; keep it that way unless "Show efficiency on shop cards" is on.
-		if ( doing_action( 'woocommerce_after_shop_loop_item_title' ) && ! mmeff_settings()['cards'] && ! isset( $attributes['efficiency'] ) && ! isset( $attributes['pa_efficiency'] ) ) {
+		// Shop cards: correct the efficiency wherever the theme shows one, but never push another
+		// spec (such as the algorithm) off a card that has no efficiency today, unless
+		// "Show efficiency on shop cards" is on.
+		if ( doing_action( 'woocommerce_after_shop_loop_item_title' ) && ! mmeff_settings()['cards'] && ! mmeff_card_shows_efficiency( $attributes ) ) {
 			return $attributes;
 		}
 		$info = mmeff_info( $product );
@@ -62,6 +63,33 @@ add_filter(
 	20,
 	2
 );
+
+/**
+ * Would the theme's shop card show an efficiency for a product with these attributes?
+ * The card lists the "Spec attributes to show" (Customizer) in order, up to three, and adds its own
+ * calculated efficiency only when fewer than three of them are filled in.
+ */
+function mmeff_card_shows_efficiency( array $attributes ): bool {
+	if ( isset( $attributes['efficiency'] ) || isset( $attributes['pa_efficiency'] ) ) {
+		return true;
+	}
+	$list = function_exists( 'mm_opt' ) ? (string) mm_opt( 'card_specs' ) : '';
+	$list = '' !== trim( $list ) ? $list : 'hashrate, power, efficiency, algorithm';
+	$shown = 0;
+	foreach ( array_filter( array_map( 'trim', explode( ',', $list ) ) ) as $name ) {
+		$key = sanitize_title( $name );
+		if ( false !== strpos( $key, 'effic' ) ) {
+			continue;
+		}
+		if ( isset( $attributes[ $key ] ) || isset( $attributes[ 'pa_' . $key ] ) ) {
+			++$shown;
+		}
+		if ( $shown >= 3 ) {
+			return false;
+		}
+	}
+	return true;
+}
 
 /**
  * "Wrong figure => right figure" for every switched-on product whose figures differ.

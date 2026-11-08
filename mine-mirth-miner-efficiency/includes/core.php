@@ -73,8 +73,9 @@ function mmeff_settings( bool $fresh = false ): array {
  * @return array{hs:float,unit:string} hs = hashes (or solutions) per second; unit = the J/x unit as listed.
  */
 function mmeff_parse_hashrate( string $raw ): array {
-	$raw = trim( $raw );
-	if ( '' === $raw || ! preg_match( '/([\d][\d.,\s]*)\s*([PTGMKk]?)\s*(H|Sol)\b/u', $raw, $m ) ) {
+	$raw = trim( html_entity_decode( wp_strip_all_tags( $raw ), ENT_QUOTES, 'UTF-8' ) );
+	// Any capitalisation and spacing: "525 Ksol/s", "525KSol/s", "1.16Ph/s", "200Th/s", "16 GH/s", "9.5 kH/s".
+	if ( '' === $raw || ! preg_match( '/(\d[\d.,]*(?:\s\d{3})*)\s*([PTGMK]?)\s*(H|SOL|S(?=\/S))(?:\/S|\b|$)/i', $raw, $m ) ) {
 		// A bare number: read it as TH/s (the theme does the same).
 		if ( preg_match( '/^[\d.,\s]+$/', $raw ) && (float) str_replace( ',', '', $raw ) > 0 ) {
 			return array( 'hs' => (float) str_replace( array( ',', ' ' ), '', $raw ) * 1e12, 'unit' => 'J/TH' );
@@ -83,13 +84,27 @@ function mmeff_parse_hashrate( string $raw ): array {
 	}
 	$num    = (float) str_replace( array( ',', ' ' ), '', $m[1] );
 	$prefix = strtoupper( $m[2] );
-	$sol    = 'Sol' === $m[3];
+	$sol    = 'H' !== strtoupper( $m[3] ); // "Sol" (Equihash solutions); a lone "S" as in "525 KS/s" too.
 	$mult   = array( 'P' => 1e15, 'T' => 1e12, 'G' => 1e9, 'M' => 1e6, 'K' => 1e3, '' => 1 )[ $prefix ] ?? 1;
-	$unit   = $sol ? ( 'K' === $prefix ? 'J/kSol' : 'J/Sol' ) : 'J/' . ( 'K' === $prefix ? 'k' : $prefix ) . 'H';
-	if ( 'J/H' === $unit ) {
-		$unit = 'J/kH';
+	if ( $sol ) {
+		$unit = '' === $prefix ? 'J/Sol' : 'J/kSol';
+	} else {
+		$unit = '' === $prefix ? 'J/kH' : 'J/' . ( 'K' === $prefix ? 'k' : $prefix ) . 'H';
 	}
 	return array( 'hs' => $num * $mult, 'unit' => $unit );
+}
+
+/**
+ * A hashrate written in a product name. Stricter than for attributes: it needs a unit prefix and
+ * H or Sol ("525Ksol/s", "1.16Ph/s", "200Th/s"), so model names like "M60S+" or "S19k" never match.
+ */
+function mmeff_name_hashrate( string $name ): string {
+	return preg_match( '/(?<![\w.])(\d+(?:[.,]\d+)?)\s*([PTGMK])\s*(H|SOL)(?:\/S)?(?![a-z])/i', $name, $m ) ? $m[0] : '';
+}
+
+/** A power draw written in a product name ("2480W", "3,400 W", "3.4kW"). */
+function mmeff_name_watts( string $name ): string {
+	return preg_match( '/(?<![\w.])(\d[\d,]*(?:\.\d+)?)\s*(k?)W(?![a-z])/i', $name, $m ) ? $m[0] : '';
 }
 
 function mmeff_parse_watts( string $raw ): float {
@@ -175,11 +190,37 @@ function mmeff_info( WC_Product $p ): array {
 	$watts_raw = trim( (string) get_post_meta( $id, '_mmeff_watts', true ) );
 	$det_hash  = mmeff_attr( $p, array( 'hashrate', 'hash-rate', 'hash_rate', 'hash rate' ) );
 	$det_watts = mmeff_attr( $p, array( 'power', 'power-consumption', 'power consumption', 'wattage' ) );
+	// What the theme itself reads (wherever it found the specs): used to fill gaps and to know its figure.
+	$sp = function_exists( 'mm_product_mining_specs' ) ? (array) mm_product_mining_specs( $p ) : array();
+	if ( '' === $det_hash && '' !== trim( (string) ( $sp['raw'][0] ?? '' ) ) ) {
+		$det_hash = trim( (string) $sp['raw'][0] );
+	}
+	if ( '' === $det_watts && '' !== trim( (string) ( $sp['raw'][1] ?? '' ) ) ) {
+		$det_watts = trim( (string) $sp['raw'][1] );
+	}
+	// Last resort: the product name, e.g. "Antminer Z15K 525Ksol/s 2480W".
+	if ( '' === $det_hash ) {
+		$det_hash = mmeff_name_hashrate( $p->get_name() );
+	}
+	if ( '' === $det_watts ) {
+		$det_watts = mmeff_name_watts( $p->get_name() );
+	}
 	$algo      = mmeff_algorithm( $p, '' !== $hash_raw ? $hash_raw : $det_hash );
 	$GLOBALS['mmeff_reading'] = false;
 
-	$h      = mmeff_parse_hashrate( '' !== $hash_raw ? $hash_raw : $det_hash );
-	$watts  = mmeff_parse_watts( '' !== $watts_raw ? $watts_raw : $det_watts );
+	$h     = mmeff_parse_hashrate( '' !== $hash_raw ? $hash_raw : $det_hash );
+	$watts = mmeff_parse_watts( '' !== $watts_raw ? $watts_raw : $det_watts );
+	// Hashrate in solutions per second (Sol/s, kSol/s) only exists for Equihash miners.
+	if ( str_contains( $h['unit'], 'Sol' ) ) {
+		$algo = 'equihash';
+	}
+	// The theme found numbers but no readable text: use its numbers (terahashes and watts).
+	if ( $h['hs'] <= 0 && '' === $hash_raw && (float) ( $sp['th'] ?? 0 ) > 0 ) {
+		$h = array( 'hs' => (float) $sp['th'] * 1e12, 'unit' => '' );
+	}
+	if ( $watts <= 0 && '' === $watts_raw && (float) ( $sp['watts'] ?? 0 ) > 0 ) {
+		$watts = (float) $sp['watts'];
+	}
 	$s      = mmeff_settings();
 	$unit   = (string) get_post_meta( $id, '_mmeff_unit', true );
 	if ( '' === $unit || ! isset( mmeff_units()[ $unit ] ) ) {
@@ -198,10 +239,7 @@ function mmeff_info( WC_Product $p ): array {
 	// What the theme shows without this plugin: watts ÷ terahashes, always called J/TH.
 	$theme = '';
 	if ( function_exists( 'mm_product_mining_specs' ) ) {
-		$GLOBALS['mmeff_reading'] = true;
-		$sp                       = mm_product_mining_specs( $p );
-		$GLOBALS['mmeff_reading'] = false;
-		if ( $sp['th'] > 0 && $sp['watts'] > 0 ) {
+		if ( (float) ( $sp['th'] ?? 0 ) > 0 && (float) ( $sp['watts'] ?? 0 ) > 0 ) {
 			$theme = number_format_i18n( $sp['watts'] / $sp['th'], 1 ) . ' J/TH';
 		}
 	} else {
