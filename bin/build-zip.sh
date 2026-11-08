@@ -34,3 +34,4 @@ build mine-mirth-subscriptions mine-mirth-subscriptions.php
 build mine-mirth-hosting-listings mine-mirth-hosting-listings.php
 build mine-mirth-product-page mine-mirth-product-page.php
 build mine-mirth-miner-efficiency mine-mirth-miner-efficiency.php
+build mine-mirth-ticker mine-mirth-ticker.php

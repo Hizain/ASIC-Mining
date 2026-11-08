@@ -1,0 +1,110 @@
+/* Mine Mirth Ticker. Colours come from the settings (CSS variables on the bar). */
+.mmtk {
+	--mmtk-h: 42px;
+	--mmtk-fs: 14px;
+	position: relative;
+	z-index: 70;
+	display: flex;
+	align-items: stretch;
+	height: var(--mmtk-h);
+	overflow: hidden;
+	color: var(--mmtk-text);
+	background: var(--mmtk-bg);
+	border-bottom: 1px solid color-mix(in srgb, var(--mmtk-accent) 35%, transparent);
+	font-family: var(--mm-font-body, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+	font-size: var(--mmtk-fs);
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+}
+.mmtk--sm { --mmtk-h: 34px; --mmtk-fs: 13px; }
+.mmtk--lg { --mmtk-h: 50px; --mmtk-fs: 16px; }
+.mmtk--bottom { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9990; border-bottom: 0; border-top: 1px solid color-mix(in srgb, var(--mmtk-accent) 35%, transparent); box-shadow: 0 -8px 24px -12px rgb(0 0 0 / .45); }
+body:has(.mmtk--bottom) { padding-bottom: var(--mmtk-h); }
+
+/* Soft fade at both edges so items glide in and out. */
+.mmtk__viewport {
+	position: relative;
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	-webkit-mask-image: linear-gradient(90deg, transparent, #000 36px, #000 calc(100% - 36px), transparent);
+	mask-image: linear-gradient(90deg, transparent, #000 36px, #000 calc(100% - 36px), transparent);
+}
+.mmtk__track { display: flex; width: max-content; height: 100%; will-change: transform; }
+.mmtk.is-running .mmtk__track { animation: mmtk-scroll var(--mmtk-dur, 60s) linear infinite; }
+.mmtk--pause:hover .mmtk__track, .mmtk--pause:focus-within .mmtk__track { animation-play-state: paused; }
+@keyframes mmtk-scroll { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(calc(-1 * var(--mmtk-shift, 50%)), 0, 0); } }
+
+.mmtk__group { display: flex; align-items: center; flex-shrink: 0; height: 100%; margin: 0; padding: 0 0 0 0; list-style: none; }
+.mmtk__item { display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 0 18px; white-space: nowrap; }
+.mmtk__sep { margin: 0; padding: 0 2px; color: color-mix(in srgb, var(--mmtk-accent) 75%, var(--mmtk-text)); opacity: .7; list-style: none; }
+
+.mmtk__badge {
+	display: inline-grid;
+	place-items: center;
+	min-width: 22px;
+	height: 20px;
+	padding: 0 6px;
+	border-radius: 6px;
+	font-size: .72em;
+	font-weight: 800;
+	letter-spacing: .03em;
+	color: var(--c, var(--mmtk-accent));
+	background: color-mix(in srgb, var(--c, var(--mmtk-accent)) 18%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c, var(--mmtk-accent)) 45%, transparent);
+}
+.mmtk__item--btc .mmtk__badge { font-size: .9em; }
+.mmtk__label { color: var(--mmtk-muted); font-weight: 500; }
+.mmtk__val { color: var(--mmtk-text); font-weight: 700; font-family: var(--mm-font-mono, ui-monospace, "SFMono-Regular", Menlo, monospace); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.mmtk__chg { font-size: .86em; font-weight: 700; font-family: var(--mm-font-mono, ui-monospace, Menlo, monospace); color: var(--mmtk-muted); }
+.mmtk__chg.is-up { color: var(--mmtk-up); }
+.mmtk__chg.is-down { color: var(--mmtk-down); }
+.mmtk__chg:empty { display: none; }
+
+/* Messages */
+.mmtk__item--msg { gap: 8px; }
+.mmtk__item--highlight .mmtk__msg { font-weight: 700; }
+.mmtk__item--highlight {
+	margin: 0 6px;
+	padding: 0 14px;
+	height: calc(var(--mmtk-h) - 12px);
+	border-radius: 999px;
+	color: var(--mmtk-msg-text);
+	background: var(--mmtk-msg-bg);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--mmtk-msg-bg) 60%, #fff), 0 6px 18px -8px color-mix(in srgb, var(--mmtk-msg-bg) 80%, transparent);
+}
+.mmtk__item--plain .mmtk__msg { color: var(--mmtk-text); font-weight: 600; }
+.mmtk__icon { font-size: 1.05em; line-height: 1; }
+.mmtk a { color: inherit; text-decoration: none; }
+.mmtk__link { font-weight: 800; text-decoration: underline !important; text-underline-offset: 3px; text-decoration-thickness: 2px; }
+.mmtk__item--plain .mmtk__link { color: var(--mmtk-accent); }
+.mmtk__link--whole:hover, .mmtk__link:hover { opacity: .85; }
+.mmtk a:focus-visible { outline: 2px solid var(--mmtk-accent); outline-offset: 2px; border-radius: 4px; }
+
+.mmtk__close {
+	flex-shrink: 0;
+	width: var(--mmtk-h);
+	border: 0;
+	border-left: 1px solid color-mix(in srgb, var(--mmtk-text) 14%, transparent);
+	background: var(--mmtk-bg);
+	color: var(--mmtk-muted);
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+}
+.mmtk__close:hover { color: var(--mmtk-text); }
+.mmtk.is-closed { display: none; }
+
+@media (max-width: 640px) {
+	.mmtk--no-mobile { display: none; }
+	.mmtk { --mmtk-fs: 13px; }
+	.mmtk--lg { --mmtk-fs: 14px; }
+	.mmtk__item { padding: 0 12px; }
+}
+
+/* Motion off: the row stays still and can be scrolled by hand. */
+@media (prefers-reduced-motion: reduce) {
+	.mmtk.is-running .mmtk__track { animation: none; }
+	.mmtk__viewport { overflow-x: auto; -webkit-mask-image: none; mask-image: none; scrollbar-width: none; }
+	.mmtk__group[aria-hidden="true"] { display: none; }
+}
