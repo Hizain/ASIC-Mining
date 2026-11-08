@@ -42,6 +42,7 @@ function mmeff_defaults(): array {
 		'auto'      => 1,
 		'table'     => 1,
 		'cards'     => 0,
+		'scale'     => 1,
 		'decimals'  => 'auto',
 		'units'     => array(
 			'sha256'     => 'J/TH',
@@ -139,6 +140,29 @@ function mmeff_algorithm( WC_Product $p, string $hash_raw ): string {
 	return 'other';
 }
 
+/**
+ * Move to a neighbouring unit until the figure is between 0.01 and 1,000.
+ * Example: 12,820,513 J/TH → 12,821 J/GH → 12.8 J/MH.
+ *
+ * @return array{0:float,1:string}
+ */
+function mmeff_readable( float $value, string $unit ): array {
+	$ladder = str_contains( $unit, 'Sol' ) ? array( 'J/kSol', 'J/Sol' ) : array( 'J/PH', 'J/TH', 'J/GH', 'J/MH', 'J/kH' );
+	$i      = array_search( $unit, $ladder, true );
+	if ( false === $i ) {
+		return array( $value, $unit );
+	}
+	while ( $value >= 1000 && $i < count( $ladder ) - 1 ) {
+		$value /= 1000;
+		++$i;
+	}
+	while ( $value < 0.01 && $i > 0 ) {
+		$value *= 1000;
+		--$i;
+	}
+	return array( $value, $ladder[ $i ] );
+}
+
 /** "0.21", "13.5", "150" — three significant figures, or a fixed number of decimals. */
 function mmeff_format( float $v ): string {
 	$dec = (string) mmeff_settings()['decimals'];
@@ -222,8 +246,9 @@ function mmeff_info( WC_Product $p ): array {
 		$watts = (float) $sp['watts'];
 	}
 	$s      = mmeff_settings();
-	$unit   = (string) get_post_meta( $id, '_mmeff_unit', true );
-	if ( '' === $unit || ! isset( mmeff_units()[ $unit ] ) ) {
+	$unit         = (string) get_post_meta( $id, '_mmeff_unit', true );
+	$product_unit = '' !== $unit && isset( mmeff_units()[ $unit ] );
+	if ( ! $product_unit ) {
 		$unit = (string) ( $s['units'][ $algo ] ?? 'listed' );
 	}
 	if ( 'listed' === $unit || ! isset( mmeff_units()[ $unit ] ) ) {
@@ -234,6 +259,12 @@ function mmeff_info( WC_Product $p ): array {
 		$unit = $h['unit'];
 	}
 	$value  = $h['hs'] > 0 && $watts > 0 ? $watts / ( $h['hs'] / mmeff_units()[ $unit ] ) : 0.0;
+	// Keep the figure readable for any miner: tiny solo/lottery miners (kH/s) would read millions of
+	// J/TH, so step to a smaller unit (J/GH, J/MH, J/kH) while the figure is 1,000 or more, and to a
+	// bigger one while it is under 0.01. A unit chosen for this product by hand is kept as it is.
+	if ( $value > 0 && $s['scale'] && ! $product_unit ) {
+		list( $value, $unit ) = mmeff_readable( $value, $unit );
+	}
 	$custom = trim( (string) get_post_meta( $id, '_mmeff_text', true ) );
 	$text   = '' !== $custom ? $custom : ( $value > 0 ? mmeff_format( $value ) . ' ' . $unit : '' );
 	// What the theme shows without this plugin: watts ÷ terahashes, always called J/TH.

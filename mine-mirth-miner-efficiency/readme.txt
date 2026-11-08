@@ -2,7 +2,7 @@
 Requires at least: 6.4
 Requires PHP: 8.0
 Requires Plugins: woocommerce
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 
 Shows each miner's efficiency from its own power draw and hashrate, in the right unit for its algorithm. A plugin only: your theme and your products are not changed. Settings: WooCommerce › Miner efficiency.
@@ -14,6 +14,7 @@ The theme worked out efficiency as watts ÷ terahashes and always called it J/TH
 * Antminer L9 (16 GH/s, 3,360 W): 210,000 J/TH → 0.21 J/MH
 * Goldshell AL-BOX (360 GH/s, 180 W): 500 J/TH → 0.5 J/GH
 * Antminer Z15K (525 Ksol/s, 2,480 W): 4,723,809,523.8 J/TH → 4.72 J/kSol
+* Lucky Miner LV02 (78 KH/s, 1 W): 12,820,513 J/TH → 12.8 J/MH
 
 Efficiency is now power ÷ hashrate in each algorithm's unit:
 
@@ -25,6 +26,8 @@ Efficiency is now power ÷ hashrate in each algorithm's unit:
 * Other: in the unit the hashrate is listed in
 
 Change any of these in the settings.
+
+Readable for every miner: when a figure would be 1,000 or more, it moves to the next smaller unit (J/TH → J/GH → J/MH → J/kH), and under 0.01 to the next bigger one. Tiny solo and lottery miners (NerdMiner, Lucky Miner LV02/LV03…) then read like 12.8 J/MH instead of millions of J/TH, while regular miners keep their usual unit. A unit you set on a product by hand is never changed. Setting: "Very small or large miners".
 
 == Where it shows ==
 
@@ -58,6 +61,9 @@ New products follow "Switch it on for new products automatically". Untick "Show 
 * The interactive tools (miner comparison, calculators) do their own maths in the visitor's browser and are not changed by this plugin.
 
 == Changelog ==
+
+= 1.0.2 =
+* Solo and lottery miners (KH/s) no longer show millions of J/TH: figures switch to a readable unit (e.g. 12.8 J/MH).
 
 = 1.0.1 =
 * Fixed: Equihash miners listed in Ksol/s (any capitalisation, e.g. Antminer Z15K) kept a huge J/TH figure. They now show J/kSol.

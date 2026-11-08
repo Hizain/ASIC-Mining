@@ -72,7 +72,7 @@ add_action(
 		if ( isset( $_POST['mmeff'] ) ) {
 			$in = (array) wp_unslash( $_POST['mmeff'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- sanitized below.
 			$s  = mmeff_settings( true );
-			foreach ( array( 'enabled', 'auto', 'table', 'cards' ) as $k ) {
+			foreach ( array( 'enabled', 'auto', 'table', 'cards', 'scale' ) as $k ) {
 				$s[ $k ] = empty( $in[ $k ] ) ? 0 : 1;
 			}
 			$s['decimals'] = in_array( (string) ( $in['decimals'] ?? 'auto' ), array( 'auto', '0', '1', '2', '3' ), true ) ? (string) $in['decimals'] : 'auto';
@@ -173,6 +173,9 @@ function mmeff_page(): void {
 								</label>
 							<?php endforeach; ?>
 						</div>
+					</td></tr>
+					<tr><th scope="row"><?php esc_html_e( 'Very small or large miners', 'mine-mirth-miner-efficiency' ); ?></th><td>
+						<label class="mmeff-check"><input type="checkbox" name="mmeff[scale]" value="1" <?php checked( $s['scale'] ); ?>> <span><?php esc_html_e( 'Switch to a readable unit when the figure would be 1,000 or more (or under 0.01)', 'mine-mirth-miner-efficiency' ); ?> <i><?php esc_html_e( '(a 78 KH/s, 1 W solo miner shows 12.8 J/MH instead of 12,820,513 J/TH; a unit set on a product by hand is kept)', 'mine-mirth-miner-efficiency' ); ?></i></span></label>
 					</td></tr>
 					<tr><th scope="row"><?php esc_html_e( 'Decimals', 'mine-mirth-miner-efficiency' ); ?></th><td>
 						<select name="mmeff[decimals]">
