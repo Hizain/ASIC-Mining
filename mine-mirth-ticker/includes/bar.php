@@ -139,12 +139,29 @@ function mmtk_bar_html( bool $preview = false ): string {
 		$s['msg_bg'],
 		$s['msg_text']
 	);
-	$classes = 'mmtk mmtk--' . $s['size'] . ' mmtk--' . ( $preview ? 'preview' : $s['placement'] ) . ( $s['pause'] ? ' mmtk--pause' : '' ) . ( $s['mobile'] ? '' : ' mmtk--no-mobile' );
+	$classes = 'mmtk mmtk--' . $s['size'] . ' mmtk--' . ( $preview ? 'preview' : $s['placement'] ) . ( ! $preview && mmtk_pinned() ? ' mmtk--pinned' : '' ) . ( $s['pause'] ? ' mmtk--pause' : '' ) . ( $s['mobile'] ? '' : ' mmtk--no-mobile' );
 	return '<div class="' . esc_attr( $classes ) . '" style="' . esc_attr( $style ) . '" data-mmtk data-speed="' . (int) $s['speed'] . '" data-refresh="' . (int) max( 30, (int) $s['refresh'] ) . '" data-endpoint="' . esc_url( rest_url( 'mine-mirth-ticker/v1/data' ) ) . '" role="region" aria-label="' . esc_attr__( 'Live mining market ticker', 'mine-mirth-ticker' ) . '">'
 		. '<div class="mmtk__viewport"><div class="mmtk__track"><ul class="mmtk__group">' . $list . '</ul></div></div>'
 		. ( $s['dismiss'] && ! $preview ? '<button type="button" class="mmtk__close" data-mmtk-close aria-label="' . esc_attr__( 'Close', 'mine-mirth-ticker' ) . '">×</button>' : '' )
 		. '</div>';
 }
+
+/** Top bar that stays visible while scrolling (the bottom bar always does). */
+function mmtk_pinned(): bool {
+	return (bool) mmtk_opt( 'sticky' ) && 'bottom' !== mmtk_opt( 'placement' );
+}
+
+// The theme's sticky header and other sticky parts move down by the bar's height.
+add_filter(
+	'body_class',
+	static function ( array $classes ): array {
+		if ( mmtk_should_show() && mmtk_pinned() ) {
+			$classes[] = 'mmtk-pinned';
+			$classes[] = 'mmtk-size-' . sanitize_html_class( (string) mmtk_opt( 'size' ) );
+		}
+		return $classes;
+	}
+);
 
 add_action(
 	'wp_enqueue_scripts',

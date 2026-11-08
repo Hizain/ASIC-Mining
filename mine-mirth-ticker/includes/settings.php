@@ -33,6 +33,7 @@ function mmtk_defaults(): array {
 		'mobile'       => 1,
 		'speed'        => 55,
 		'pause'        => 1,
+		'sticky'       => 1,
 		'size'         => 'md',
 		'bg'           => '#050b14',
 		'text'         => '#eaf3fc',

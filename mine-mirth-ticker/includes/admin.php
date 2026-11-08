@@ -58,7 +58,7 @@ add_action(
 		$d  = mmtk_defaults();
 		$s  = mmtk_settings( true );
 
-		foreach ( array( 'enabled', 'pause', 'hide_checkout', 'mobile', 'dismiss', 'change' ) as $k ) {
+		foreach ( array( 'enabled', 'pause', 'sticky', 'hide_checkout', 'mobile', 'dismiss', 'change' ) as $k ) {
 			$s[ $k ] = empty( $in[ $k ] ) ? 0 : 1;
 		}
 		$s['placement']    = in_array( $in['placement'] ?? '', array( 'replace', 'above', 'bottom' ), true ) ? $in['placement'] : 'replace';
@@ -246,6 +246,7 @@ function mmtk_page(): void {
 							<option value="all" <?php selected( $s['pages'], 'all' ); ?>><?php esc_html_e( 'On every page', 'mine-mirth-ticker' ); ?></option>
 							<option value="home" <?php selected( $s['pages'], 'home' ); ?>><?php esc_html_e( 'On the homepage only', 'mine-mirth-ticker' ); ?></option>
 						</select>
+						<p><?php echo $chk( 'sticky', __( 'Keep it visible while scrolling (at the top, with the menu just below it)', 'mine-mirth-ticker' ) ); // phpcs:ignore WordPress.Security.EscapeOutput ?></p>
 						<p class="description"><?php esc_html_e( 'To place it inside a page instead, use the shortcode [mm_ticker].', 'mine-mirth-ticker' ); ?></p>
 					</td></tr>
 					<tr><th scope="row"><?php esc_html_e( 'Movement', 'mine-mirth-ticker' ); ?></th><td>

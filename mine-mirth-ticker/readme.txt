@@ -1,7 +1,7 @@
 === Mine Mirth Ticker ===
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 
 A scrolling announcement bar (right to left) with the live Bitcoin price, the hashprice of proof-of-work coins one by one, and your own messages. A plugin only: your theme is not changed. Settings: Appearance › Ticker bar.
@@ -24,6 +24,7 @@ A live preview of the bar is at the top of the page.
 
 * Bar: on or off, on phones, hide on cart and checkout, let visitors close it.
 * Where: top of the page instead of the theme's announcement bar (default), top of the page above it, or fixed at the bottom of the screen; every page or the homepage only. Shortcode [mm_ticker] puts it inside any page.
+* Keep it visible while scrolling (on by default): the bar stays at the top of the screen and the theme's menu sits just below it (below the WordPress toolbar too when you are logged in). Untick to let it scroll away with the page. The bottom-of-screen bar is always visible.
 * Movement: speed, and pause while the mouse is over it. Visitors who turned off animations on their device see it still and can scroll it by hand.
 * What it shows: tick items on or off, reorder them with the arrows, remove them, add as many messages as you like (icon, text, link text, link, highlighted or plain). The Bitcoin price and hashprices can be added again too.
 * Labels: "Bitcoin" and "{name} hashprice" ({tag} for the ticker), 24-hour change on or off, the symbol between items, and repeating messages after every few coins.
@@ -40,6 +41,9 @@ A live preview of the bar is at the top of the page.
 * Hashprices move with coin prices and network difficulty; they are estimates, not guarantees.
 
 == Changelog ==
+
+= 1.0.1 =
+* The bar stays visible while scrolling, with the menu below it. Optional: "Keep it visible while scrolling", on by default.
 
 = 1.0.0 =
 * First release.

@@ -21,6 +21,20 @@
 .mmtk--bottom { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9990; border-bottom: 0; border-top: 1px solid color-mix(in srgb, var(--mmtk-accent) 35%, transparent); box-shadow: 0 -8px 24px -12px rgb(0 0 0 / .45); }
 body:has(.mmtk--bottom) { padding-bottom: var(--mmtk-h); }
 
+/* Kept visible while scrolling: the bar sticks to the top (below the WordPress toolbar when logged in),
+   and the theme's sticky header, sidebars and contents lists sit below it, because the theme places all
+   of them with --mm-admin-bar, which is raised here by the bar's height. */
+html body.mmtk-pinned { --mmtk-bar-h: 42px; --mmtk-top: 0px; }
+html body.mmtk-pinned.mmtk-size-sm { --mmtk-bar-h: 34px; }
+html body.mmtk-pinned.mmtk-size-lg { --mmtk-bar-h: 50px; }
+html body.mmtk-pinned.admin-bar { --mmtk-top: 32px; }
+@media (max-width: 782px) { html body.mmtk-pinned.admin-bar { --mmtk-top: 46px; } }
+@media (max-width: 600px) { html body.mmtk-pinned.admin-bar { --mmtk-top: 0px; } } /* The toolbar scrolls away on small phones. */
+html body.mmtk-pinned { --mm-admin-bar: calc(var(--mmtk-top) + var(--mmtk-bar-h)); }
+@media (max-width: 600px) { html body.mmtk-pinned.admin-bar.mm-header-sticky .mm-masthead { top: var(--mmtk-bar-h); } }
+.mmtk--pinned { position: sticky; top: var(--mmtk-top, 0px); z-index: 1000; }
+@media (max-width: 640px) { body.mmtk-pinned:has(.mmtk--no-mobile) { --mm-admin-bar: var(--mmtk-top); } }
+
 /* Soft fade at both edges so items glide in and out. */
 .mmtk__viewport {
 	position: relative;
